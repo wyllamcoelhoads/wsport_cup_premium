@@ -82,13 +82,17 @@ class WorldCupPage extends StatelessWidget {
                 return [
                   SliverAppBar(
                     expandedHeight:
-                        160.0, // Aumentado para acomodar imagem e abas
+                        180.0, // Aumentado um pouco para melhor respiro
                     pinned: true,
                     backgroundColor: AppColors.background,
                     elevation: 0,
+                    // Força a cor preta quando a barra colapsar (scroll para cima)
+                    forceElevated: innerBoxIsScrolled,
                     flexibleSpace: FlexibleSpaceBar(
                       centerTitle: true,
-                      titlePadding: const EdgeInsets.only(bottom: 50),
+                      titlePadding: const EdgeInsets.only(
+                        bottom: 56,
+                      ), // Espaço para as abas
                       title: Text(
                         championCode != null
                             ? "CAMPEÃO 2026"
@@ -96,51 +100,78 @@ class WorldCupPage extends StatelessWidget {
                         style: const TextStyle(
                           color: AppColors.primaryGold,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 16,
+                          letterSpacing: 1.2,
                           shadows: [
-                            Shadow(color: Colors.black, blurRadius: 10),
-                          ], // Sombra para destacar sobre a foto
+                            Shadow(
+                              color: Colors.black,
+                              offset: Offset(0, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
                         ),
                       ),
-                      // --- MAGICA DO BACKGROUND AQUI ---
-                      background: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          image: championCode != null
-                              ? DecorationImage(
-                                  // Busca a imagem local correspondente ao campeão (ex: assets/images/champions/br.jpg)
-                                  image: AssetImage(
-                                    'assets/images/champions/$championCode.jpg',
-                                  ),
-                                  fit: BoxFit.cover,
-                                  colorFilter: ColorFilter.mode(
-                                    Colors.black.withOpacity(0.4),
-                                    BlendMode.darken,
-                                  ),
-                                )
-                              : null,
-                        ),
-                        child: championCode == null
-                            ? Center(
-                                child: Icon(
-                                  Icons.sports_soccer,
-                                  size: 60,
-                                  color: Colors.white.withOpacity(0.05),
-                                ),
-                              )
-                            : null, // Remove o ícone se já tem imagem de campeão
+                      background: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // Imagem da Bandeira
+                          if (championCode != null)
+                            Image.asset(
+                              'assets/images/champions/$championCode.jpg',
+                              fit: BoxFit.cover,
+                            )
+                          else
+                            Center(
+                              child: Icon(
+                                Icons.sports_soccer,
+                                size: 60,
+                                color: Colors.white.withOpacity(0.1),
+                              ),
+                            ),
+
+                          // GRADIENTE DE CONTRASTE (O segredo da legibilidade)
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withOpacity(
+                                    0.7,
+                                  ), // Escurece o topo (Título)
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(
+                                    0.8,
+                                  ), // Escurece a base (Abas)
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    bottom: const TabBar(
-                      indicatorColor: AppColors.primaryGold,
-                      labelColor: AppColors.primaryGold,
-                      unselectedLabelColor: Colors.grey,
-                      indicatorWeight: 3,
-                      tabs: [
-                        Tab(text: "JOGOS"),
-                        Tab(text: "TABELA"),
-                        Tab(text: "MATA-MATA"),
-                      ],
+                    bottom: PreferredSize(
+                      preferredSize: const Size.fromHeight(48),
+                      child: Container(
+                        // Fundo preto semi-transparente para as abas
+                        color: Colors.black.withOpacity(0.4),
+                        child: const TabBar(
+                          indicatorColor: AppColors.primaryGold,
+                          labelColor: AppColors.primaryGold,
+                          unselectedLabelColor: Colors
+                              .white70, // Branco com transparência para contraste
+                          indicatorWeight: 3,
+                          labelStyle: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                          tabs: [
+                            Tab(text: "JOGOS"),
+                            Tab(text: "TABELA"),
+                            Tab(text: "MATA-MATA"),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ];
