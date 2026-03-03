@@ -1,64 +1,158 @@
 import 'package:flutter/material.dart';
-
 import '../../../../core/constants/app_theme.dart';
 import '../../domain/entities/match_entity.dart';
 
-class BracketView extends StatelessWidget {
+class BracketView extends StatefulWidget {
   final List<MatchEntity> matches;
+  // Callback para avisar o pai (Tabs) para travar/destravar o scroll
+  final Function(bool)? onLockScroll;
 
-  const BracketView({super.key, required this.matches});
+  const BracketView({super.key, required this.matches, this.onLockScroll});
 
   @override
-  Widget build(BuildContext context) {
-    // Separa os jogos por fase
-    final r16 = matches
-        .where((m) => m.group == 'R16' || m.id.startsWith('r16'))
-        .toList();
-    final qf = matches
-        .where((m) => m.group == 'QF' || m.id.startsWith('qf'))
-        .toList();
-    final sf = matches
-        .where((m) => m.group == 'SF' || m.id.startsWith('sf'))
-        .toList();
-    final finals = matches.where((m) => m.group == 'FINAL').toList();
+  State<BracketView> createState() => _BracketViewState();
+}
 
-    // INTERACTIVE VIEWER: O segredo para responsividade e zoom
-    return InteractiveViewer(
-      // CORREÇÃO CRÍTICA 1: Scroll infinito
-      constrained: false,
-      boundaryMargin: const EdgeInsets.all(400), // Margem gigante para navegar
-      minScale: 0.1,
-      maxScale: 4.0,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 100),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // CORREÇÃO CRÍTICA 2: Aumentei o espaçamento vertical (heightFactor)
-            _buildRoundColumn(
-              "OITAVAS",
-              r16,
-              180,
-            ), // Antes era 140, muito apertado
-            _buildConnectors(r16.length, 180),
+class _BracketViewState extends State<BracketView> {
+  late TransformationController _transformationController;
+  bool _isInteractive = false;
 
-            _buildRoundColumn("QUARTAS", qf, 360), // Dobro de 180
-            _buildConnectors(qf.length, 360),
+  final double cardWidth = 160.0;
+  final double connectorWidth = 50.0;
+  final double r16Gap = 100.0;
 
-            _buildRoundColumn("SEMIFINAL", sf, 720), // Dobro de 360
-            _buildConnectors(sf.length, 720),
+  @override
+  void initState() {
+    super.initState();
+    _transformationController = TransformationController();
+  }
 
-            _buildRoundColumn("FINAL", finals, 0, isFinal: true),
-          ],
+  void _toggleInteractivity() {
+    setState(() {
+      _isInteractive = !_isInteractive;
+    });
+
+    // IMPORTANTE: Avisa o pai para travar as Tabs
+    if (widget.onLockScroll != null) {
+      widget.onLockScroll!(_isInteractive);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          _isInteractive
+              ? "Modo Exploração: Arraste e Zoom liberados"
+              : "Modo Fixo: Navegação entre abas liberada",
         ),
+        duration: const Duration(milliseconds: 800),
       ),
     );
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final r16 = widget.matches
+        .where((m) => m.group == 'R16' || m.id.startsWith('r16'))
+        .toList();
+    final qf = widget.matches
+        .where((m) => m.group == 'QF' || m.id.startsWith('qf'))
+        .toList();
+    final sf = widget.matches
+        .where((m) => m.group == 'SF' || m.id.startsWith('sf'))
+        .toList();
+    final finals = widget.matches.where((m) => m.group == 'FINAL').toList();
+
+    return Stack(
+      children: [
+        GestureDetector(
+          onDoubleTap: _toggleInteractivity,
+          behavior:
+              HitTestBehavior.opaque, // Impede o toque de passar para a TabBar
+          child: InteractiveViewer(
+            transformationController: _transformationController,
+            constrained: false,
+            panEnabled: _isInteractive, // Só move se estiver ativo
+            scaleEnabled: _isInteractive,
+            minScale: 0.1,
+            maxScale: 3.0,
+            boundaryMargin: const EdgeInsets.all(200),
+            alignment: Alignment.center,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
+              child: Row(
+                children: [
+                  _buildRoundColumn("OITAVAS", r16, r16Gap),
+                  _buildConnectors(r16.length, r16Gap),
+                  _buildRoundColumn("QUARTAS", qf, r16Gap * 2),
+                  _buildConnectors(qf.length, r16Gap * 2),
+                  _buildRoundColumn("SEMIFINAL", sf, r16Gap * 4),
+                  _buildConnectors(sf.length, r16Gap * 4),
+                  _buildRoundColumn("FINAL", finals, 0, isFinal: true),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Badge de Instrução
+        Positioned(
+          top: 20,
+          left: 20,
+          right: 20,
+          child: Center(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: _isInteractive ? AppColors.primaryGold : Colors.black87,
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(color: AppColors.primaryGold),
+                boxShadow: [
+                  if (_isInteractive)
+                    BoxShadow(
+                      color: AppColors.primaryGold.withOpacity(0.3),
+                      blurRadius: 10,
+                    ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _isInteractive ? Icons.zoom_out_map : Icons.touch_app,
+                    color: _isInteractive
+                        ? Colors.black
+                        : AppColors.primaryGold,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _isInteractive
+                        ? "EXPLORAÇÃO ATIVA"
+                        : "DUPLO CLIQUE PARA MOVER",
+                    style: TextStyle(
+                      color: _isInteractive ? Colors.black : Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ... (Mantenha _buildRoundColumn, _buildConnectors, _BracketMatchCard e BracketLinePainter)
+  // Certifique-se de copiar as funções auxiliares do código anterior.
+  //altura fixa para o card para facilitar o cálculo do centro
+  final double cardHeight = 60.0;
   Widget _buildRoundColumn(
     String title,
     List<MatchEntity> matches,
-    double heightFactor, {
+    double gap, {
     bool isFinal = false,
   }) {
     return Column(
@@ -69,85 +163,79 @@ class BracketView extends StatelessWidget {
           style: const TextStyle(
             color: AppColors.primaryGold,
             fontWeight: FontWeight.bold,
-            fontSize: 20,
+            fontSize: 16,
           ),
         ),
-        const SizedBox(height: 30),
+        const SizedBox(height: 20),
         ...matches.map((match) {
           return Container(
-            // Altura fixa para garantir alinhamento das linhas
-            height: isFinal ? null : heightFactor,
+            // O Container externo ocupa o 'gap' total (espaço entre os centros)
+            height: isFinal ? null : gap,
             alignment: Alignment.center,
-            child: _BracketMatchCard(match: match, isFinal: isFinal),
+            child: _BracketMatchCard(
+              match: match,
+              isFinal: isFinal,
+              width: cardWidth,
+              height: cardHeight, // Passamos a altura fixa
+            ),
           );
         }).toList(),
       ],
     );
   }
 
-  // Desenha as linhas de conexão
-  Widget _buildConnectors(int count, double heightFactor) {
-    if (count == 0)
-      return const SizedBox(width: 50); // Espaço se não tiver linha
+  Widget _buildConnectors(int count, double gap) {
+    if (count == 0) return SizedBox(width: connectorWidth);
     return SizedBox(
-      width: 60, // Largura da linha
-      height: count * heightFactor,
+      width: connectorWidth,
+      height: count * gap,
       child: CustomPaint(
-        painter: BracketLinePainter(itemCount: count, gap: heightFactor),
+        painter: BracketLinePainter(itemCount: count, gap: gap),
       ),
     );
   }
 }
 
-// --- CARD MINIMALISTA PARA O CHAVEAMENTO ---
+// --- Card com Altura Fixa ---
 class _BracketMatchCard extends StatelessWidget {
   final MatchEntity match;
   final bool isFinal;
+  final double width;
+  final double height;
 
-  const _BracketMatchCard({required this.match, this.isFinal = false});
+  const _BracketMatchCard({
+    required this.match,
+    required this.isFinal,
+    required this.width,
+    required this.height,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 160,
-      padding: const EdgeInsets.all(8),
+      width: width,
+      height:
+          height, // Altura fixa garante que o centro do card seja o centro do gap
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: isFinal ? AppColors.primaryGold : AppColors.cardSurface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white24),
-        boxShadow: [
-          if (isFinal)
-            BoxShadow(
-              color: AppColors.primaryGold.withOpacity(0.4),
-              blurRadius: 20,
-              spreadRadius: 5,
-            ),
-        ],
+        border: Border.all(color: Colors.white10),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment:
+            MainAxisAlignment.center, // Centraliza o conteúdo interno
         children: [
-          _teamRow(match.homeTeam, match.homeFlag, match.userHomePrediction),
-          const Divider(height: 8, color: Colors.black26),
-          _teamRow(match.awayTeam, match.awayFlag, match.userAwayPrediction),
-          if (isFinal) ...[
-            const SizedBox(height: 4),
-            const Text(
-              "CAMPEÃO",
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 8,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+          _row(match.homeTeam, match.userHomePrediction, isFinal),
+          const Divider(height: 8, color: Colors.white10),
+          _row(match.awayTeam, match.userAwayPrediction, isFinal),
         ],
       ),
     );
   }
 
-  Widget _teamRow(String name, String flag, int? score) {
-    final textColor = isFinal ? Colors.black : Colors.white;
+  Widget _row(String name, int? score, bool isFinal) {
+    final color = isFinal ? Colors.black : Colors.white;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -155,26 +243,19 @@ class _BracketMatchCard extends StatelessWidget {
           child: Text(
             name,
             style: TextStyle(
-              color: textColor,
+              color: color,
               fontSize: 11,
               fontWeight: FontWeight.bold,
             ),
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(
-            color: Colors.black12,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(
-            score?.toString() ?? "-",
-            style: TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
+        Text(
+          score?.toString() ?? "-",
+          style: TextStyle(
+            color: color,
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
           ),
         ),
       ],
@@ -182,7 +263,7 @@ class _BracketMatchCard extends StatelessWidget {
   }
 }
 
-// --- PINTOR DE LINHAS (A MÁGICA VISUAL) ---
+// --- Painter Ajustado para o Centro ---
 class BracketLinePainter extends CustomPainter {
   final int itemCount;
   final double gap;
@@ -192,30 +273,32 @@ class BracketLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white24
-      ..strokeWidth = 2
+      ..color = AppColors.primaryGold.withOpacity(0.4)
+      ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
-    // Lógica simplificada para conectar pares (1 e 2, 3 e 4...)
-    // Assumindo que a coluna tem pares perfeitos
     for (int i = 0; i < itemCount; i += 2) {
-      // Pontos Y dos cards
-      // Esse cálculo é aproximado para alinhar com os containers acima
-      // Ajuste fino pode ser necessário dependendo do tamanho exato dos cards
-      double startY1 = (i * gap) + (gap / 2);
-      double startY2 = ((i + 1) * gap) + (gap / 2);
+      // O cálculo (i * gap) + (gap / 2) encontra o centro exato do container do card
+      double y1 = (i * gap) + (gap / 2);
+      double y2 = ((i + 1) * gap) + (gap / 2);
+      double centerX = size.width / 2;
+      double midY = (y1 + y2) / 2;
 
-      double midY = (startY1 + startY2) / 2;
-
-      // Desenha o "Conector" |--|
       final path = Path();
-      path.moveTo(0, startY1);
-      path.lineTo(size.width / 2, startY1);
-      path.lineTo(size.width / 2, startY2);
-      path.lineTo(0, startY2);
 
-      // Linha saindo para o próximo round
-      path.moveTo(size.width / 2, midY);
+      // Linha horizontal saindo do centro do Card Superior
+      path.moveTo(0, y1);
+      path.lineTo(centerX, y1);
+
+      // Linha vertical conectando os dois
+      path.lineTo(centerX, y2);
+
+      // Linha horizontal saindo do centro do Card Inferior
+      path.moveTo(0, y2);
+      path.lineTo(centerX, y2);
+
+      // Linha de saída para a próxima fase (exatamente no meio dos dois cards)
+      path.moveTo(centerX, midY);
       path.lineTo(size.width, midY);
 
       canvas.drawPath(path, paint);
@@ -223,5 +306,5 @@ class BracketLinePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(CustomPainter old) => false;
 }
