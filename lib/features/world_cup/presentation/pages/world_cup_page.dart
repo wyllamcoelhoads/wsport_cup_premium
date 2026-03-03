@@ -13,31 +13,24 @@ import '../widgets/bracket_view.dart';
 class WorldCupPage extends StatelessWidget {
   const WorldCupPage({super.key});
 
-  // --- NOVO MÉTODO: IDENTIFICA O CAMPEÃO ---
   String? _getChampionCode(List<MatchEntity> matches) {
     try {
-      // Pega o jogo da final
       final finalMatch = matches.firstWhere((m) => m.id == 'final');
-
-      // Verifica se o usuário já digitou o placar da final
       if (finalMatch.userHomePrediction != null &&
           finalMatch.userAwayPrediction != null) {
         String winnerFlagUrl = '';
-
         if (finalMatch.userHomePrediction! > finalMatch.userAwayPrediction!) {
           winnerFlagUrl = finalMatch.homeFlag;
         } else if (finalMatch.userAwayPrediction! >
             finalMatch.userHomePrediction!) {
           winnerFlagUrl = finalMatch.awayFlag;
         } else {
-          winnerFlagUrl =
-              finalMatch.homeFlag; // Em caso de empate, assume o mandante
+          winnerFlagUrl = finalMatch.homeFlag;
         }
 
-        // A url da bandeira é: https://flagcdn.com/w320/br.png -> Vamos extrair apenas o "br"
         if (winnerFlagUrl.isNotEmpty && winnerFlagUrl.contains('/')) {
-          final filename = winnerFlagUrl.split('/').last; // "br.png"
-          return filename.split('.').first; // "br"
+          final filename = winnerFlagUrl.split('/').last;
+          return filename.split('.').first;
         }
       }
     } catch (e) {
@@ -48,7 +41,6 @@ class WorldCupPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // O BlocConsumer agora engloba a tela inteira para o cabeçalho reagir ao estado
     return BlocConsumer<WorldCupBloc, WorldCupState>(
       listener: (context, state) {
         if (state.successMessage != null) {
@@ -68,31 +60,25 @@ class WorldCupPage extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        // 1. Descobre se já temos um campeão na chave atualizada
         final String? championCode = _getChampionCode(
           BracketCalculator.populate(state.matches),
         );
 
         return DefaultTabController(
-          length: 3, // JOGOS, TABELA, MATA-MATA
+          length: 4, // <-- AGORA SÃO 4 ABAS
           child: Scaffold(
             backgroundColor: AppColors.background,
             body: NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
                   SliverAppBar(
-                    expandedHeight:
-                        180.0, // Aumentado um pouco para melhor respiro
+                    expandedHeight: 160.0,
                     pinned: true,
                     backgroundColor: AppColors.background,
                     elevation: 0,
-                    // Força a cor preta quando a barra colapsar (scroll para cima)
-                    forceElevated: innerBoxIsScrolled,
                     flexibleSpace: FlexibleSpaceBar(
                       centerTitle: true,
-                      titlePadding: const EdgeInsets.only(
-                        bottom: 56,
-                      ), // Espaço para as abas
+                      titlePadding: const EdgeInsets.only(bottom: 50),
                       title: Text(
                         championCode != null
                             ? "CAMPEÃO 2026"
@@ -100,78 +86,52 @@ class WorldCupPage extends StatelessWidget {
                         style: const TextStyle(
                           color: AppColors.primaryGold,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          letterSpacing: 1.2,
+                          fontSize: 14,
                           shadows: [
-                            Shadow(
-                              color: Colors.black,
-                              offset: Offset(0, 2),
-                              blurRadius: 4,
-                            ),
+                            Shadow(color: Colors.black, blurRadius: 10),
                           ],
                         ),
                       ),
-                      background: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          // Imagem da Bandeira
-                          if (championCode != null)
-                            Image.asset(
-                              'assets/images/champions/$championCode.jpg',
-                              fit: BoxFit.cover,
-                            )
-                          else
-                            Center(
-                              child: Icon(
-                                Icons.sports_soccer,
-                                size: 60,
-                                color: Colors.white.withOpacity(0.1),
-                              ),
-                            ),
-
-                          // GRADIENTE DE CONTRASTE (O segredo da legibilidade)
-                          Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.black.withOpacity(
-                                    0.7,
-                                  ), // Escurece o topo (Título)
-                                  Colors.transparent,
-                                  Colors.black.withOpacity(
-                                    0.8,
-                                  ), // Escurece a base (Abas)
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                      background: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.background,
+                          image: championCode != null
+                              ? DecorationImage(
+                                  image: AssetImage(
+                                    'assets/images/champions/$championCode.jpg',
+                                  ),
+                                  fit: BoxFit.cover,
+                                  colorFilter: ColorFilter.mode(
+                                    Colors.black.withOpacity(0.4),
+                                    BlendMode.darken,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        child: championCode == null
+                            ? Center(
+                                child: Icon(
+                                  Icons.sports_soccer,
+                                  size: 60,
+                                  color: Colors.white.withOpacity(0.05),
+                                ),
+                              )
+                            : null,
                       ),
                     ),
-                    bottom: PreferredSize(
-                      preferredSize: const Size.fromHeight(48),
-                      child: Container(
-                        // Fundo preto semi-transparente para as abas
-                        color: Colors.black.withOpacity(0.4),
-                        child: const TabBar(
-                          indicatorColor: AppColors.primaryGold,
-                          labelColor: AppColors.primaryGold,
-                          unselectedLabelColor: Colors
-                              .white70, // Branco com transparência para contraste
-                          indicatorWeight: 3,
-                          labelStyle: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                          tabs: [
-                            Tab(text: "JOGOS"),
-                            Tab(text: "TABELA"),
-                            Tab(text: "MATA-MATA"),
-                          ],
-                        ),
-                      ),
+                    bottom: const TabBar(
+                      indicatorColor: AppColors.primaryGold,
+                      labelColor: AppColors.primaryGold,
+                      unselectedLabelColor: Colors.grey,
+                      indicatorWeight: 3,
+                      isScrollable:
+                          true, // Permite rolar as abas se a tela for pequena
+                      tabs: [
+                        Tab(text: "CALENDÁRIO"), // NOVA ABA
+                        Tab(text: "GRUPOS"), // ANTIGA "JOGOS"
+                        Tab(text: "TABELA"),
+                        Tab(text: "MATA-MATA"),
+                      ],
                     ),
                   ),
                 ];
@@ -191,11 +151,13 @@ class WorldCupPage extends StatelessWidget {
                     )
                   : TabBarView(
                       children: [
-                        // ABA 1: Jogos
+                        // ABA 1: Calendário (Por Data)
+                        _CalendarTab(matches: state.matches),
+                        // ABA 2: Grupos (Por Grupo)
                         _MatchesTab(matches: state.matches),
-                        // ABA 2: Tabela de Classificação
+                        // ABA 3: Tabela
                         _StandingsTab(matches: state.matches),
-                        // ABA 3: Chaveamento com a calculadora
+                        // ABA 4: Mata-Mata
                         BracketView(
                           matches: BracketCalculator.populate(state.matches),
                         ),
@@ -210,7 +172,62 @@ class WorldCupPage extends StatelessWidget {
 }
 
 // =============================================================================
-// WIDGET DA ABA DE JOGOS
+// NOVA ABA: CALENDÁRIO (Agrupa por Data)
+// =============================================================================
+class _CalendarTab extends StatelessWidget {
+  final List<MatchEntity> matches;
+
+  const _CalendarTab({required this.matches});
+
+  @override
+  Widget build(BuildContext context) {
+    // Filtra apenas jogos da fase de grupos para o calendário principal
+    final groupMatches = matches
+        .where((m) => m.group.startsWith('GROUP'))
+        .toList();
+
+    // Ordena todos os jogos por data
+    groupMatches.sort((a, b) => a.date.compareTo(b.date));
+
+    // Agrupa pela String da data (Ex: "11/06")
+    final Map<String, List<MatchEntity>> groupedByDate = {};
+    for (var match in groupMatches) {
+      final dateStr =
+          "${match.date.day.toString().padLeft(2, '0')}/${match.date.month.toString().padLeft(2, '0')}";
+      if (!groupedByDate.containsKey(dateStr)) {
+        groupedByDate[dateStr] = [];
+      }
+      groupedByDate[dateStr]!.add(match);
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      itemCount: groupedByDate.length + 1,
+      itemBuilder: (context, index) {
+        if (index == groupedByDate.length) return const SizedBox(height: 50);
+
+        final dateKey = groupedByDate.keys.elementAt(index);
+        final dayMatches = groupedByDate[dateKey]!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _GroupHeader(
+              title: "DATA: $dateKey",
+              showEdit: false,
+            ), // Header sem lápis
+            ...dayMatches
+                .map((match) => _PremiumMatchCard(match: match))
+                .toList(),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// =============================================================================
+// ABA 2: GRUPOS (Antiga Aba Jogos)
 // =============================================================================
 class _MatchesTab extends StatelessWidget {
   final List<MatchEntity> matches;
@@ -233,7 +250,7 @@ class _MatchesTab extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _GroupHeader(title: groupName),
+            _GroupHeader(title: groupName, showEdit: true), // Header com lápis
             ...groupMatches
                 .map((match) => _PremiumMatchCard(match: match))
                 .toList(),
@@ -245,7 +262,8 @@ class _MatchesTab extends StatelessWidget {
 
   Map<String, List<MatchEntity>> _groupMatches(List<MatchEntity> matches) {
     final Map<String, List<MatchEntity>> grouped = {};
-    for (var match in matches) {
+    // Filtra apenas jogos da fase de grupos
+    for (var match in matches.where((m) => m.group.startsWith('GROUP'))) {
       final key = match.group;
       if (!grouped.containsKey(key)) grouped[key] = [];
       grouped[key]!.add(match);
@@ -257,7 +275,7 @@ class _MatchesTab extends StatelessWidget {
 }
 
 // =============================================================================
-// WIDGET DA ABA DE CLASSIFICAÇÃO (TABELA)
+// ABA 3: CLASSIFICAÇÃO (TABELA)
 // =============================================================================
 class _StandingsTab extends StatelessWidget {
   final List<MatchEntity> matches;
@@ -280,7 +298,7 @@ class _StandingsTab extends StatelessWidget {
 
         return Column(
           children: [
-            _GroupHeader(title: groupName),
+            _GroupHeader(title: groupName, showEdit: false),
             Container(
               decoration: BoxDecoration(
                 color: AppColors.cardSurface,
@@ -459,7 +477,10 @@ class _StandingsTab extends StatelessWidget {
 
 class _GroupHeader extends StatelessWidget {
   final String title;
-  const _GroupHeader({required this.title});
+  final bool
+  showEdit; // Adicionado para esconder o lápis no calendário e tabela
+
+  const _GroupHeader({required this.title, this.showEdit = true});
 
   @override
   Widget build(BuildContext context) {
@@ -478,11 +499,12 @@ class _GroupHeader extends StatelessWidget {
               fontSize: 16,
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white38, size: 18),
-            onPressed: () => _showEditGroupDialog(context, title),
-            tooltip: "Editar Grupo",
-          ),
+          if (showEdit)
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.white38, size: 18),
+              onPressed: () => _showEditGroupDialog(context, title),
+              tooltip: "Editar Grupo",
+            ),
         ],
       ),
     );
@@ -503,8 +525,6 @@ class _GroupHeader extends StatelessWidget {
       {'name': 'Italy', 'flag': 'https://flagcdn.com/w320/it.png'},
       {'name': 'Sweden', 'flag': 'https://flagcdn.com/w320/se.png'},
       {'name': 'Chile', 'flag': 'https://flagcdn.com/w320/cl.png'},
-      {'name': 'Nigeria', 'flag': 'https://flagcdn.com/w320/ng.png'},
-      {'name': 'Egypt', 'flag': 'https://flagcdn.com/w320/eg.png'},
     ];
 
     showDialog(
@@ -661,7 +681,7 @@ class _PremiumMatchCard extends StatelessWidget {
                 ),
               ),
               child: Text(
-                "${match.date.day}/${match.date.month} • ${match.stadium}",
+                "${match.group} • ${match.date.day.toString().padLeft(2, '0')}/${match.date.month.toString().padLeft(2, '0')} • ${match.stadium}",
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.white38, fontSize: 10),
               ),
