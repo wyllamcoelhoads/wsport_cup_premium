@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wsports_cup_premium/features/world_cup/presentation/bloc/world_cup_event.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../domain/entities/match_entity.dart';
 import '../../domain/logic/bracket_calculator.dart';
