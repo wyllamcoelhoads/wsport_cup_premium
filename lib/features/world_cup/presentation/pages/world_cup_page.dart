@@ -71,26 +71,45 @@ class WorldCupPage extends StatelessWidget {
             body: NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
+                  // ... dentro do seu NestedScrollView headerSliverBuilder
                   SliverAppBar(
-                    expandedHeight: 160.0,
+                    expandedHeight:
+                        200.0, // Aumentei um pouco para caber melhor os dois elementos
                     pinned: true,
                     backgroundColor: AppColors.background,
                     elevation: 0,
                     flexibleSpace: FlexibleSpaceBar(
                       centerTitle: true,
-                      titlePadding: const EdgeInsets.only(bottom: 50),
-                      title: Text(
-                        championCode != null
-                            ? "CAMPEÃO 2026"
-                            : "SIMULADOR 2026",
-                        style: const TextStyle(
-                          color: AppColors.primaryGold,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          shadows: [
-                            Shadow(color: Colors.black, blurRadius: 10),
-                          ],
-                        ),
+                      titlePadding: const EdgeInsets.only(
+                        bottom: 60,
+                      ), // Espaço para a TabBar não cobrir o título
+                      title: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // ÍCONE DE BOLA CENTRALIZADO
+                          Icon(
+                            Icons.sports_soccer,
+                            size: 40,
+                            color: championCode != null
+                                ? Colors.white.withOpacity(0.8)
+                                : Colors.white.withOpacity(0.1),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            championCode != null
+                                ? "CAMPEÃO 2026"
+                                : "SIMULADOR 2026",
+                            style: const TextStyle(
+                              color: AppColors.primaryGold,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              shadows: [
+                                Shadow(color: Colors.black, blurRadius: 10),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                       background: Container(
                         decoration: BoxDecoration(
@@ -108,30 +127,42 @@ class WorldCupPage extends StatelessWidget {
                                 )
                               : null,
                         ),
-                        child: championCode == null
-                            ? Center(
-                                child: Icon(
-                                  Icons.sports_soccer,
-                                  size: 60,
-                                  color: Colors.white.withOpacity(0.05),
-                                ),
-                              )
-                            : null,
                       ),
                     ),
-                    bottom: const TabBar(
-                      indicatorColor: AppColors.primaryGold,
-                      labelColor: AppColors.primaryGold,
-                      unselectedLabelColor: Colors.grey,
-                      indicatorWeight: 3,
-                      isScrollable:
-                          true, // Permite rolar as abas se a tela for pequena
-                      tabs: [
-                        Tab(text: "CALENDÁRIO"), // NOVA ABA
-                        Tab(text: "GRUPOS"), // ANTIGA "JOGOS"
-                        Tab(text: "TABELA"),
-                        Tab(text: "MATA-MATA"),
-                      ],
+                    bottom: const PreferredSize(
+                      preferredSize: Size.fromHeight(48),
+                      child: Center(
+                        // Centraliza a TabBar horizontalmente
+                        child: TabBar(
+                          indicatorColor: AppColors.primaryGold,
+                          labelColor: AppColors.primaryGold,
+                          unselectedLabelColor: Colors.grey,
+                          indicatorWeight: 3,
+                          isScrollable:
+                              false, // <-- MUDADO PARA FALSE PARA CENTRALIZAR
+                          labelPadding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                          ), // Ajuste fino do respiro
+                          tabs: [
+                            Tab(
+                              text: "CALENDÁRIO",
+                              icon: Icon(Icons.calendar_today, size: 18),
+                            ),
+                            Tab(
+                              text: "GRUPOS",
+                              icon: Icon(Icons.group, size: 18),
+                            ),
+                            Tab(
+                              text: "TABELA",
+                              icon: Icon(Icons.table_chart, size: 18),
+                            ),
+                            Tab(
+                              text: "MATA-MATA",
+                              icon: Icon(Icons.emoji_events, size: 18),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ];
