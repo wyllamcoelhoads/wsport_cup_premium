@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:video_player/video_player.dart';
 import 'package:wsports_cup_premium/features/splash/presentation/pages/video_splash_screen.dart';
 import 'package:wsports_cup_premium/features/world_cup/presentation/bloc/world_cup_bloc.dart';
 import 'package:wsports_cup_premium/features/world_cup/presentation/bloc/world_cup_event.dart';
-import 'package:wsports_cup_premium/features/world_cup/presentation/pages/world_cup_page.dart';
 import 'package:wsports_cup_premium/injection_container.dart';
 import 'package:wsports_cup_premium/injection_container.dart' as di;
 

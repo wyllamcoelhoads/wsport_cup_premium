@@ -44,6 +44,7 @@ dependencies:
   #Armazenamento Local
   shared_preferences: ^2.5.4
   video_player: ^2.11.0
+  flutter_native_splash: ^2.4.7
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -107,4 +108,11 @@ flutter:
 
   # Coloque isso na última linha do seu pubspec.yaml
 flutter_native_splash:
+  android: false
   color: "#000000"
+  image: assets/images/vazio.png
+  android_12:
+    color: "#000000"
+    image: assets/images/vazio.png
+    icon_background_color: "#000000"
+
