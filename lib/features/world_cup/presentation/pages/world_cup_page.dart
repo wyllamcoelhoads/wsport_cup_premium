@@ -8,6 +8,7 @@ import '../../domain/logic/standings_calculator.dart';
 import '../bloc/world_cup_bloc.dart';
 import '../bloc/world_cup_state.dart';
 import '../widgets/bracket_view.dart';
+import '../bloc/world_cup_event.dart';
 
 class WorldCupPage extends StatefulWidget {
   const WorldCupPage({super.key});
@@ -518,7 +519,9 @@ class _PremiumMatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool hasPrediction = match.userHomePrediction != null;
+
     return GestureDetector(
+      // 1. O clique chama a função abaixo
       onTap: () => _showPredictionDialog(context, match),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -526,8 +529,8 @@ class _PremiumMatchCard extends StatelessWidget {
           color: AppColors.cardSurface,
           borderRadius: BorderRadius.circular(16),
           border: hasPrediction
-              ? Border.all(color: AppColors.primaryGold)
-              : null,
+              ? Border.all(color: AppColors.primaryGold, width: 1.0)
+              : Border.all(color: Colors.transparent),
         ),
         child: Column(
           children: [
@@ -584,8 +587,66 @@ class _PremiumMatchCard extends StatelessWidget {
     );
   }
 
+  // 2. A função completa do Modal de Palpite
   void _showPredictionDialog(BuildContext context, MatchEntity match) {
-    // Implementação do diálogo de previsão...
+    final homeController = TextEditingController();
+    final awayController = TextEditingController();
+
+    if (match.userHomePrediction != null) {
+      homeController.text = match.userHomePrediction.toString();
+      awayController.text = match.userAwayPrediction.toString();
+    }
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.cardSurface,
+        title: const Center(
+          child: Text(
+            "SIMULAR",
+            style: TextStyle(color: AppColors.primaryGold),
+          ),
+        ),
+        content: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _ScoreInput(controller: homeController),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Text("X", style: TextStyle(color: Colors.white)),
+            ),
+            _ScoreInput(controller: awayController),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("CANCELAR", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryGold,
+            ),
+            onPressed: () {
+              final h = int.tryParse(homeController.text);
+              final a = int.tryParse(awayController.text);
+              if (h != null && a != null) {
+                // 3. AQUI ATUALIZA O PLACAR NA MEMÓRIA (Atualiza Grupos, Calendário, Tabela e Bracket ao mesmo tempo)
+                context.read<WorldCupBloc>().add(
+                  SavePredictionEvent(
+                    matchId: match.id,
+                    homeScore: h,
+                    awayScore: a,
+                  ),
+                );
+                Navigator.pop(context);
+              }
+            },
+            child: const Text("SALVAR", style: TextStyle(color: Colors.black)),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -620,6 +681,31 @@ class _TeamFlag extends StatelessWidget {
             maxLines: 1,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ScoreInput extends StatelessWidget {
+  final TextEditingController controller;
+
+  const _ScoreInput({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 50,
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white, fontSize: 20),
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.black,
+          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        ),
       ),
     );
   }

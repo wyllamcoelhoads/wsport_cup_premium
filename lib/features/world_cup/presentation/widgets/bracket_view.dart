@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../domain/entities/match_entity.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // Certifique de importar o bloc no topo do arquivo se necessário
+import '../bloc/world_cup_bloc.dart';
+import '../bloc/world_cup_event.dart';
 
 class BracketView extends StatefulWidget {
   final List<MatchEntity> matches;
@@ -197,6 +200,7 @@ class _BracketViewState extends State<BracketView> {
 }
 
 // --- Card com Altura Fixa ---
+// --- Card Interativo no Mata-Mata ---
 class _BracketMatchCard extends StatelessWidget {
   final MatchEntity match;
   final bool isFinal;
@@ -212,24 +216,26 @@ class _BracketMatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height:
-          height, // Altura fixa garante que o centro do card seja o centro do gap
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: isFinal ? AppColors.primaryGold : AppColors.cardSurface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Column(
-        mainAxisAlignment:
-            MainAxisAlignment.center, // Centraliza o conteúdo interno
-        children: [
-          _row(match.homeTeam, match.userHomePrediction, isFinal),
-          const Divider(height: 8, color: Colors.white10),
-          _row(match.awayTeam, match.userAwayPrediction, isFinal),
-        ],
+    // 1. Envolvemos o card com GestureDetector no BracketView também
+    return GestureDetector(
+      onTap: () => _showPredictionDialog(context, match),
+      child: Container(
+        width: width,
+        height: height,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isFinal ? AppColors.primaryGold : AppColors.cardSurface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _row(match.homeTeam, match.userHomePrediction, isFinal),
+            const Divider(height: 8, color: Colors.white10),
+            _row(match.awayTeam, match.userAwayPrediction, isFinal),
+          ],
+        ),
       ),
     );
   }
@@ -259,6 +265,85 @@ class _BracketMatchCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  // 2. Diálogo adaptado para o BracketView
+  void _showPredictionDialog(BuildContext context, MatchEntity match) {
+    final homeController = TextEditingController();
+    final awayController = TextEditingController();
+
+    if (match.userHomePrediction != null) {
+      homeController.text = match.userHomePrediction.toString();
+      awayController.text = match.userAwayPrediction.toString();
+    }
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.cardSurface,
+        title: const Center(
+          child: Text(
+            "SIMULAR FASE",
+            style: TextStyle(color: AppColors.primaryGold),
+          ),
+        ),
+        content: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _miniScoreInput(homeController),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Text("X", style: TextStyle(color: Colors.white)),
+            ),
+            _miniScoreInput(awayController),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("CANCELAR", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryGold,
+            ),
+            onPressed: () {
+              final h = int.tryParse(homeController.text);
+              final a = int.tryParse(awayController.text);
+              if (h != null && a != null) {
+                context.read<WorldCupBloc>().add(
+                  SavePredictionEvent(
+                    matchId: match.id,
+                    homeScore: h,
+                    awayScore: a,
+                  ),
+                );
+                Navigator.pop(context);
+              }
+            },
+            child: const Text("SALVAR", style: TextStyle(color: Colors.black)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _miniScoreInput(TextEditingController controller) {
+    return SizedBox(
+      width: 50,
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white, fontSize: 20),
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.black,
+          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
     );
   }
 }

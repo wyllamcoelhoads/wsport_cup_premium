@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "872989141595",
+    "project_id": "wsporte-cup-premium",
+    "storage_bucket": "wsporte-cup-premium.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:872989141595:android:4b7a3dad81eba7f9942d7e",
+        "android_client_info": {
+          "package_name": "br.com.william.wsports_cup_premium"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfP4EYgbfp00nokTzPxvxLxwcmAHr_AeM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
