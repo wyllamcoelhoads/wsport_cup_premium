@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../domain/entities/match_entity.dart';
@@ -35,21 +36,14 @@ class _BracketViewState extends State<BracketView> {
       _isInteractive = !_isInteractive;
     });
 
-    // IMPORTANTE: Avisa o pai para travar as Tabs
+    // Se o usuário desativar o modo de exploração, voltamos ao centro
+    if (!_isInteractive) {
+      _transformationController.value = Matrix4.identity();
+    }
+
     if (widget.onLockScroll != null) {
       widget.onLockScroll!(_isInteractive);
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          _isInteractive
-              ? "Modo Exploração: Arraste e Zoom liberados"
-              : "Modo Fixo: Navegação entre abas liberada",
-        ),
-        duration: const Duration(milliseconds: 800),
-      ),
-    );
   }
 
   @override
@@ -73,16 +67,23 @@ class _BracketViewState extends State<BracketView> {
               HitTestBehavior.opaque, // Impede o toque de passar para a TabBar
           child: InteractiveViewer(
             transformationController: _transformationController,
-            constrained: false,
-            panEnabled: _isInteractive, // Só move se estiver ativo
+            constrained: false, // Permite que o Row seja maior que a tela
+            panEnabled:
+                _isInteractive, // Ativa/Desativa conforme modo de exploração
             scaleEnabled: _isInteractive,
-            minScale: 0.1,
-            maxScale: 3.0,
-            boundaryMargin: const EdgeInsets.all(200),
-            alignment: Alignment.center,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
+            minScale: 0.5,
+            maxScale: 2.0,
+            boundaryMargin: const EdgeInsets.symmetric(
+              horizontal: 1000,
+              vertical: 500,
+            ),
+            child: Container(
+              // Define um espaço de trabalho fixo para o CustomPaint não se perder
+              width: 1200,
+              height: 800,
+              alignment: Alignment.center,
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildRoundColumn("OITAVAS", r16, r16Gap),
                   _buildConnectors(r16.length, r16Gap),
@@ -273,61 +274,168 @@ class _BracketMatchCard extends StatelessWidget {
     final homeController = TextEditingController();
     final awayController = TextEditingController();
 
-    if (match.userHomePrediction != null) {
-      homeController.text = match.userHomePrediction.toString();
-      awayController.text = match.userAwayPrediction.toString();
-    }
+    homeController.text = (match.userHomePrediction ?? 0).toString();
+    awayController.text = (match.userAwayPrediction ?? 0).toString();
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.cardSurface,
-        title: const Center(
-          child: Text(
-            "SIMULAR FASE",
-            style: TextStyle(color: AppColors.primaryGold),
-          ),
-        ),
-        content: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _miniScoreInput(homeController),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Text("X", style: TextStyle(color: Colors.white)),
-            ),
-            _miniScoreInput(awayController),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("CANCELAR", style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryGold,
-            ),
-            onPressed: () {
-              final h = int.tryParse(homeController.text);
-              final a = int.tryParse(awayController.text);
-              if (h != null && a != null) {
-                context.read<WorldCupBloc>().add(
-                  SavePredictionEvent(
-                    matchId: match.id,
-                    homeScore: h,
-                    awayScore: a,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          void incrementScore(TextEditingController controller, int value) {
+            int current = int.tryParse(controller.text) ?? 0;
+            setModalState(() => controller.text = (current + value).toString());
+          }
+
+          return AlertDialog(
+            backgroundColor: AppColors.cardSurface,
+            title: Stack(
+              alignment: Alignment.center,
+              children: [
+                const Text(
+                  "SIMULAR FASE",
+                  style: TextStyle(
+                    color: AppColors.primaryGold,
+                    fontWeight: FontWeight.bold,
                   ),
-                );
-                Navigator.pop(context);
-              }
-            },
-            child: const Text("SALVAR", style: TextStyle(color: Colors.black)),
-          ),
-        ],
+                ),
+                Positioned(
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: () => setModalState(() {
+                      homeController.text = "0";
+                      awayController.text = "0";
+                    }),
+                    child: const Icon(
+                      Icons.cleaning_services,
+                      color: Colors.white38,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildFlagIcon(match.homeFlag),
+                    const SizedBox(width: 8),
+                    _miniScoreInput(homeController),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        "X",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    _miniScoreInput(awayController),
+                    const SizedBox(width: 8),
+                    _buildFlagIcon(match.awayFlag),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  match.homeTeam.toUpperCase(),
+                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                ),
+                Wrap(
+                  spacing: 4,
+                  children: [1, 2, 3]
+                      .map(
+                        (v) => _buildIncBtn(
+                          "+ $v",
+                          () => incrementScore(homeController, v),
+                        ),
+                      )
+                      .toList(),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  match.awayTeam.toUpperCase(),
+                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                ),
+                Wrap(
+                  spacing: 4,
+                  children: [1, 2, 3]
+                      .map(
+                        (v) => _buildIncBtn(
+                          "+ $v",
+                          () => incrementScore(awayController, v),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("VOLTAR"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGold,
+                ),
+                onPressed: () {
+                  final h = int.tryParse(homeController.text);
+                  final a = int.tryParse(awayController.text);
+                  if (h != null && a != null) {
+                    context.read<WorldCupBloc>().add(
+                      SavePredictionEvent(
+                        matchId: match.id,
+                        homeScore: h,
+                        awayScore: a,
+                      ),
+                    );
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text(
+                  "SALVAR",
+                  style: TextStyle(color: Colors.black),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
+
+  // Widgets de suporte para o diálogo
+  Widget _buildFlagIcon(String url) => ClipOval(
+    child: CachedNetworkImage(
+      imageUrl: url,
+      width: 24,
+      height: 24,
+      fit: BoxFit.cover,
+      errorWidget: (_, __, ___) => const Icon(Icons.flag, size: 20),
+    ),
+  );
+  Widget _buildIncBtn(String label, VoidCallback onTap) => InkWell(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white10),
+        borderRadius: BorderRadius.circular(4),
+        color: Colors.white.withOpacity(0.05),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.primaryGold,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+  );
 
   Widget _miniScoreInput(TextEditingController controller) {
     return SizedBox(
