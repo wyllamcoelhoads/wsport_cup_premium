@@ -23,7 +23,7 @@ void main() async {
   // 3. Inicialização da Injeção de Dependência (agora segura, pois o Firebase já acordou)
   await di.init();
   // 1. Descomente esta linha para rodar o insert, depois comente novamente!
-  await popularGruposFirebase();
+  //await popularGruposFirebase();
   runApp(const MyApp());
 }
 

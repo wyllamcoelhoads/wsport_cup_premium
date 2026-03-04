@@ -595,59 +595,198 @@ class _PremiumMatchCard extends StatelessWidget {
     final homeController = TextEditingController();
     final awayController = TextEditingController();
 
-    if (match.userHomePrediction != null) {
-      homeController.text = match.userHomePrediction.toString();
-      awayController.text = match.userAwayPrediction.toString();
-    }
+    homeController.text = (match.userHomePrediction ?? 0).toString();
+    awayController.text = (match.userAwayPrediction ?? 0).toString();
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.cardSurface,
-        title: const Center(
-          child: Text(
-            "SIMULAR",
-            style: TextStyle(color: AppColors.primaryGold),
-          ),
-        ),
-        content: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _ScoreInput(controller: homeController),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Text("X", style: TextStyle(color: Colors.white)),
-            ),
-            _ScoreInput(controller: awayController),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("CANCELAR", style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryGold,
-            ),
-            onPressed: () {
-              final h = int.tryParse(homeController.text);
-              final a = int.tryParse(awayController.text);
-              if (h != null && a != null) {
-                // 3. AQUI ATUALIZA O PLACAR NA MEMÓRIA (Atualiza Grupos, Calendário, Tabela e Bracket ao mesmo tempo)
-                context.read<WorldCupBloc>().add(
-                  SavePredictionEvent(
-                    matchId: match.id,
-                    homeScore: h,
-                    awayScore: a,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          void incrementScore(TextEditingController controller, int value) {
+            int current = int.tryParse(controller.text) ?? 0;
+            setModalState(() {
+              controller.text = (current + value).toString();
+            });
+          }
+
+          return AlertDialog(
+            backgroundColor: AppColors.cardSurface,
+            title: Stack(
+              alignment: Alignment.center,
+              children: [
+                const Text(
+                  "SIMULAR",
+                  style: TextStyle(
+                    color: AppColors.primaryGold,
+                    fontWeight: FontWeight.bold,
                   ),
-                );
-                Navigator.pop(context);
-              }
-            },
-            child: const Text("SALVAR", style: TextStyle(color: Colors.black)),
+                ),
+                Positioned(
+                  right: 0,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.cleaning_services,
+                      color: Colors.white38,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      setModalState(() {
+                        homeController.text = "0";
+                        awayController.text = "0";
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildFlagIcon(match.homeFlag),
+                    const SizedBox(width: 10),
+                    _ScoreInput(controller: homeController),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        "X",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    _ScoreInput(controller: awayController),
+                    const SizedBox(width: 10),
+                    _buildFlagIcon(match.awayFlag),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // NOME DA EQUIPE CASA (Removido o CONST para aceitar o toUpperCase)
+                Text(
+                  match.homeTeam.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Wrap(
+                  spacing: 4,
+                  children: [1, 2, 3, 4, 5]
+                      .map(
+                        (val) => _buildIncrementButton(
+                          "+ $val",
+                          () => incrementScore(homeController, val),
+                        ),
+                      )
+                      .toList(),
+                ),
+
+                const SizedBox(height: 15),
+
+                // NOME DA EQUIPE FORA
+                Text(
+                  match.awayTeam.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Wrap(
+                  spacing: 4,
+                  children: [1, 2, 3, 4, 5]
+                      .map(
+                        (val) => _buildIncrementButton(
+                          "+ $val",
+                          () => incrementScore(awayController, val),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  "CANCELAR",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGold,
+                ),
+                onPressed: () {
+                  final h = int.tryParse(homeController.text);
+                  final a = int.tryParse(awayController.text);
+                  if (h != null && a != null) {
+                    context.read<WorldCupBloc>().add(
+                      SavePredictionEvent(
+                        matchId: match.id,
+                        homeScore: h,
+                        awayScore: a,
+                      ),
+                    );
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text(
+                  "SALVAR",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // Widget auxiliar para as bandeiras dentro do modal
+  Widget _buildFlagIcon(String url) {
+    return ClipOval(
+      child: CachedNetworkImage(
+        imageUrl: url,
+        width: 32,
+        height: 32,
+        fit: BoxFit.cover,
+        errorWidget: (_, __, ___) =>
+            const Icon(Icons.flag, color: Colors.white24),
+      ),
+    );
+  }
+
+  // Widget auxiliar para os botões de +1, +2, etc
+  Widget _buildIncrementButton(String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.white10),
+          borderRadius: BorderRadius.circular(4),
+          color: Colors.white.withOpacity(0.05),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.primaryGold,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
           ),
-        ],
+        ),
       ),
     );
   }
