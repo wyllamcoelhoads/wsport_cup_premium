@@ -307,6 +307,8 @@ class WorldCupMockData {
       awayFlag: 'https://flagcdn.com/w320/$aFlag.png',
       date: date, // <--- Agora usa a data real!
       stadium: 'TBD',
+      country: 'TBD',
+      location: 'TBD',
       group: group,
       status: 'Scheduled',
     );
