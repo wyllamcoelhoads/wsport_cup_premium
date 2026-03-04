@@ -87,32 +87,35 @@ class _WorldCupPageState extends State<WorldCupPage> {
                     flexibleSpace: FlexibleSpaceBar(
                       centerTitle: true,
                       titlePadding: const EdgeInsets.only(bottom: 60),
-                      title: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.sports_soccer,
-                            size: 40,
-                            color: championCode != null
-                                ? Colors.white.withOpacity(0.8)
-                                : Colors.white.withOpacity(0.1),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            championCode != null
-                                ? "CAMPEÃO 2026"
-                                : "SIMULADOR 2026",
-                            style: const TextStyle(
-                              color: AppColors.primaryGold,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              shadows: [
-                                Shadow(color: Colors.black, blurRadius: 10),
-                              ],
+                      title: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.sports_soccer,
+                              size: 40,
+                              color: championCode != null
+                                  ? Colors.white.withOpacity(0.8)
+                                  : Colors.white.withOpacity(0.1),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Text(
+                              championCode != null
+                                  ? "CAMPEÃO 2026"
+                                  : "SIMULADOR 2026",
+                              style: const TextStyle(
+                                color: AppColors.primaryGold,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                shadows: [
+                                  Shadow(color: Colors.black, blurRadius: 10),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       background: Container(
                         decoration: BoxDecoration(

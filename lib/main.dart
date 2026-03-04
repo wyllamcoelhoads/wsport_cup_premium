@@ -23,7 +23,7 @@ void main() async {
   // 3. Inicialização da Injeção de Dependência (agora segura, pois o Firebase já acordou)
   await di.init();
   // 1. Descomente esta linha para rodar o insert, depois comente novamente!
-  await popularBancoFirebase();
+  await popularGruposFirebase();
   runApp(const MyApp());
 }
 
@@ -48,12 +48,13 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Future<void> popularBancoFirebase() async {
+Future<void> popularGruposFirebase() async {
   final firestore = FirebaseFirestore.instance;
   final collection = firestore.collection('matches');
 
+  // Tabela Oficial - Primeira Rodada dos 12 Grupos
   final jogos = [
-    // --- GRUPO A (México) ---
+    // === GRUPO A ===
     {
       'id': 'gA_1',
       'group': 'GROUP A',
@@ -63,31 +64,47 @@ Future<void> popularBancoFirebase() async {
       'awayFlag': 'https://flagcdn.com/w320/za.png',
       'date': DateTime(2026, 6, 11, 16, 0),
       'stadium': 'Estádio Azteca',
+      'status': 'Agendado',
     },
     {
       'id': 'gA_2',
       'group': 'GROUP A',
-      'homeTeam': 'A3',
-      'homeFlag': 'https://flagcdn.com/w320/un.png',
-      'awayTeam': 'A4',
-      'awayFlag': 'https://flagcdn.com/w320/un.png',
+      'homeTeam': 'South Korea',
+      'homeFlag': 'https://flagcdn.com/w320/kr.png',
+      'awayTeam': 'Rep. Europa D',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'date': DateTime(2026, 6, 11, 20, 0),
-      'stadium': 'Estádio Guadalajara',
+      'stadium': 'TBD',
+      'status': 'Agendado',
     },
 
-    // --- GRUPO B (Canadá) ---
+    // === GRUPO B ===
     {
       'id': 'gB_1',
       'group': 'GROUP B',
       'homeTeam': 'Canada',
       'homeFlag': 'https://flagcdn.com/w320/ca.png',
-      'awayTeam': 'B2',
-      'awayFlag': 'https://flagcdn.com/w320/un.png',
+      'awayTeam': 'Rep. Europa A',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'date': DateTime(2026, 6, 12, 16, 0),
-      'stadium': 'BMO Field (Toronto)',
+      'stadium': 'TBD',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'gB_2',
+      'group': 'GROUP B',
+      'homeTeam': 'Qatar',
+      'homeFlag': 'https://flagcdn.com/w320/qa.png',
+      'awayTeam': 'Switzerland',
+      'awayFlag': 'https://flagcdn.com/w320/ch.png',
+      'date': DateTime(2026, 6, 12, 20, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
     },
 
-    // --- GRUPO C (Brasil - Conforme seu pedido) ---
+    // === GRUPO C (Brasil) ===
     {
       'id': 'gC_1',
       'group': 'GROUP C',
@@ -96,92 +113,178 @@ Future<void> popularBancoFirebase() async {
       'awayTeam': 'Morocco',
       'awayFlag': 'https://flagcdn.com/w320/ma.png',
       'date': DateTime(2026, 6, 13, 16, 0),
-      'stadium': 'MetLife Stadium',
+      'stadium': 'TBD',
+      'status': 'Agendado',
     },
     {
       'id': 'gC_2',
       'group': 'GROUP C',
-      'homeTeam': 'Brazil',
-      'homeFlag': 'https://flagcdn.com/w320/br.png',
-      'awayTeam': 'Haiti',
-      'awayFlag': 'https://flagcdn.com/w320/ht.png',
-      'date': DateTime(2026, 6, 19, 16, 0),
-      'stadium': 'Lincoln Financial Field',
-    },
-    {
-      'id': 'gC_3',
-      'group': 'GROUP C',
-      'homeTeam': 'Brazil',
-      'homeFlag': 'https://flagcdn.com/w320/br.png',
+      'homeTeam': 'Haiti',
+      'homeFlag': 'https://flagcdn.com/w320/ht.png',
       'awayTeam': 'Scotland',
       'awayFlag': 'https://flagcdn.com/w320/gb-sct.png',
-      'date': DateTime(2026, 6, 24, 16, 0),
-      'stadium': 'Hard Rock Stadium',
+      'date': DateTime(2026, 6, 13, 20, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
     },
 
-    // --- GRUPO D (EUA) ---
+    // === GRUPO D ===
     {
       'id': 'gD_1',
       'group': 'GROUP D',
       'homeTeam': 'USA',
       'homeFlag': 'https://flagcdn.com/w320/us.png',
-      'awayTeam': 'D2',
-      'awayFlag': 'https://flagcdn.com/w320/un.png',
-      'date': DateTime(2026, 6, 12, 21, 0),
-      'stadium': 'SoFi Stadium (Los Angeles)',
+      'awayTeam': 'Paraguay',
+      'awayFlag': 'https://flagcdn.com/w320/py.png',
+      'date': DateTime(2026, 6, 14, 16, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'gD_2',
+      'group': 'GROUP D',
+      'homeTeam': 'Australia',
+      'homeFlag': 'https://flagcdn.com/w320/au.png',
+      'awayTeam': 'Rep. Europa C',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
+      'date': DateTime(2026, 6, 14, 20, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
     },
 
-    // ... (Repete a lógica para Grupos E até L - Total de 72 jogos de grupo) ...
-
-    // --- MATA-MATA (ROUND OF 32 - Início do novo formato) ---
+    // === GRUPO E ===
     {
-      'id': 'r32_73',
-      'group': 'ROUND OF 32',
-      'homeTeam': 'Vencedor Grupo A',
-      'homeFlag': 'https://flagcdn.com/w320/un.png',
-      'awayTeam': '3º C/E/F/H/I',
-      'awayFlag': 'https://flagcdn.com/w320/un.png',
-      'date': DateTime(2026, 6, 28, 18, 0),
-      'stadium': 'SoFi Stadium',
+      'id': 'gE_1',
+      'group': 'GROUP E',
+      'homeTeam': 'Germany',
+      'homeFlag': 'https://flagcdn.com/w320/de.png',
+      'awayTeam': 'Curaçao',
+      'awayFlag': 'https://flagcdn.com/w320/cw.png',
+      'date': DateTime(2026, 6, 15, 16, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'gE_2',
+      'group': 'GROUP E',
+      'homeTeam': 'Ivory Coast',
+      'homeFlag': 'https://flagcdn.com/w320/ci.png',
+      'awayTeam': 'Ecuador',
+      'awayFlag': 'https://flagcdn.com/w320/ec.png',
+      'date': DateTime(2026, 6, 15, 20, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
     },
 
-    // --- FINAIS ---
+    // === GRUPO F ===
     {
-      'id': 'm_101',
-      'group': 'SEMIFINAL',
-      'homeTeam': 'Vencedor QF1',
-      'homeFlag': 'https://flagcdn.com/w320/un.png',
-      'awayTeam': 'Vencedor QF2',
-      'awayFlag': 'https://flagcdn.com/w320/un.png',
-      'date': DateTime(2026, 7, 14, 20, 0),
-      'stadium': 'AT&T Stadium (Dallas)',
+      'id': 'gF_1',
+      'group': 'GROUP F',
+      'homeTeam': 'Netherlands',
+      'homeFlag': 'https://flagcdn.com/w320/nl.png',
+      'awayTeam': 'Japan',
+      'awayFlag': 'https://flagcdn.com/w320/jp.png',
+      'date': DateTime(2026, 6, 16, 16, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
     },
     {
-      'id': 'm_103',
-      'group': '3RD PLACE',
-      'homeTeam': 'Perdedor SF1',
-      'homeFlag': 'https://flagcdn.com/w320/un.png',
-      'awayTeam': 'Perdedor SF2',
-      'awayFlag': 'https://flagcdn.com/w320/un.png',
-      'date': DateTime(2026, 7, 18, 16, 0),
-      'stadium': 'Hard Rock Stadium (Miami)',
+      'id': 'gF_2',
+      'group': 'GROUP F',
+      'homeTeam': 'Rep. Europa B',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
+      'awayTeam': 'Tunisia',
+      'awayFlag': 'https://flagcdn.com/w320/tn.png',
+      'date': DateTime(2026, 6, 16, 20, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
     },
+
+    // === GRUPO G ===
     {
-      'id': 'm_104',
-      'group': 'FINAL',
-      'homeTeam': 'Vencedor SF1',
-      'homeFlag': 'https://flagcdn.com/w320/un.png',
-      'awayTeam': 'Vencedor SF2',
-      'awayFlag': 'https://flagcdn.com/w320/un.png',
-      'date': DateTime(2026, 7, 19, 16, 0),
-      'stadium': 'MetLife Stadium (NY/NJ)',
+      'id': 'gG_1',
+      'group': 'GROUP G',
+      'homeTeam': 'Belgium',
+      'homeFlag': 'https://flagcdn.com/w320/be.png',
+      'awayTeam': 'Egypt',
+      'awayFlag': 'https://flagcdn.com/w320/eg.png',
+      'date': DateTime(2026, 6, 17, 16, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
+    },
+
+    // === GRUPO H ===
+    {
+      'id': 'gH_1',
+      'group': 'GROUP H',
+      'homeTeam': 'Spain',
+      'homeFlag': 'https://flagcdn.com/w320/es.png',
+      'awayTeam': 'Cape Verde',
+      'awayFlag': 'https://flagcdn.com/w320/cv.png',
+      'date': DateTime(2026, 6, 18, 16, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
+    },
+
+    // === GRUPO I ===
+    {
+      'id': 'gI_1',
+      'group': 'GROUP I',
+      'homeTeam': 'France',
+      'homeFlag': 'https://flagcdn.com/w320/fr.png',
+      'awayTeam': 'Senegal',
+      'awayFlag': 'https://flagcdn.com/w320/sn.png',
+      'date': DateTime(2026, 6, 19, 16, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
+    },
+
+    // === GRUPO J ===
+    {
+      'id': 'gJ_1',
+      'group': 'GROUP J',
+      'homeTeam': 'Argentina',
+      'homeFlag': 'https://flagcdn.com/w320/ar.png',
+      'awayTeam': 'Algeria',
+      'awayFlag': 'https://flagcdn.com/w320/dz.png',
+      'date': DateTime(2026, 6, 20, 16, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
+    },
+
+    // === GRUPO K ===
+    {
+      'id': 'gK_1',
+      'group': 'GROUP K',
+      'homeTeam': 'Portugal',
+      'homeFlag': 'https://flagcdn.com/w320/pt.png',
+      'awayTeam': 'Rep. Inter 1',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/International_Flag_of_Planet_Earth.svg/320px-International_Flag_of_Planet_Earth.svg.png',
+      'date': DateTime(2026, 6, 21, 16, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
+    },
+
+    // === GRUPO L ===
+    {
+      'id': 'gL_1',
+      'group': 'GROUP L',
+      'homeTeam': 'England',
+      'homeFlag': 'https://flagcdn.com/w320/gb-eng.png',
+      'awayTeam': 'Croatia',
+      'awayFlag': 'https://flagcdn.com/w320/hr.png',
+      'date': DateTime(2026, 6, 22, 16, 0),
+      'stadium': 'TBD',
+      'status': 'Agendado',
     },
   ];
 
-  print('⏳ Enviando jogos para o Firebase...');
+  print('⏳ Enviando grupos oficias para o Firebase...');
 
   for (var jogo in jogos) {
-    // Insere ou atualiza o documento com a ID exata (ex: gC_1)
     await collection.doc(jogo['id'] as String).set({
       'id': jogo['id'],
       'group': jogo['group'],
@@ -189,10 +292,10 @@ Future<void> popularBancoFirebase() async {
       'homeFlag': jogo['homeFlag'],
       'awayTeam': jogo['awayTeam'],
       'awayFlag': jogo['awayFlag'],
-      // Converte o DateTime do Flutter para o formato Timestamp exigido pelo Firebase
       'date': Timestamp.fromDate(jogo['date'] as DateTime),
       'stadium': jogo['stadium'],
+      'status': jogo['status'],
     });
   }
-  print('🔥 BANCO POPULADO COM SUCESSO!');
+  print('🔥 GRUPOS POPULADOS COM SUCESSO!');
 }
