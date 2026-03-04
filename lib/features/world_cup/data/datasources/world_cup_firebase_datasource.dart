@@ -23,6 +23,8 @@ class WorldCupFirebaseDatasource {
           date: (data['date'] as Timestamp)
               .toDate(), // Converte a data do Firebase para o app
           stadium: data['stadium'] ?? 'TBD',
+          country: data['country'] ?? 'TBD',
+          location: data['location'] ?? 'TBD',
           group: data['group'],
           status: 'Scheduled',
           // 3. O SEGREDO: O placar inicial sempre nasce nulo (vazio) na memória!

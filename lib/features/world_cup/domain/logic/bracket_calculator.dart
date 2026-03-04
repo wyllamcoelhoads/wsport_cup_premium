@@ -21,6 +21,8 @@ class BracketCalculator {
           awayFlag: away.flag,
           date: match.date,
           stadium: match.stadium,
+          country: match.country,
+          location: match.location,
           group: match.group,
           status: match.status,
           userHomePrediction: match.userHomePrediction,

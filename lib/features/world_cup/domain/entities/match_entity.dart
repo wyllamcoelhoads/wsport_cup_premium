@@ -10,6 +10,8 @@ class MatchEntity extends Equatable {
   // Detalhes
   final DateTime date;
   final String stadium;
+  final String country;
+  final String location; // Ex: "Mexico City"
   final String group; // Ex: "Group G"
   final String status; // Ex: "Scheduled", "Finished"
   // Placar Real
@@ -27,6 +29,8 @@ class MatchEntity extends Equatable {
     required this.awayFlag,
     required this.date,
     required this.stadium,
+    required this.country,
+    required this.location,
     required this.group,
     required this.status,
     this.homeScore,
@@ -43,6 +47,8 @@ class MatchEntity extends Equatable {
     String? awayTeam,
     String? awayFlag,
     String? group,
+    String? country,
+    String? location,
     int? userHomePrediction,
     int? userAwayPrediction,
   }) {
@@ -54,6 +60,8 @@ class MatchEntity extends Equatable {
       awayFlag: awayFlag ?? this.awayFlag,
       date: date, // Data e estádio não mudam no copyWith
       stadium: stadium,
+      country: country ?? this.country,
+      location: location ?? this.location,
       group: group ?? this.group,
       status: status, // Status também permanece o mesmo
       homeScore: homeScore, // Placar real não é alterado aqui
@@ -71,5 +79,7 @@ class MatchEntity extends Equatable {
     userHomePrediction,
     userAwayPrediction,
     status,
+    country,
+    location,
   ];
 }

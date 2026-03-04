@@ -39,6 +39,8 @@ class WorldCupRepositoryImpl implements WorldCupRepository {
             awayFlag: match.awayFlag,
             date: match.date,
             stadium: match.stadium,
+            country: match.country,
+            location: match.location,
             group: match.group,
             status: match.status,
             userHomePrediction: json['home'],
