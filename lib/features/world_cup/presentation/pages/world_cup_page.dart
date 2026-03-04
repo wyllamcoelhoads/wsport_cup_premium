@@ -84,56 +84,60 @@ class _WorldCupPageState extends State<WorldCupPage> {
                     pinned: true,
                     backgroundColor: AppColors.background,
                     elevation: 0,
-                    flexibleSpace: FlexibleSpaceBar(
-                      centerTitle: true,
-                      titlePadding: const EdgeInsets.only(bottom: 60),
-                      title: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.sports_soccer,
-                              size: 40,
-                              color: championCode != null
-                                  ? Colors.white.withOpacity(0.8)
-                                  : Colors.white.withOpacity(0.1),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              championCode != null
-                                  ? "CAMPEÃO 2026"
-                                  : "SIMULADOR 2026",
-                              style: const TextStyle(
-                                color: AppColors.primaryGold,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                shadows: [
-                                  Shadow(color: Colors.black, blurRadius: 10),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      background: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          image: championCode != null
-                              ? DecorationImage(
-                                  image: AssetImage(
-                                    'assets/images/champions/$championCode.jpg',
+                    flexibleSpace: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Calcula o percentual de expansão (1.0 totalmente aberto, 0.0 fechado)
+                        final double appBarHeight = constraints.maxHeight;
+                        final bool isExpanded =
+                            appBarHeight >
+                            150; // Altura arbitrária para detecção
+
+                        return FlexibleSpaceBar(
+                          centerTitle: true,
+                          // Se estiver aberto, usa 90 de padding. Se fechar, usa 50 para caber.
+                          titlePadding: EdgeInsets.only(
+                            bottom: isExpanded ? 90 : 55,
+                          ),
+                          title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Opcional: Esconder o ícone quando a barra encolher para limpar o visual
+                                if (isExpanded)
+                                  Icon(
+                                    Icons.sports_soccer,
+                                    size: 28,
+                                    color: championCode != null
+                                        ? Colors.white.withOpacity(0.8)
+                                        : Colors.white.withOpacity(0.1),
                                   ),
-                                  fit: BoxFit.cover,
-                                  colorFilter: ColorFilter.mode(
-                                    Colors.black.withOpacity(0.4),
-                                    BlendMode.darken,
+                                if (isExpanded) const SizedBox(height: 4),
+                                Text(
+                                  championCode != null
+                                      ? "CAMPEÃO 2026"
+                                      : "SIMULADOR 2026",
+                                  style: const TextStyle(
+                                    color: AppColors.primaryGold,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black,
+                                        blurRadius: 10,
+                                      ),
+                                    ],
                                   ),
-                                )
-                              : null,
-                        ),
-                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          background: Container(
+                            /* ... seu código de background atual ... */
+                          ),
+                        );
+                      },
                     ),
                     bottom: const PreferredSize(
                       preferredSize: Size.fromHeight(48),
