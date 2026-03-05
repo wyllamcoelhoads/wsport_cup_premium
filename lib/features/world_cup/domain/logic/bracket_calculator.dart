@@ -45,13 +45,18 @@ class BracketCalculator {
       }
     }
 
-    // Pega 1º ou 2º colocado de um grupo
+    // Pega 1º ou 2º colocado de um grupo (mas SÓ se já tiver jogado)
     TeamStanding? getTeam(String groupName, int position) {
       if (groups.containsKey(groupName) &&
           groups[groupName]!.length > position) {
-        return groups[groupName]![position];
+        final team = groups[groupName]![position];
+
+        // A MÁGICA AQUI: O time só avança se tiver entrado em campo!
+        if (team.played > 0) {
+          return team;
+        }
       }
-      return null;
+      return null; // Retorna nulo, o que fará a tela mostrar "A Definir"
     }
 
     // =========================================================================
@@ -60,7 +65,12 @@ class BracketCalculator {
     List<TeamStanding> allThirds = [];
     groups.forEach((groupName, teams) {
       if (teams.length >= 3) {
-        allThirds.add(teams[2]); // Pega o 3º lugar (índice 2)
+        final thirdPlace = teams[2]; // Pega o 3º lugar (índice 2)
+
+        // SÓ ENTRA NA REPESCAGEM DOS MELHORES 3ºs SE TIVER JOGADO
+        if (thirdPlace.played > 0) {
+          allThirds.add(thirdPlace);
+        }
       }
     });
 
