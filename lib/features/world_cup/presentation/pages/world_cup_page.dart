@@ -223,7 +223,9 @@ class _CalendarTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final groupMatches = matches
-        .where((m) => m.group.startsWith('GRUPO'))
+        .where(
+          (m) => m.friendlyGroupName.startsWith('GRUPO'),
+        ) // Filtra apenas os jogos de fase de grupos
         .toList();
     groupMatches.sort((a, b) => a.date.compareTo(b.date));
     final Map<String, List<MatchEntity>> groupedByDate = {};
@@ -286,8 +288,12 @@ class _MatchesTab extends StatelessWidget {
 
   Map<String, List<MatchEntity>> _groupMatches(List<MatchEntity> matches) {
     final Map<String, List<MatchEntity>> grouped = {};
-    for (var match in matches.where((m) => m.group.startsWith('GRUPO'))) {
-      final key = match.group;
+    for (var match in matches.where(
+      (m) => m.friendlyGroupName.startsWith('GRUPO'),
+    )) {
+      // Filtra apenas os jogos de fase de grupos
+      final key =
+          match.friendlyGroupName; // Usa o nome amigável do grupo como chave
       if (!grouped.containsKey(key)) grouped[key] = [];
       grouped[key]!.add(match);
     }
@@ -583,7 +589,7 @@ class _PremiumMatchCard extends StatelessWidget {
                 ),
               ),
               child: Text(
-                "${match.group} • ${match.date.day.toString().padLeft(2, '0')}/${match.date.month.toString().padLeft(2, '0')} • ${match.stadium} • ${match.location}",
+                "${match.friendlyGroupName} • ${match.date.day.toString().padLeft(2, '0')}/${match.date.month.toString().padLeft(2, '0')} • ${match.stadium} • ${match.location}",
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.white38, fontSize: 10),
               ),

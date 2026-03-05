@@ -1040,6 +1040,490 @@ Future<void> popularGruposFirebase() async {
       'location': 'A definir',
       'status': 'Agendado',
     },
+    // ==========================================
+    // === MATA-MATA: 32-AVOS DE FINAL (16 jogos) ===
+    // ==========================================
+    {
+      'id': 'r32_1',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 6, 28, 13, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_2',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 6, 28, 17, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_3',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 6, 29, 13, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_4',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 6, 29, 17, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_5',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 6, 30, 13, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_6',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 6, 30, 17, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_7',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 1, 13, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_8',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 1, 17, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_9',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 2, 13, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_10',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 2, 17, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_11',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 2, 21, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_12',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 3, 13, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_13',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 3, 17, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_14',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 3, 21, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_15',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 3, 22, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r32_16',
+      'group': 'R32',
+      'homeTeam': 'A Definir',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'A Definir',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 3, 23, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+
+    // ==========================================
+    // === MATA-MATA: OITAVAS DE FINAL (8 jogos) ===
+    // ==========================================
+    {
+      'id': 'r16_1',
+      'group': 'R16',
+      'homeTeam': 'Vencedor R32',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor R32',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 4, 13, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r16_2',
+      'group': 'R16',
+      'homeTeam': 'Vencedor R32',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor R32',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 4, 17, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r16_3',
+      'group': 'R16',
+      'homeTeam': 'Vencedor R32',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor R32',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 5, 13, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r16_4',
+      'group': 'R16',
+      'homeTeam': 'Vencedor R32',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor R32',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 5, 17, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r16_5',
+      'group': 'R16',
+      'homeTeam': 'Vencedor R32',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor R32',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 6, 13, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r16_6',
+      'group': 'R16',
+      'homeTeam': 'Vencedor R32',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor R32',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 6, 17, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r16_7',
+      'group': 'R16',
+      'homeTeam': 'Vencedor R32',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor R32',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 7, 13, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'r16_8',
+      'group': 'R16',
+      'homeTeam': 'Vencedor R32',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor R32',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 7, 17, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+
+    // ==========================================
+    // === MATA-MATA: QUARTAS DE FINAL (4 jogos) ===
+    // ==========================================
+    {
+      'id': 'qf_1',
+      'group': 'QF',
+      'homeTeam': 'Vencedor Oitavas',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor Oitavas',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 9, 16, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'qf_2',
+      'group': 'QF',
+      'homeTeam': 'Vencedor Oitavas',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor Oitavas',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 10, 16, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'qf_3',
+      'group': 'QF',
+      'homeTeam': 'Vencedor Oitavas',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor Oitavas',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 11, 16, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'qf_4',
+      'group': 'QF',
+      'homeTeam': 'Vencedor Oitavas',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor Oitavas',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 11, 20, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+
+    // ==========================================
+    // === MATA-MATA: SEMIFINAL (2 jogos) ===
+    // ==========================================
+    {
+      'id': 'sf_1',
+      'group': 'SF',
+      'homeTeam': 'Vencedor Quartas',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor Quartas',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 14, 16, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+    {
+      'id': 'sf_2',
+      'group': 'SF',
+      'homeTeam': 'Vencedor Quartas',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor Quartas',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 15, 16, 0),
+      'stadium': 'A Definir',
+      'country': 'A Definir',
+      'location': 'A Definir',
+      'status': 'Agendado',
+    },
+
+    // ==========================================
+    // === MATA-MATA: FINAL (1 jogo) ===
+    // ==========================================
+    {
+      'id': 'final_1',
+      'group': 'FINAL',
+      'homeTeam': 'Vencedor Semi 1',
+      'homeFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'awayTeam': 'Vencedor Semi 2',
+      'awayFlag':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png',
+      'date': DateTime(2026, 7, 19, 16, 0),
+      'stadium': 'Estádio MetLife',
+      'country': 'Estados Unidos',
+      'location': 'Nova York/Nova Jersey',
+      'status': 'Agendado',
+    },
   ];
 
   print('⏳ Enviando grupos oficias para o Firebase...');

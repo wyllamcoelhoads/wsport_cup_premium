@@ -39,6 +39,26 @@ class MatchEntity extends Equatable {
     this.userAwayPrediction,
   });
 
+  // ==========================================
+  // O SEGREDO: TRADUTOR DE NOMES PARA A UI
+  // ==========================================
+  String get friendlyGroupName {
+    switch (group) {
+      case 'R32':
+        return '32-Avos de Final';
+      case 'R16':
+        return 'Oitavas de Final';
+      case 'QF':
+        return 'Quartas de Final';
+      case 'SF':
+        return 'Semifinal';
+      case 'FINAL':
+        return 'Final';
+      default:
+        return group; // Se for "GRUPO A", ele simplesmente retorna "GRUPO A"
+    }
+  }
+
   // ADICIONE ESTE MÉTODO:
   MatchEntity copyWith({
     String? id,

@@ -10,137 +10,153 @@ class BracketCalculator {
       for (var m in allMatches) m.id: m,
     };
 
+    // Atualiza a entidade usando o copyWith que você criou
     void setMatchTeams(String matchId, TeamStanding? home, TeamStanding? away) {
-      if (matchMap.containsKey(matchId) && home != null && away != null) {
+      if (matchMap.containsKey(matchId)) {
         final match = matchMap[matchId]!;
-        matchMap[matchId] = MatchEntity(
-          id: match.id,
-          homeTeam: home.teamName,
-          homeFlag: home.flag,
-          awayTeam: away.teamName,
-          awayFlag: away.flag,
-          date: match.date,
-          stadium: match.stadium,
-          country: match.country,
-          location: match.location,
-          group: match.group,
-          status: match.status,
-          userHomePrediction: match.userHomePrediction,
-          userAwayPrediction: match.userAwayPrediction,
+        matchMap[matchId] = match.copyWith(
+          homeTeam: home?.teamName ?? "A Definir",
+          homeFlag:
+              home?.flag ??
+              "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png",
+          awayTeam: away?.teamName ?? "A Definir",
+          awayFlag:
+              away?.flag ??
+              "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png",
         );
       }
     }
 
+    // Pega o vencedor de um jogo do mata-mata
     TeamStanding? getWinner(String matchId) {
       if (!matchMap.containsKey(matchId)) return null;
       final match = matchMap[matchId]!;
 
-      if (match.userHomePrediction == null ||
-          match.userAwayPrediction == null) {
+      if (match.userHomePrediction == null || match.userAwayPrediction == null)
         return null;
-      }
 
       if (match.userHomePrediction! > match.userAwayPrediction!) {
         return TeamStanding(teamName: match.homeTeam, flag: match.homeFlag);
       } else if (match.userAwayPrediction! > match.userHomePrediction!) {
         return TeamStanding(teamName: match.awayTeam, flag: match.awayFlag);
       } else {
-        // Empate: No mata-mata real haveria pênaltis.
-        // Aqui passamos o "Home" como critério de desempate simples.
+        // Empate simples: avança quem está em "casa" no layout
         return TeamStanding(teamName: match.homeTeam, flag: match.homeFlag);
       }
     }
 
+    // Pega 1º ou 2º colocado de um grupo
+    TeamStanding? getTeam(String groupName, int position) {
+      if (groups.containsKey(groupName) &&
+          groups[groupName]!.length > position) {
+        return groups[groupName]![position];
+      }
+      return null;
+    }
+
     // =========================================================================
-    // 1. ROUND OF 32 (Cruzamentos Oficiais Simplificados)
+    // LÓGICA DE CLASSIFICAÇÃO DOS 8 MELHORES TERCEIROS COLOCADOS
+    // =========================================================================
+    List<TeamStanding> allThirds = [];
+    groups.forEach((groupName, teams) {
+      if (teams.length >= 3) {
+        allThirds.add(teams[2]); // Pega o 3º lugar (índice 2)
+      }
+    });
+
+    // Ordena todos os terceiros por Pontos, depois Saldo, depois Gols
+    allThirds.sort((a, b) {
+      if (b.points != a.points) return b.points.compareTo(a.points);
+      if (b.goalDifference != a.goalDifference)
+        return b.goalDifference.compareTo(a.goalDifference);
+      return b.goalsFor.compareTo(a.goalsFor);
+    });
+
+    // Filtra apenas os 8 melhores
+    List<TeamStanding> best8 = allThirds.take(8).toList();
+
+    // Função auxiliar para saber de qual grupo aquele terceiro lugar veio
+    String getGroupOfTeam(TeamStanding team) {
+      for (var entry in groups.entries) {
+        if (entry.value.any((t) => t.teamName == team.teamName))
+          return entry.key;
+      }
+      return '';
+    }
+
+    // Distribui os terceiros colocados conforme as chaves permitidas
+    TeamStanding? getBestThird(List<String> allowedGroups) {
+      for (int i = 0; i < best8.length; i++) {
+        final group = getGroupOfTeam(best8[i]);
+        if (allowedGroups.contains(group)) {
+          return best8.removeAt(
+            i,
+          ); // Remove da lista para não ser usado duas vezes
+        }
+      }
+      // Se não achar o encaixe perfeito, pega o próximo disponível para não travar o app
+      if (best8.isNotEmpty) return best8.removeAt(0);
+      return null;
+    }
+
+    // =========================================================================
+    // 1. ROUND OF 32 (Cruzamentos Oficiais FIFA 2026)
     // =========================================================================
 
-    // Cruzando 1ºs e 2ºs conforme o regulamento de 48 times
-    setMatchTeams(
-      'r32_1',
-      _getTeam(groups, 'GROUP A', 0),
-      _getTeam(groups, 'GROUP C', 1),
-    );
-    setMatchTeams(
-      'r32_2',
-      _getTeam(groups, 'GROUP B', 0),
-      _getTeam(groups, 'GROUP D', 1),
-    );
+    // Lado Esquerdo do Chaveamento
+    setMatchTeams('r32_1', getTeam('GRUPO A', 1), getTeam('GRUPO B', 1));
+    setMatchTeams('r32_2', getTeam('GRUPO F', 0), getTeam('GRUPO C', 1));
     setMatchTeams(
       'r32_3',
-      _getTeam(groups, 'GROUP C', 0),
-      _getTeam(groups, 'GROUP E', 1),
+      getTeam('GRUPO E', 0),
+      getBestThird(['GRUPO A', 'GRUPO B', 'GRUPO C', 'GRUPO D', 'GRUPO F']),
     );
     setMatchTeams(
       'r32_4',
-      _getTeam(groups, 'GROUP D', 0),
-      _getTeam(groups, 'GROUP F', 1),
+      getTeam('GRUPO I', 0),
+      getBestThird(['GRUPO C', 'GRUPO D', 'GRUPO F', 'GRUPO G', 'GRUPO H']),
     );
     setMatchTeams(
       'r32_5',
-      _getTeam(groups, 'GROUP E', 0),
-      _getTeam(groups, 'GROUP G', 1),
+      getTeam('GRUPO D', 0),
+      getBestThird(['GRUPO B', 'GRUPO E', 'GRUPO F', 'GRUPO I', 'GRUPO J']),
     );
     setMatchTeams(
       'r32_6',
-      _getTeam(groups, 'GROUP F', 0),
-      _getTeam(groups, 'GROUP H', 1),
+      getTeam('GRUPO G', 0),
+      getBestThird(['GRUPO A', 'GRUPO E', 'GRUPO H', 'GRUPO I', 'GRUPO J']),
     );
-    setMatchTeams(
-      'r32_7',
-      _getTeam(groups, 'GROUP G', 0),
-      _getTeam(groups, 'GROUP I', 1),
-    );
-    setMatchTeams(
-      'r32_8',
-      _getTeam(groups, 'GROUP H', 0),
-      _getTeam(groups, 'GROUP J', 1),
-    );
-    setMatchTeams(
-      'r32_9',
-      _getTeam(groups, 'GROUP I', 0),
-      _getTeam(groups, 'GROUP K', 1),
-    );
-    setMatchTeams(
-      'r32_10',
-      _getTeam(groups, 'GROUP J', 0),
-      _getTeam(groups, 'GROUP L', 1),
-    );
+    setMatchTeams('r32_7', getTeam('GRUPO K', 1), getTeam('GRUPO L', 1));
+    setMatchTeams('r32_8', getTeam('GRUPO H', 0), getTeam('GRUPO J', 1));
+
+    // Lado Direito do Chaveamento
+    setMatchTeams('r32_9', getTeam('GRUPO C', 0), getTeam('GRUPO F', 1));
+    setMatchTeams('r32_10', getTeam('GRUPO E', 1), getTeam('GRUPO I', 1));
     setMatchTeams(
       'r32_11',
-      _getTeam(groups, 'GROUP K', 0),
-      _getTeam(groups, 'GROUP A', 1),
+      getTeam('GRUPO A', 0),
+      getBestThird(['GRUPO C', 'GRUPO E', 'GRUPO F', 'GRUPO H', 'GRUPO I']),
     );
     setMatchTeams(
       'r32_12',
-      _getTeam(groups, 'GROUP L', 0),
-      _getTeam(groups, 'GROUP B', 1),
+      getTeam('GRUPO L', 0),
+      getBestThird(['GRUPO E', 'GRUPO H', 'GRUPO I', 'GRUPO J', 'GRUPO K']),
     );
-
-    // Exemplo de cruzamento para contemplar 16 jogos (incluindo alguns 3ºs lugares se necessário)
     setMatchTeams(
       'r32_13',
-      _getTeam(groups, 'GROUP A', 1),
-      _getTeam(groups, 'GROUP B', 1),
+      getTeam('GRUPO B', 0),
+      getBestThird(['GRUPO E', 'GRUPO F', 'GRUPO G', 'GRUPO I', 'GRUPO J']),
     );
     setMatchTeams(
       'r32_14',
-      _getTeam(groups, 'GROUP C', 1),
-      _getTeam(groups, 'GROUP D', 1),
+      getTeam('GRUPO K', 0),
+      getBestThird(['GRUPO D', 'GRUPO E', 'GRUPO I', 'GRUPO J', 'GRUPO L']),
     );
-    setMatchTeams(
-      'r32_15',
-      _getTeam(groups, 'GROUP E', 1),
-      _getTeam(groups, 'GROUP F', 1),
-    );
-    setMatchTeams(
-      'r32_16',
-      _getTeam(groups, 'GROUP G', 1),
-      _getTeam(groups, 'GROUP H', 1),
-    );
+    setMatchTeams('r32_15', getTeam('GRUPO J', 0), getTeam('GRUPO H', 1));
+    setMatchTeams('r32_16', getTeam('GRUPO D', 1), getTeam('GRUPO G', 1));
 
     // =========================================================================
-    // 2. OITAVAS DE FINAL (R16)
+    // 2. OITAVAS DE FINAL
     // =========================================================================
     setMatchTeams('r16_1', getWinner('r32_1'), getWinner('r32_2'));
     setMatchTeams('r16_2', getWinner('r32_3'), getWinner('r32_4'));
@@ -152,7 +168,7 @@ class BracketCalculator {
     setMatchTeams('r16_8', getWinner('r32_15'), getWinner('r32_16'));
 
     // =========================================================================
-    // 3. QUARTAS DE FINAL (QF)
+    // 3. QUARTAS DE FINAL
     // =========================================================================
     setMatchTeams('qf_1', getWinner('r16_1'), getWinner('r16_2'));
     setMatchTeams('qf_2', getWinner('r16_3'), getWinner('r16_4'));
@@ -160,7 +176,7 @@ class BracketCalculator {
     setMatchTeams('qf_4', getWinner('r16_7'), getWinner('r16_8'));
 
     // =========================================================================
-    // 4. SEMIFINAL (SF)
+    // 4. SEMIFINAL
     // =========================================================================
     setMatchTeams('sf_1', getWinner('qf_1'), getWinner('qf_2'));
     setMatchTeams('sf_2', getWinner('qf_3'), getWinner('qf_4'));
@@ -168,19 +184,8 @@ class BracketCalculator {
     // =========================================================================
     // 5. FINAL
     // =========================================================================
-    setMatchTeams('final', getWinner('sf_1'), getWinner('sf_2'));
+    setMatchTeams('final_1', getWinner('sf_1'), getWinner('sf_2'));
 
     return matchMap.values.toList();
-  }
-
-  static TeamStanding? _getTeam(
-    Map<String, List<TeamStanding>> groups,
-    String groupName,
-    int index,
-  ) {
-    if (groups.containsKey(groupName) && groups[groupName]!.length > index) {
-      return groups[groupName]![index];
-    }
-    return null;
   }
 }

@@ -2,13 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../domain/entities/match_entity.dart';
-import 'package:flutter_bloc/flutter_bloc.dart'; // Certifique de importar o bloc no topo do arquivo se necessário
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/world_cup_bloc.dart';
 import '../bloc/world_cup_event.dart';
 
 class BracketView extends StatefulWidget {
   final List<MatchEntity> matches;
-  // Callback para avisar o pai (Tabs) para travar/destravar o scroll
   final Function(bool)? onLockScroll;
 
   const BracketView({super.key, required this.matches, this.onLockScroll});
@@ -21,9 +20,11 @@ class _BracketViewState extends State<BracketView> {
   late TransformationController _transformationController;
   bool _isInteractive = false;
 
+  // Variáveis de layout todas centralizadas dentro do State
   final double cardWidth = 160.0;
+  final double cardHeight = 60.0; // Trazido para dentro da classe
   final double connectorWidth = 50.0;
-  final double r16Gap = 100.0;
+  final double r16Gap = 140.0; // Aumentado para os cards da R32 não sobreporem
 
   @override
   void initState() {
@@ -36,7 +37,6 @@ class _BracketViewState extends State<BracketView> {
       _isInteractive = !_isInteractive;
     });
 
-    // Se o usuário desativar o modo de exploração, voltamos ao centro
     if (!_isInteractive) {
       _transformationController.value = Matrix4.identity();
     }
@@ -46,8 +46,22 @@ class _BracketViewState extends State<BracketView> {
     }
   }
 
+  // Função para navegar até a fase desejada
+  void _scrollToPhase(int phaseIndex) {
+    double xOffset = phaseIndex * (cardWidth + connectorWidth);
+
+    setState(() {
+      _transformationController.value = Matrix4.identity()
+        ..translate(-xOffset + 20.0); // +20 para margem na esquerda
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 1. Filtragem das fases (Adicionando R32 para Copa 2026)
+    final r32 = widget.matches
+        .where((m) => m.group == 'R32' || m.id.startsWith('r32'))
+        .toList();
     final r16 = widget.matches
         .where((m) => m.group == 'R16' || m.id.startsWith('r16'))
         .toList();
@@ -61,30 +75,31 @@ class _BracketViewState extends State<BracketView> {
 
     return Stack(
       children: [
+        // Visualizador Interativo
         GestureDetector(
           onDoubleTap: _toggleInteractivity,
-          behavior:
-              HitTestBehavior.opaque, // Impede o toque de passar para a TabBar
+          behavior: HitTestBehavior.opaque,
           child: InteractiveViewer(
             transformationController: _transformationController,
-            constrained: false, // Permite que o Row seja maior que a tela
-            panEnabled:
-                _isInteractive, // Ativa/Desativa conforme modo de exploração
+            constrained: false,
+            panEnabled: _isInteractive,
             scaleEnabled: _isInteractive,
             minScale: 0.5,
             maxScale: 2.0,
             boundaryMargin: const EdgeInsets.symmetric(
               horizontal: 1000,
-              vertical: 500,
+              vertical: 800,
             ),
             child: Container(
-              // Define um espaço de trabalho fixo para o CustomPaint não se perder
-              width: 1200,
-              height: 800,
+              width: 2000, // Espaço horizontal suficiente
+              height:
+                  1400, // Altura suficiente para os 16 jogos da fase 32-avos
               alignment: Alignment.center,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  _buildRoundColumn("32-AVOS", r32, r16Gap / 2),
+                  _buildConnectors(r32.length, r16Gap / 2),
                   _buildRoundColumn("OITAVAS", r16, r16Gap),
                   _buildConnectors(r16.length, r16Gap),
                   _buildRoundColumn("QUARTAS", qf, r16Gap * 2),
@@ -92,6 +107,28 @@ class _BracketViewState extends State<BracketView> {
                   _buildRoundColumn("SEMIFINAL", sf, r16Gap * 4),
                   _buildConnectors(sf.length, r16Gap * 4),
                   _buildRoundColumn("FINAL", finals, 0, isFinal: true),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Barra de Navegação
+        Positioned(
+          top: 80,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _navButton("32-AVOS", 0),
+                  _navButton("OITAVAS", 1),
+                  _navButton("QUARTAS", 2),
+                  _navButton("SEMI", 3),
+                  _navButton("FINAL", 4),
                 ],
               ),
             ),
@@ -111,13 +148,6 @@ class _BracketViewState extends State<BracketView> {
                 color: _isInteractive ? AppColors.primaryGold : Colors.black87,
                 borderRadius: BorderRadius.circular(25),
                 border: Border.all(color: AppColors.primaryGold),
-                boxShadow: [
-                  if (_isInteractive)
-                    BoxShadow(
-                      color: AppColors.primaryGold.withOpacity(0.3),
-                      blurRadius: 10,
-                    ),
-                ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -149,10 +179,26 @@ class _BracketViewState extends State<BracketView> {
     );
   }
 
-  // ... (Mantenha _buildRoundColumn, _buildConnectors, _BracketMatchCard e BracketLinePainter)
-  // Certifique-se de copiar as funções auxiliares do código anterior.
-  //altura fixa para o card para facilitar o cálculo do centro
-  final double cardHeight = 60.0;
+  // Widgets auxiliares AGORA DENTRO DA CLASSE _BracketViewState
+  Widget _navButton(String label, int index) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: ActionChip(
+        backgroundColor: Colors.black87,
+        side: const BorderSide(color: AppColors.primaryGold, width: 0.5),
+        label: Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.primaryGold,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        onPressed: () => _scrollToPhase(index),
+      ),
+    );
+  }
+
   Widget _buildRoundColumn(
     String title,
     List<MatchEntity> matches,
@@ -173,14 +219,13 @@ class _BracketViewState extends State<BracketView> {
         const SizedBox(height: 20),
         ...matches.map((match) {
           return Container(
-            // O Container externo ocupa o 'gap' total (espaço entre os centros)
             height: isFinal ? null : gap,
             alignment: Alignment.center,
             child: _BracketMatchCard(
               match: match,
               isFinal: isFinal,
               width: cardWidth,
-              height: cardHeight, // Passamos a altura fixa
+              height: cardHeight,
             ),
           );
         }).toList(),
@@ -198,10 +243,10 @@ class _BracketViewState extends State<BracketView> {
       ),
     );
   }
-}
+} // FIM DA CLASSE _BracketViewState
 
-// --- Card com Altura Fixa ---
-// --- Card Interativo no Mata-Mata ---
+// --- Classes Independentes (Stateless e Painter) ---
+
 class _BracketMatchCard extends StatelessWidget {
   final MatchEntity match;
   final bool isFinal;
@@ -217,7 +262,6 @@ class _BracketMatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Envolvemos o card com GestureDetector no BracketView também
     return GestureDetector(
       onTap: () => _showPredictionDialog(context, match),
       child: Container(
@@ -269,7 +313,6 @@ class _BracketMatchCard extends StatelessWidget {
     );
   }
 
-  // 2. Diálogo adaptado para o BracketView
   void _showPredictionDialog(BuildContext context, MatchEntity match) {
     final homeController = TextEditingController();
     final awayController = TextEditingController();
@@ -407,7 +450,6 @@ class _BracketMatchCard extends StatelessWidget {
     );
   }
 
-  // Widgets de suporte para o diálogo
   Widget _buildFlagIcon(String url) => ClipOval(
     child: CachedNetworkImage(
       imageUrl: url,
@@ -417,6 +459,7 @@ class _BracketMatchCard extends StatelessWidget {
       errorWidget: (_, __, ___) => const Icon(Icons.flag, size: 20),
     ),
   );
+
   Widget _buildIncBtn(String label, VoidCallback onTap) => InkWell(
     onTap: onTap,
     child: Container(
@@ -456,7 +499,6 @@ class _BracketMatchCard extends StatelessWidget {
   }
 }
 
-// --- Painter Ajustado para o Centro ---
 class BracketLinePainter extends CustomPainter {
   final int itemCount;
   final double gap;
@@ -471,26 +513,17 @@ class BracketLinePainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     for (int i = 0; i < itemCount; i += 2) {
-      // O cálculo (i * gap) + (gap / 2) encontra o centro exato do container do card
       double y1 = (i * gap) + (gap / 2);
       double y2 = ((i + 1) * gap) + (gap / 2);
       double centerX = size.width / 2;
       double midY = (y1 + y2) / 2;
 
       final path = Path();
-
-      // Linha horizontal saindo do centro do Card Superior
       path.moveTo(0, y1);
       path.lineTo(centerX, y1);
-
-      // Linha vertical conectando os dois
       path.lineTo(centerX, y2);
-
-      // Linha horizontal saindo do centro do Card Inferior
       path.moveTo(0, y2);
       path.lineTo(centerX, y2);
-
-      // Linha de saída para a próxima fase (exatamente no meio dos dois cards)
       path.moveTo(centerX, midY);
       path.lineTo(size.width, midY);
 
