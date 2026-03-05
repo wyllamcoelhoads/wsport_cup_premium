@@ -21,9 +21,15 @@ class BracketCalculator {
         int? newHomePred = match.userHomePrediction;
         int? newAwayPred = match.userAwayPrediction;
 
-        // EFEITO CASCATA: Se os times mudaram (ex: Brasil virou "A Definir"),
-        // apagamos o placar dessa chave também!
-        if (match.homeTeam != newHome || match.awayTeam != newAway) {
+        // ==========================================
+        // O EFEITO CASCATA CORRIGIDO AQUI 👇
+        // ==========================================
+        // Se qualquer um dos times for "A Definir" OU se os times mudaram,
+        // nós TEMOS que zerar o placar dessa chave obrigatoriamente!
+        if (newHome == "A Definir" ||
+            newAway == "A Definir" ||
+            match.homeTeam != newHome ||
+            match.awayTeam != newAway) {
           newHomePred = null;
           newAwayPred = null;
         }
