@@ -4,7 +4,8 @@ abstract class WorldCupEvent extends Equatable {
   const WorldCupEvent();
 
   @override
-  List<Object> get props => [];
+  // AQUI ESTAVA O ERRO: O Pai agora ganha a interrogação (?) e aceita nulos
+  List<Object?> get props => [];
 }
 
 // Evento 1: Tela abriu, carregue os jogos
@@ -13,19 +14,21 @@ class LoadMatchesEvent extends WorldCupEvent {}
 // Evento 2: Usuário clicou em "Salvar" no diálogo
 class SavePredictionEvent extends WorldCupEvent {
   final String matchId;
-  final int homeScore;
-  final int awayScore;
+  final int? homeScore; // Pode ser nulo (Vassoura)
+  final int? awayScore; // Pode ser nulo (Vassoura)
 
   const SavePredictionEvent({
     required this.matchId,
-    required this.homeScore,
-    required this.awayScore,
+    this.homeScore,
+    this.awayScore,
   });
 
   @override
-  List<Object> get props => [matchId, homeScore, awayScore];
+  // O Filho ganha a interrogação (?)
+  List<Object?> get props => [matchId, homeScore, awayScore];
 }
 
+// Evento 3: Troca de times
 class SwapTeamEvent extends WorldCupEvent {
   final String oldTeamName;
   final String newTeamName;
@@ -38,5 +41,6 @@ class SwapTeamEvent extends WorldCupEvent {
   });
 
   @override
-  List<Object> get props => [oldTeamName, newTeamName, newTeamFlag];
+  // Ganha a interrogação (?) para padronizar tudo
+  List<Object?> get props => [oldTeamName, newTeamName, newTeamFlag];
 }

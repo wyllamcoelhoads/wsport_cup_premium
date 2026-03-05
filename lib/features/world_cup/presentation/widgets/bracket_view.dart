@@ -38,7 +38,10 @@ class _BracketViewState extends State<BracketView> {
     });
 
     if (!_isInteractive) {
-      _transformationController.value = Matrix4.identity();
+      // BÔNUS: Em vez de usar Matrix4.identity() que desalinha a tela,
+      // forçamos o alinhamento de volta para a primeira coluna (32-avos)
+      // preservando a posição vertical que o usuário estava!
+      _scrollToPhase(0);
     }
 
     if (widget.onLockScroll != null) {
@@ -47,31 +50,78 @@ class _BracketViewState extends State<BracketView> {
   }
 
   // Função para navegar até a fase desejada
+  // Função para navegar até a fase desejada com alinhamento perfeito
   void _scrollToPhase(int phaseIndex) {
-    double xOffset = phaseIndex * (cardWidth + connectorWidth);
+    // 1. Pega a largura do ecrã do telemóvel
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // 2. Matemática do layout:
+    // O Container tem 2000 de largura.
+    // O conteúdo total (cards + conectores) tem 1000.
+    // Como está centralizado, o conteúdo começa na coordenada X = 500.
+    const double startX = 600;
+
+    // 3. Acha o centro exato da coluna clicada
+    final double columnCenterX =
+        startX + (phaseIndex * (cardWidth + connectorWidth)) + (cardWidth / 2);
+
+    // 4. Calcula o movimento para alinhar o centro da coluna com o centro do ecrã
+    final double xOffset = (screenWidth / 2) - columnCenterX;
+
+    // 5. Preserva a posição vertical atual (para a tela não saltar para cima do nada)
+    final currentY = _transformationController.value.getTranslation().y;
 
     setState(() {
       _transformationController.value = Matrix4.identity()
-        ..translate(-xOffset + 20.0); // +20 para margem na esquerda
+        ..translate(xOffset, currentY);
     });
+  }
+
+  int _getMatchNumber(String id) {
+    final parts = id.split('_');
+    if (parts.length > 1) {
+      return int.tryParse(parts.last) ?? 0;
+    }
+    return 0;
   }
 
   @override
   Widget build(BuildContext context) {
-    // 1. Filtragem das fases (Adicionando R32 para Copa 2026)
-    final r32 = widget.matches
-        .where((m) => m.group == 'R32' || m.id.startsWith('r32'))
+    final r32 =
+        widget.matches
+            .where((m) => m.group == 'R32' || m.id.startsWith('r32'))
+            .toList()
+          ..sort(
+            (a, b) => _getMatchNumber(a.id).compareTo(_getMatchNumber(b.id)),
+          );
+
+    final r16 =
+        widget.matches
+            .where((m) => m.group == 'R16' || m.id.startsWith('r16'))
+            .toList()
+          ..sort(
+            (a, b) => _getMatchNumber(a.id).compareTo(_getMatchNumber(b.id)),
+          );
+
+    final qf =
+        widget.matches
+            .where((m) => m.group == 'QF' || m.id.startsWith('qf'))
+            .toList()
+          ..sort(
+            (a, b) => _getMatchNumber(a.id).compareTo(_getMatchNumber(b.id)),
+          );
+
+    final sf =
+        widget.matches
+            .where((m) => m.group == 'SF' || m.id.startsWith('sf'))
+            .toList()
+          ..sort(
+            (a, b) => _getMatchNumber(a.id).compareTo(_getMatchNumber(b.id)),
+          );
+
+    final finals = widget.matches
+        .where((m) => m.group == 'FINAL' || m.id.startsWith('final_'))
         .toList();
-    final r16 = widget.matches
-        .where((m) => m.group == 'R16' || m.id.startsWith('r16'))
-        .toList();
-    final qf = widget.matches
-        .where((m) => m.group == 'QF' || m.id.startsWith('qf'))
-        .toList();
-    final sf = widget.matches
-        .where((m) => m.group == 'SF' || m.id.startsWith('sf'))
-        .toList();
-    final finals = widget.matches.where((m) => m.group == 'FINAL').toList();
 
     return Stack(
       children: [
@@ -82,21 +132,32 @@ class _BracketViewState extends State<BracketView> {
           child: InteractiveViewer(
             transformationController: _transformationController,
             constrained: false,
-            panEnabled: _isInteractive,
+            panEnabled: true,
             scaleEnabled: _isInteractive,
+            panAxis: _isInteractive ? PanAxis.free : PanAxis.vertical,
             minScale: 0.5,
             maxScale: 2.0,
+
+            // Margens para garantir que o utilizador consiga arrastar um pouco além dos limites
             boundaryMargin: const EdgeInsets.symmetric(
               horizontal: 1000,
-              vertical: 800,
+              vertical:
+                  400, // Reduzido para evitar que a tela se perca no vazio
             ),
+
             child: Container(
-              width: 2000, // Espaço horizontal suficiente
-              height:
-                  1400, // Altura suficiente para os 16 jogos da fase 32-avos
-              alignment: Alignment.center,
+              width: 2000,
+
+              // 1. REMOVEMOS A ALTURA FIXA (height)! O Flutter vai calcular a altura perfeita automaticamente.
+
+              // 2. O RESPIRO EXATO:
+              // top: 160 -> Empurra o chaveamento só o suficiente para começar logo abaixo da barra de botões.
+              // bottom: 100 -> Dá um espacinho no final para a última chave não ficar colada à borda do ecrã.
+              padding: const EdgeInsets.only(top: 160, bottom: 100),
+
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                // O Flutter já centraliza verticalmente os elementos da Row de forma automática!
                 children: [
                   _buildRoundColumn("32-AVOS", r32, r16Gap / 2),
                   _buildConnectors(r32.length, r16Gap / 2),
@@ -235,12 +296,28 @@ class _BracketViewState extends State<BracketView> {
 
   Widget _buildConnectors(int count, double gap) {
     if (count == 0) return SizedBox(width: connectorWidth);
-    return SizedBox(
-      width: connectorWidth,
-      height: count * gap,
-      child: CustomPaint(
-        painter: BracketLinePainter(itemCount: count, gap: gap),
-      ),
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // 1. O TÍTULO FANTASMA:
+        // Tem o mesmo tamanho da fonte (16) para ocupar o mesmo espaço no topo e empurrar as linhas para baixo.
+        const Text(
+          " ",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(
+          height: 20,
+        ), // O mesmo espaçamento que existe embaixo dos títulos
+        // 2. AS LINHAS:
+        SizedBox(
+          width: connectorWidth,
+          height: count * gap,
+          child: CustomPaint(
+            painter: BracketLinePainter(itemCount: count, gap: gap),
+          ),
+        ),
+      ],
     );
   }
 } // FIM DA CLASSE _BracketViewState

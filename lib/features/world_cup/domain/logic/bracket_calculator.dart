@@ -10,19 +10,44 @@ class BracketCalculator {
       for (var m in allMatches) m.id: m,
     };
 
-    // Atualiza a entidade usando o copyWith que você criou
+    // Atualiza a entidade de forma inteligente (Com efeito cascata)
     void setMatchTeams(String matchId, TeamStanding? home, TeamStanding? away) {
       if (matchMap.containsKey(matchId)) {
         final match = matchMap[matchId]!;
-        matchMap[matchId] = match.copyWith(
-          homeTeam: home?.teamName ?? "A Definir",
+
+        final newHome = home?.teamName ?? "A Definir";
+        final newAway = away?.teamName ?? "A Definir";
+
+        int? newHomePred = match.userHomePrediction;
+        int? newAwayPred = match.userAwayPrediction;
+
+        // EFEITO CASCATA: Se os times mudaram (ex: Brasil virou "A Definir"),
+        // apagamos o placar dessa chave também!
+        if (match.homeTeam != newHome || match.awayTeam != newAway) {
+          newHomePred = null;
+          newAwayPred = null;
+        }
+
+        matchMap[matchId] = MatchEntity(
+          id: match.id,
+          homeTeam: newHome,
           homeFlag:
               home?.flag ??
               "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png",
-          awayTeam: away?.teamName ?? "A Definir",
+          awayTeam: newAway,
           awayFlag:
               away?.flag ??
               "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png",
+          date: match.date,
+          stadium: match.stadium,
+          country: match.country,
+          location: match.location,
+          group: match.group,
+          status: match.status,
+          homeScore: match.homeScore,
+          awayScore: match.awayScore,
+          userHomePrediction: newHomePred,
+          userAwayPrediction: newAwayPred,
         );
       }
     }
