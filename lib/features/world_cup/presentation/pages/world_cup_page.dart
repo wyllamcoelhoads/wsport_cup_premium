@@ -588,10 +588,66 @@ class _PremiumMatchCard extends StatelessWidget {
                   bottom: Radius.circular(16),
                 ),
               ),
-              child: Text(
-                "${match.friendlyGroupName} • ${match.date.day.toString().padLeft(2, '0')}/${match.date.month.toString().padLeft(2, '0')} • ${match.stadium} • ${match.location}",
+              child: Text.rich(
+                TextSpan(
+                  // Estilo padrão para todos os textos dentro deste Text.rich
+                  style: const TextStyle(color: Colors.white38, fontSize: 10),
+                  children: [
+                    // 1. Nome do Grupo
+                    const WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 4.0),
+                        child: Icon(
+                          Icons.group,
+                          size: 10,
+                          color: Colors.white38,
+                        ),
+                      ),
+                    ),
+                    TextSpan(text: "${match.friendlyGroupName}"),
+
+                    // 2. Ícone de Calendário
+                    const WidgetSpan(
+                      alignment: PlaceholderAlignment
+                          .middle, // Alinha o ícone com o centro do texto
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: 16.0,
+                          right: 4.0,
+                        ), // Dá um espacinho entre o ícone e a data
+                        child: Icon(
+                          Icons.calendar_today,
+                          size: 10,
+                          color: Colors.white38,
+                        ),
+                      ),
+                    ),
+
+                    // 3. Data e Horário)
+                    TextSpan(
+                      text:
+                          "${match.date.day.toString().padLeft(2, '0')}/${match.date.month.toString().padLeft(2, '0')} às ${match.date.hour.toString().padLeft(2, '0')}:${match.date.minute.toString().padLeft(2, '0')}",
+                    ),
+
+                    // 4. Ícone de Localização
+                    const WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 16.0, right: 4.0),
+                        child: Icon(
+                          Icons.location_on,
+                          size: 10,
+                          color: Colors.white38,
+                        ),
+                      ),
+                    ),
+
+                    // 5. Estádio e País (Ajuste com as variáveis corretas do seu match)
+                    TextSpan(text: "${match.stadium}, ${match.country}"),
+                  ],
+                ),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white38, fontSize: 10),
               ),
             ),
           ],
