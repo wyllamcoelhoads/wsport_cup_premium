@@ -3,7 +3,6 @@ import '../../domain/entities/match_entity.dart';
 import '../../domain/repositories/world_cup_repository.dart';
 import '../../domain/usecases/get_matches_usecase.dart';
 import '../../../../core/utils/local_storage_service.dart';
-// Importe o seu calculador aqui!
 import '../../domain/logic/bracket_calculator.dart';
 import 'world_cup_event.dart';
 import 'world_cup_state.dart';

@@ -397,13 +397,20 @@ class _BracketMatchCard extends StatelessWidget {
     homeController.text = (match.userHomePrediction ?? 0).toString();
     awayController.text = (match.userAwayPrediction ?? 0).toString();
 
+    // 1. Variável de erro
+    String? errorMessage;
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
           void incrementScore(TextEditingController controller, int value) {
             int current = int.tryParse(controller.text) ?? 0;
-            setModalState(() => controller.text = (current + value).toString());
+            setModalState(() {
+              controller.text = (current + value).toString();
+              errorMessage =
+                  null; // Limpa o erro quando o usuário muda o placar
+            });
           }
 
           return AlertDialog(
@@ -424,6 +431,7 @@ class _BracketMatchCard extends StatelessWidget {
                     onTap: () => setModalState(() {
                       homeController.text = "0";
                       awayController.text = "0";
+                      errorMessage = null; // Limpa o erro ao resetar
                     }),
                     child: const Icon(
                       Icons.cleaning_services,
@@ -442,7 +450,9 @@ class _BracketMatchCard extends StatelessWidget {
                   children: [
                     _buildFlagIcon(match.homeFlag),
                     const SizedBox(width: 8),
-                    _miniScoreInput(homeController),
+                    _miniScoreInput(
+                      homeController,
+                    ), // Usando o nome correto daqui
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 10),
                       child: Text(
@@ -453,7 +463,9 @@ class _BracketMatchCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    _miniScoreInput(awayController),
+                    _miniScoreInput(
+                      awayController,
+                    ), // Usando o nome correto daqui
                     const SizedBox(width: 8),
                     _buildFlagIcon(match.awayFlag),
                   ],
@@ -468,6 +480,7 @@ class _BracketMatchCard extends StatelessWidget {
                   children: [1, 2, 3]
                       .map(
                         (v) => _buildIncBtn(
+                          // Usando o nome correto daqui
                           "+ $v",
                           () => incrementScore(homeController, v),
                         ),
@@ -484,18 +497,58 @@ class _BracketMatchCard extends StatelessWidget {
                   children: [1, 2, 3]
                       .map(
                         (v) => _buildIncBtn(
+                          // Usando o nome correto daqui
                           "+ $v",
                           () => incrementScore(awayController, v),
                         ),
                       )
                       .toList(),
                 ),
+
+                // ==========================================
+                // CAIXA DE MENSAGEM DE ERRO
+                // ==========================================
+                if (errorMessage != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.redAccent.withOpacity(0.5),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.redAccent,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            errorMessage!,
+                            style: const TextStyle(
+                              color: Colors.redAccent,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                // ==========================================
               ],
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("VOLTAR"),
+                child: const Text("SAIR", style: TextStyle(color: Colors.grey)),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -504,7 +557,17 @@ class _BracketMatchCard extends StatelessWidget {
                 onPressed: () {
                   final h = int.tryParse(homeController.text);
                   final a = int.tryParse(awayController.text);
+
                   if (h != null && a != null) {
+                    // REGRA FIFA: Checa se é mata-mata e está empatado
+                    if (match.isKnockout && h == a) {
+                      setModalState(() {
+                        errorMessage =
+                            "Mata-mata não aceita empate! Simule um vencedor (considere a prorrogação).";
+                      });
+                      return; // Trava o fechamento do modal
+                    }
+
                     context.read<WorldCupBloc>().add(
                       SavePredictionEvent(
                         matchId: match.id,
@@ -517,7 +580,10 @@ class _BracketMatchCard extends StatelessWidget {
                 },
                 child: const Text(
                   "SALVAR",
-                  style: TextStyle(color: Colors.black),
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

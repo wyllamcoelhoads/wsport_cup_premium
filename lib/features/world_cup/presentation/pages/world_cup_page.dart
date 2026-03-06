@@ -658,11 +658,15 @@ class _PremiumMatchCard extends StatelessWidget {
 
   // 2. A função completa do Modal de Palpite
   void _showPredictionDialog(BuildContext context, MatchEntity match) {
-    final homeController = TextEditingController();
-    final awayController = TextEditingController();
+    final homeController = TextEditingController(
+      text: match.userHomePrediction?.toString() ?? "0",
+    );
+    final awayController = TextEditingController(
+      text: match.userAwayPrediction?.toString() ?? "0",
+    );
 
-    homeController.text = (match.userHomePrediction ?? 0).toString();
-    awayController.text = (match.userAwayPrediction ?? 0).toString();
+    // 1. CRIAMOS UMA VARIÁVEL PARA O ERRO AQUI
+    String? errorMessage;
 
     showDialog(
       context: context,
@@ -672,6 +676,8 @@ class _PremiumMatchCard extends StatelessWidget {
             int current = int.tryParse(controller.text) ?? 0;
             setModalState(() {
               controller.text = (current + value).toString();
+              // 2. SE O USUÁRIO MEXER NO PLACAR, LIMPAMOS A MENSAGEM DE ERRO
+              errorMessage = null;
             });
           }
 
@@ -699,6 +705,7 @@ class _PremiumMatchCard extends StatelessWidget {
                       setModalState(() {
                         homeController.text = "0";
                         awayController.text = "0";
+                        errorMessage = null; // Limpa erro ao resetar
                       });
                     },
                   ),
@@ -731,7 +738,6 @@ class _PremiumMatchCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // NOME DA EQUIPE CASA (Removido o CONST para aceitar o toUpperCase)
                 Text(
                   match.homeTeam.toUpperCase(),
                   style: const TextStyle(
@@ -755,7 +761,6 @@ class _PremiumMatchCard extends StatelessWidget {
 
                 const SizedBox(height: 15),
 
-                // NOME DA EQUIPE FORA
                 Text(
                   match.awayTeam.toUpperCase(),
                   style: const TextStyle(
@@ -776,6 +781,44 @@ class _PremiumMatchCard extends StatelessWidget {
                       )
                       .toList(),
                 ),
+
+                // ==========================================
+                // 3. CAIXA DE MENSAGEM DE ERRO DENTRO DO POP-UP
+                // ==========================================
+                if (errorMessage != null) ...[
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.redAccent.withOpacity(0.5),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.redAccent,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            errorMessage!,
+                            style: const TextStyle(
+                              color: Colors.redAccent,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                // ==========================================
               ],
             ),
             actions: [
@@ -793,7 +836,19 @@ class _PremiumMatchCard extends StatelessWidget {
                 onPressed: () {
                   final h = int.tryParse(homeController.text);
                   final a = int.tryParse(awayController.text);
+
                   if (h != null && a != null) {
+                    // ==========================================
+                    // 4. REGRA DE NEGÓCIO: BLOQUEIA APENAS MATA-MATA
+                    // ==========================================
+                    if (match.isKnockout && h == a) {
+                      setModalState(() {
+                        errorMessage =
+                            "Mata-mata não aceita empate! Informe o placar final (incluindo prorrogação/pênaltis).";
+                      });
+                      return; // Trava o fechamento do modal
+                    }
+
                     context.read<WorldCupBloc>().add(
                       SavePredictionEvent(
                         matchId: match.id,

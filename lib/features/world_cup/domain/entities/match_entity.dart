@@ -39,6 +39,13 @@ class MatchEntity extends Equatable {
     this.userAwayPrediction,
   });
 
+  bool get isKnockout {
+    // Se não começar com "GROUP" ou "Grupo", é mata-mata
+    return !group.toUpperCase().startsWith(
+      'GRUP',
+    ); // Cobre "GROUP" e "Grupo" (português)
+  }
+
   // ==========================================
   // O SEGREDO: TRADUTOR DE NOMES PARA A UI
   // ==========================================
