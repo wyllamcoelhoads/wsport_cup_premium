@@ -73,7 +73,7 @@ Future<void> popularGruposFirebase() async {
       'group': 'GRUPO A',
       'homeTeam': 'Coreia do Sul',
       'homeFlag': 'https://flagcdn.com/w320/kr.png',
-      'awayTeam': 'Rep. Europa D',
+      'awayTeam': 'Vencedor Rep D',
       'awayFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'date': DateTime(2026, 6, 11, 23, 0),
@@ -85,7 +85,7 @@ Future<void> popularGruposFirebase() async {
     {
       'id': 'gA_3',
       'group': 'GRUPO A',
-      'homeTeam': 'Rep. Europa D',
+      'homeTeam': 'Vencedor Rep D',
       'homeFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'awayTeam': 'Afrique do Sul',
@@ -125,7 +125,7 @@ Future<void> popularGruposFirebase() async {
     {
       'id': 'gA_6',
       'group': 'GRUPO A',
-      'homeTeam': 'Rep. Europa D',
+      'homeTeam': 'Vencedor Rep D',
       'homeFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'awayTeam': 'México',
@@ -142,7 +142,7 @@ Future<void> popularGruposFirebase() async {
       'group': 'GRUPO B',
       'homeTeam': 'Canada',
       'homeFlag': 'https://flagcdn.com/w320/ca.png',
-      'awayTeam': 'Rep. Europa A',
+      'awayTeam': 'Vencedor Rep A',
       'awayFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'date': DateTime(2026, 6, 12, 16, 0),
@@ -169,7 +169,7 @@ Future<void> popularGruposFirebase() async {
       'group': 'GRUPO B',
       'homeTeam': 'Suiça',
       'homeFlag': 'https://flagcdn.com/w320/ch.png',
-      'awayTeam': 'Rep. Europa A',
+      'awayTeam': 'Vencedor Rep A',
       'awayFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'date': DateTime(2026, 6, 18, 16, 0),
@@ -184,7 +184,7 @@ Future<void> popularGruposFirebase() async {
       'homeTeam': 'Canada',
       'homeFlag': 'https://flagcdn.com/w320/ca.png',
       'awayTeam': 'Catar',
-      'awayFlag': 'https://flagcdn.com/w320/qa  .png',
+      'awayFlag': 'https://flagcdn.com/w320/qa.png',
       'date': DateTime(2026, 6, 18, 19, 0),
       'stadium': 'A definir',
       'country': 'A definir',
@@ -207,7 +207,7 @@ Future<void> popularGruposFirebase() async {
     {
       'id': 'gB_6',
       'group': 'GRUPO B',
-      'homeTeam': 'Rep. Europa A',
+      'homeTeam': 'Vencedor Rep A',
       'homeFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'awayTeam': 'Catar',
@@ -317,7 +317,7 @@ Future<void> popularGruposFirebase() async {
       'group': 'GRUPO D',
       'homeTeam': 'Austrália',
       'homeFlag': 'https://flagcdn.com/w320/au.png',
-      'awayTeam': 'Rep. Europa C',
+      'awayTeam': 'Vencedor Rep C',
       'awayFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'date': DateTime(2026, 6, 14, 01, 0),
@@ -342,7 +342,7 @@ Future<void> popularGruposFirebase() async {
     {
       'id': 'gD_4',
       'group': 'GRUPO D',
-      'homeTeam': 'Rep. Europa C',
+      'homeTeam': 'Vencedor Rep C',
       'homeFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'awayTeam': 'Paraguai',
@@ -356,7 +356,7 @@ Future<void> popularGruposFirebase() async {
     {
       'id': 'gD_5',
       'group': 'GRUPO D',
-      'homeTeam': 'Rep. Europa C',
+      'homeTeam': 'Vencedor Rep C',
       'homeFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'awayTeam': 'Estados Unidos',
@@ -477,7 +477,7 @@ Future<void> popularGruposFirebase() async {
     {
       'id': 'gF_2',
       'group': 'GRUPO F',
-      'homeTeam': 'Rep. Europa B',
+      'homeTeam': 'Vencedor Rep B',
       'homeFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'awayTeam': 'Tunísia',
@@ -493,7 +493,7 @@ Future<void> popularGruposFirebase() async {
       'group': 'GRUPO F',
       'homeTeam': 'Equador',
       'homeFlag': 'https://flagcdn.com/w320/ec.png',
-      'awayTeam': 'Rep. Europa B',
+      'awayTeam': 'Vencedor Rep B',
       'awayFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'date': DateTime(2026, 6, 20, 14, 0),
@@ -533,7 +533,7 @@ Future<void> popularGruposFirebase() async {
       'group': 'GRUPO F',
       'homeTeam': 'Japão',
       'homeFlag': 'https://flagcdn.com/w320/jp.png',
-      'awayTeam': 'Rep. Europa B',
+      'awayTeam': 'Vencedor Rep B',
       'awayFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/320px-Flag_of_Europe.svg.png',
       'date': DateTime(2026, 6, 25, 20, 0),
@@ -720,7 +720,7 @@ Future<void> popularGruposFirebase() async {
     {
       'id': 'gI_2',
       'group': 'GRUPO I',
-      'homeTeam': 'Rep. Inter 2',
+      'homeTeam': 'Vencedor Rep 2',
       'homeFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/International_Flag_of_Planet_Earth.svg/320px-International_Flag_of_Planet_Earth.svg.png',
       'awayTeam': 'Noruega',
@@ -736,7 +736,7 @@ Future<void> popularGruposFirebase() async {
       'group': 'GRUPO I',
       'homeTeam': 'França',
       'homeFlag': 'https://flagcdn.com/w320/fr.png',
-      'awayTeam': 'Rep. Inter 2',
+      'awayTeam': 'Vencedor Rep 2',
       'awayFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/International_Flag_of_Planet_Earth.svg/320px-International_Flag_of_Planet_Earth.svg.png',
       'date': DateTime(2026, 6, 22, 18, 0),
@@ -776,7 +776,7 @@ Future<void> popularGruposFirebase() async {
       'group': 'GRUPO I',
       'homeTeam': 'Senegal',
       'homeFlag': 'https://flagcdn.com/w320/sn.png',
-      'awayTeam': 'Rep. Inter 2',
+      'awayTeam': 'Vencedor Rep 2',
       'awayFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/International_Flag_of_Planet_Earth.svg/320px-International_Flag_of_Planet_Earth.svg.png',
       'date': DateTime(2026, 6, 26, 16, 0),
@@ -872,7 +872,7 @@ Future<void> popularGruposFirebase() async {
       'group': 'GRUPO K',
       'homeTeam': 'Portugal',
       'homeFlag': 'https://flagcdn.com/w320/pt.png',
-      'awayTeam': 'Rep. Inter 1',
+      'awayTeam': 'Vencedor Rep 1',
       'awayFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/International_Flag_of_Planet_Earth.svg/320px-International_Flag_of_Planet_Earth.svg.png',
       'date': DateTime(2026, 6, 17, 14, 0),
@@ -912,7 +912,7 @@ Future<void> popularGruposFirebase() async {
       'group': 'GRUPO K',
       'homeTeam': 'Colombia',
       'homeFlag': 'https://flagcdn.com/w320/co.png',
-      'awayTeam': 'Rep. Inter 1',
+      'awayTeam': 'Vencedor Rep 1',
       'awayFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/International_Flag_of_Planet_Earth.svg/320px-International_Flag_of_Planet_Earth.svg.png',
       'date': DateTime(2026, 6, 23, 23, 0),
@@ -937,7 +937,7 @@ Future<void> popularGruposFirebase() async {
     {
       'id': 'gK_6',
       'group': 'GRUPO K',
-      'homeTeam': 'Rep. Inter 1',
+      'homeTeam': 'Vencedor Rep 1',
       'homeFlag':
           'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/International_Flag_of_Planet_Earth.svg/320px-International_Flag_of_Planet_Earth.svg.png',
       'awayTeam': 'Uzbequistão',

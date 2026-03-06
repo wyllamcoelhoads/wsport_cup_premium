@@ -13,27 +13,32 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
 
   WorldCupBloc({required this.getMatchesUseCase, required this.repository})
     : super(const WorldCupState()) {
+    // ==========================================================
     // 1. CARREGAR JOGOS (Quando o app abre)
+    // ==========================================================
     on<LoadMatchesEvent>((event, emit) async {
       emit(state.copyWith(isLoading: true));
-
-      // 1. Pega os jogos limpos (sem placar) do Firebase
       final matchesFromFirebase = await getMatchesUseCase();
 
-      // 2. A MÁGICA: Puxa do disco do celular todos os placares que o usuário já tinha digitado
-      final restoredMatches = await LocalStorageService.restorePredictions(
+      // 1. Restaurar as trocas de seleções da repescagem (Novo)
+      final matchesWithSwaps = await LocalStorageService.restoreSwaps(
         matchesFromFirebase,
       );
 
-      // 3. Roda o calculador para montar as chaves com os dados restaurados
-      final calculatedMatches = BracketCalculator.populate(restoredMatches);
+      // 2. Restaurar palpites
+      final restoredMatches = await LocalStorageService.restorePredictions(
+        matchesWithSwaps,
+      );
 
+      final calculatedMatches = BracketCalculator.populate(restoredMatches);
       emit(state.copyWith(isLoading: false, matches: calculatedMatches));
     });
 
-    // 2. SALVAR PALPITE
+    // ==========================================================
+    // 2. SALVAR PALPITE (Faltava este bloco no seu código)
+    // ==========================================================
     on<SavePredictionEvent>((event, emit) async {
-      // 1. A MÁGICA: Salva o placar (ou apaga) no disco do celular
+      // 1. Salva o placar (ou apaga) no disco do celular
       await LocalStorageService.savePrediction(
         event.matchId,
         event.homeScore,
@@ -42,12 +47,9 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
 
       final currentMatches = state.matches;
 
-      // 1. Atualiza o placar do jogo de forma 100% blindada
+      // 2. Atualiza o placar do jogo
       final updatedList = currentMatches.map((match) {
         if (match.id == event.matchId) {
-          // Em vez de usar "copyWith", nós recriamos a entidade inteira.
-          // Assim, se a vassoura mandar 'null', o sistema engole o 'null'
-          // e apaga o placar definitivamente, sem questionar!
           return MatchEntity(
             id: match.id,
             homeTeam: match.homeTeam,
@@ -62,7 +64,6 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
             status: match.status,
             homeScore: match.homeScore,
             awayScore: match.awayScore,
-            // Passamos EXATAMENTE o que veio do evento (número ou null)
             userHomePrediction: event.homeScore,
             userAwayPrediction: event.awayScore,
           );
@@ -70,7 +71,7 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
         return match;
       }).toList();
 
-      // 3. Recalcula o mata-mata
+      // 3. Recalcula o mata-mata com os novos placares
       final matchesWithBrackets = BracketCalculator.populate(updatedList);
 
       emit(
@@ -85,41 +86,58 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
       emit(state.copyWith(successMessage: null));
     });
 
-    // 3. TROCA DE TIMES (SWAP)
+    // ==========================================================
+    // 3. TROCA DE TIMES DA REPESCAGEM (SWAP)
+    // ==========================================================
     on<SwapTeamEvent>((event, emit) async {
-      emit(state.copyWith(isLoading: true));
+      // 1. Persistir a troca localmente
+      await LocalStorageService.saveTeamSwap(
+        event.oldTeamName,
+        event.newTeamName,
+        event.newTeamFlag,
+      );
 
       final swappedList = state.matches.map((match) {
-        if (match.homeTeam == event.oldTeamName) {
-          return match.copyWith(
-            homeTeam: event.newTeamName,
-            homeFlag: event.newTeamFlag,
-            userHomePrediction: null,
-            userAwayPrediction: null,
-          );
-        } else if (match.awayTeam == event.oldTeamName) {
-          return match.copyWith(
-            awayTeam: event.newTeamName,
-            awayFlag: event.newTeamFlag,
-            userHomePrediction: null,
-            userAwayPrediction: null,
-          );
-        }
-        return match;
+        // Substitui em qualquer lugar que o placeholder apareça
+        String hName = match.homeTeam == event.oldTeamName
+            ? event.newTeamName
+            : match.homeTeam;
+        String hFlag = match.homeTeam == event.oldTeamName
+            ? event.newTeamFlag
+            : match.homeFlag;
+        String aName = match.awayTeam == event.oldTeamName
+            ? event.newTeamName
+            : match.awayTeam;
+        String aFlag = match.awayTeam == event.oldTeamName
+            ? event.newTeamFlag
+            : match.awayFlag;
+
+        return match.copyWith(
+          homeTeam: hName,
+          homeFlag: hFlag,
+          awayTeam: aName,
+          awayFlag: aFlag,
+          // Ao trocar o time, limpamos o palpite para evitar bugs de lógica
+          userHomePrediction:
+              (match.homeTeam == event.oldTeamName ||
+                  match.awayTeam == event.oldTeamName)
+              ? null
+              : match.userHomePrediction,
+          userAwayPrediction:
+              (match.homeTeam == event.oldTeamName ||
+                  match.awayTeam == event.oldTeamName)
+              ? null
+              : match.userAwayPrediction,
+        );
       }).toList();
 
-      // === NOVIDADE: Roda o calculador aqui também após a troca ===
       final finalCalculatedList = BracketCalculator.populate(swappedList);
-
       emit(
         state.copyWith(
           matches: finalCalculatedList,
-          isLoading: false,
-          successMessage:
-              "Troca realizada: ${event.oldTeamName} ➔ ${event.newTeamName}",
+          successMessage: "Seleção definida!",
         ),
       );
-
       emit(state.copyWith(successMessage: null));
     });
   }

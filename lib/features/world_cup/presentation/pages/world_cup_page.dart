@@ -5,6 +5,7 @@ import '../../../../core/constants/app_theme.dart';
 import '../../domain/entities/match_entity.dart';
 import '../../domain/logic/bracket_calculator.dart';
 import '../../domain/logic/standings_calculator.dart';
+import '../../domain/logic/repescagem_data.dart';
 import '../bloc/world_cup_bloc.dart';
 import '../bloc/world_cup_state.dart';
 import '../widgets/bracket_view.dart';
@@ -214,7 +215,7 @@ class _WorldCupPageState extends State<WorldCupPage> {
   }
 }
 
-// --- Componentes auxiliares (Mantidos sem alteração de lógica) ---
+// --- Componentes auxiliares ---
 
 class _CalendarTab extends StatelessWidget {
   final List<MatchEntity> matches;
@@ -488,13 +489,19 @@ class _StandingsTab extends StatelessWidget {
   }
 }
 
+// CORREÇÃO: O _GroupHeader agora não pede allMatches
 class _GroupHeader extends StatelessWidget {
   final String title;
   final bool showEdit;
+
   const _GroupHeader({required this.title, this.showEdit = true});
 
   @override
   Widget build(BuildContext context) {
+    // Verifica se este grupo tem algum placeholder de repescagem
+    final placeholders = RepescagemData.placeholdersNoGrupo(title);
+    final bool canEdit = showEdit && placeholders.isNotEmpty;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       margin: const EdgeInsets.only(top: 20, bottom: 5),
@@ -510,18 +517,117 @@ class _GroupHeader extends StatelessWidget {
               fontSize: 16,
             ),
           ),
-          if (showEdit)
+          if (canEdit)
             IconButton(
-              icon: const Icon(Icons.edit, color: Colors.white38, size: 18),
-              onPressed: () => _showEditGroupDialog(context, title),
+              icon: const Icon(
+                Icons.edit,
+                color: AppColors.primaryGold,
+                size: 20,
+              ),
+              onPressed: () => _showEditRepescagemDialog(context, placeholders),
             ),
         ],
       ),
     );
   }
 
-  void _showEditGroupDialog(BuildContext context, String groupName) {
-    // Implementação do diálogo de edição...
+  void _showEditRepescagemDialog(
+    BuildContext context,
+    List<String> placeholders,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "DEFINIR CLASSIFICADO DA REPESCAGEM",
+              style: TextStyle(
+                color: AppColors.primaryGold,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ...placeholders.map((placeholder) {
+              final options = RepescagemData.opcoes[placeholder] ?? [];
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    placeholder,
+                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 90,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: options.length,
+                      itemBuilder: (context, index) {
+                        final team = options[index];
+                        return GestureDetector(
+                          onTap: () {
+                            context.read<WorldCupBloc>().add(
+                              SwapTeamEvent(
+                                oldTeamName: placeholder,
+                                newTeamName: team['name']!,
+                                newTeamFlag: team['flag']!,
+                              ),
+                            );
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            width: 80,
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white10),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ClipOval(
+                                  child: Image.network(
+                                    team['flag']!,
+                                    width: 30,
+                                    height: 30,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  team['name']!,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
   }
 }
 
