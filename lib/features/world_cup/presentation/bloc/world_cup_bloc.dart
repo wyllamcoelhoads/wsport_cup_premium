@@ -115,26 +115,33 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
     });
 
     // ==========================================================
-    // 4. RESETAR TODOS OS PALPITES (AGORA NO LUGAR CERTO!)
+    // 4. RESETAR TODOS OS PALPITES
+    // ==========================================================
+    // ==========================================================
+    // 4. RESETAR TODOS OS PALPITES
     // ==========================================================
     on<ResetAllPredictionsEvent>((event, emit) async {
+      // 1. Limpa tudo do armazenamento local do celular
       await LocalStorageService.clearAllPredictions();
 
+      // 2. Chama o nosso novo método que zera os palpites de forma segura
       final clearedMatches = state.matches.map((match) {
-        return match.copyWith(
-          userHomePrediction: null,
-          userAwayPrediction: null,
-        );
+        return match.clearPredictions();
       }).toList();
 
+      // 3. Recalcula o mata-mata com a lista limpa
       final recalculatedMatches = BracketCalculator.populate(clearedMatches);
 
+      // 4. Atualiza a tela
       emit(
         state.copyWith(
           matches: recalculatedMatches,
-          successMessage: "Todos os palpites foram resetados! 🧹",
+          successMessage: "Todos os palpites foram apagados! 🧹",
         ),
       );
+
+      // 5. Micro-atraso mágico para garantir que a SnackBar apareça corretamente
+      await Future.delayed(const Duration(milliseconds: 100));
       emit(state.copyWith(successMessage: null));
     });
   }

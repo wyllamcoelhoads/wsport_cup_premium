@@ -39,6 +39,30 @@ class MatchEntity extends Equatable {
     this.userAwayPrediction,
   });
 
+  // Adicione este método dentro da classe MatchEntity
+  // Método para limpar palpites de forma segura
+  MatchEntity clearPredictions() {
+    return MatchEntity(
+      id: this.id,
+      homeTeam: this.homeTeam,
+      homeFlag: this.homeFlag,
+      awayTeam: this.awayTeam,
+      awayFlag: this.awayFlag,
+      date: this.date,
+      stadium: this.stadium,
+      country: this.country,
+      location: this.location,
+      group: this.group,
+      status: this.status,
+      homeScore: this.homeScore,
+      awayScore: this.awayScore,
+
+      // O SEGREDO: Forçamos os palpites a ficarem nulos direto na raiz
+      userHomePrediction: null,
+      userAwayPrediction: null,
+    );
+  }
+
   bool get isKnockout {
     // Se não começar com "GROUP" ou "Grupo", é mata-mata
     return !group.toUpperCase().startsWith(

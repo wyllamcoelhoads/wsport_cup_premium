@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../domain/entities/match_entity.dart';
 import '../../domain/logic/bracket_calculator.dart';
@@ -136,15 +137,15 @@ class _WorldCupPageState extends State<WorldCupPage> {
               children: [
                 ActionButton(
                   onPressed: () => _resetAllPredictions(context),
-                  icon: const Icon(Icons.refresh, size: 20),
+                  icon: FaIcon(FontAwesomeIcons.trashCan, size: 20),
                 ),
                 ActionButton(
                   onPressed: () {},
-                  icon: const Icon(Icons.stadium_outlined, size: 20),
+                  icon: FaIcon(FontAwesomeIcons.question, size: 20),
                 ),
                 ActionButton(
                   onPressed: () {},
-                  icon: const Icon(Icons.brightness_auto_outlined, size: 20),
+                  icon: FaIcon(FontAwesomeIcons.personThroughWindow, size: 20),
                 ),
               ],
             ), // CORREÇÃO: O FAB agora é apenas o botão, sem receber o estado ou bloc
