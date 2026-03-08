@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/match_entity.dart';
 import '../../domain/repositories/world_cup_repository.dart';
 import '../../domain/usecases/get_matches_usecase.dart';
 import '../../../../core/utils/local_storage_service.dart';
