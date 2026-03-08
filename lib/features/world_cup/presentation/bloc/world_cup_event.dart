@@ -44,3 +44,6 @@ class SwapTeamEvent extends WorldCupEvent {
   // Ganha a interrogação (?) para padronizar tudo
   List<Object?> get props => [oldTeamName, newTeamName, newTeamFlag];
 }
+
+// Evento 4: Resetar completamente os palpites
+class ResetAllPredictionsEvent extends WorldCupEvent {}

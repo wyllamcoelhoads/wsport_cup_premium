@@ -47,6 +47,20 @@ class LocalStorageService {
   }
 
   // ===========================================================================
+  // 3. LIMPAR TODOS OS PALPITES (RESET)
+  // ===========================================================================
+  static Future<void> clearAllPredictions() async {
+    final prefs = await SharedPreferences.getInstance();
+    // Pega todas as chaves que terminam com '_home' ou '_away' (padrão usado nos palpites)
+    final keysToRemove = prefs.getKeys().where(
+      (key) => key.endsWith('_home') || key.endsWith('_away'),
+    );
+    for (var key in keysToRemove) {
+      await prefs.remove(key);
+    }
+  }
+
+  // ===========================================================================
   // 2. LÓGICA DA REPESCAGEM (NOVA FUNCIONALIDADE)
   // ===========================================================================
 

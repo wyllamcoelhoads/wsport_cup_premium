@@ -7,9 +7,10 @@ import '../../domain/logic/bracket_calculator.dart';
 import '../../domain/logic/standings_calculator.dart';
 import '../../domain/logic/repescagem_data.dart';
 import '../bloc/world_cup_bloc.dart';
+import '../bloc/world_cup_event.dart';
 import '../bloc/world_cup_state.dart';
 import '../widgets/bracket_view.dart';
-import '../bloc/world_cup_event.dart';
+import '../widgets/expandable_fab.dart';
 
 class WorldCupPage extends StatefulWidget {
   const WorldCupPage({super.key});
@@ -48,6 +49,45 @@ class _WorldCupPageState extends State<WorldCupPage> {
     return null;
   }
 
+  void _resetAllPredictions(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardSurface,
+        title: const Text(
+          'Resetar todos os palpites?',
+          style: TextStyle(color: AppColors.primaryGold),
+        ),
+        content: const Text(
+          'Isso apagará todos os seus palpites e simulações.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCELAR', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryGold,
+            ),
+            onPressed: () {
+              context.read<WorldCupBloc>().add(ResetAllPredictionsEvent());
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'RESETAR',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<WorldCupBloc, WorldCupState>(
@@ -77,6 +117,23 @@ class _WorldCupPageState extends State<WorldCupPage> {
           length: 4,
           child: Scaffold(
             backgroundColor: AppColors.background,
+            floatingActionButton: ExpandableFab(
+              distance: 80.0,
+              children: [
+                ActionButton(
+                  onPressed: () => _resetAllPredictions(context),
+                  icon: const Icon(Icons.refresh, size: 20),
+                ),
+                ActionButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.stadium_outlined, size: 20),
+                ),
+                ActionButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.brightness_auto_outlined, size: 20),
+                ),
+              ],
+            ), // CORREÇÃO: O FAB agora é apenas o botão, sem receber o estado ou bloc
             body: NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
@@ -314,7 +371,8 @@ class _StandingsTab extends StatelessWidget {
     final sortedGroups = standingsMap.keys.toList()..sort();
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets
+          .zero, // MUDANÇA 1: Zerei o padding geral para alinhar o topo
       itemCount: sortedGroups.length + 1,
       itemBuilder: (context, index) {
         if (index == sortedGroups.length) return const SizedBox(height: 50);
@@ -323,136 +381,50 @@ class _StandingsTab extends StatelessWidget {
         return Column(
           children: [
             _GroupHeader(title: groupName, showEdit: false),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.cardSurface,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      children: const [
-                        SizedBox(
-                          width: 20,
-                          child: Text(
-                            "#",
-                            style: TextStyle(color: Colors.grey, fontSize: 10),
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            "SELEÇÃO",
-                            style: TextStyle(color: Colors.grey, fontSize: 10),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 30,
-                          child: Center(
-                            child: Text(
-                              "P",
-                              style: TextStyle(
-                                color: AppColors.primaryGold,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 30,
-                          child: Center(
-                            child: Text(
-                              "J",
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 30,
-                          child: Center(
-                            child: Text(
-                              "SG",
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1, color: Colors.white10),
-                  ...teams.asMap().entries.map((entry) {
-                    final pos = entry.key + 1;
-                    final team = entry.value;
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        border: pos <= 2
-                            ? const Border(
-                                left: BorderSide(
-                                  color: AppColors.successGreen,
-                                  width: 3,
-                                ),
-                              )
-                            : null,
-                      ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+              ), // MUDANÇA 2: Padding lateral apenas no Container
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.cardSurface,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
                       child: Row(
-                        children: [
+                        children: const [
                           SizedBox(
                             width: 20,
                             child: Text(
-                              "$pos",
-                              style: const TextStyle(color: Colors.white54),
+                              "#",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 10,
+                              ),
                             ),
                           ),
                           Expanded(
-                            child: Row(
-                              children: [
-                                ClipOval(
-                                  child: CachedNetworkImage(
-                                    imageUrl: team.flag,
-                                    width: 20,
-                                    height: 20,
-                                    fit: BoxFit.cover,
-                                    errorWidget: (_, __, ___) => const Icon(
-                                      Icons.circle,
-                                      size: 20,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    team.teamName,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            child: Text(
+                              "SELEÇÃO",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 10,
+                              ),
                             ),
                           ),
                           SizedBox(
                             width: 30,
                             child: Center(
                               child: Text(
-                                "${team.points}",
-                                style: const TextStyle(
+                                "P",
+                                style: TextStyle(
                                   color: AppColors.primaryGold,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 12,
                                 ),
                               ),
                             ),
@@ -461,8 +433,11 @@ class _StandingsTab extends StatelessWidget {
                             width: 30,
                             child: Center(
                               child: Text(
-                                "${team.played}",
-                                style: const TextStyle(color: Colors.white70),
+                                "J",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 10,
+                                ),
                               ),
                             ),
                           ),
@@ -470,16 +445,111 @@ class _StandingsTab extends StatelessWidget {
                             width: 30,
                             child: Center(
                               child: Text(
-                                "${team.goalDifference}",
-                                style: const TextStyle(color: Colors.white70),
+                                "SG",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 10,
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
-                    );
-                  }).toList(),
-                ],
+                    ),
+                    const Divider(height: 1, color: Colors.white10),
+                    ...teams.asMap().entries.map((entry) {
+                      final pos = entry.key + 1;
+                      final team = entry.value;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          border: pos <= 2
+                              ? const Border(
+                                  left: BorderSide(
+                                    color: AppColors.successGreen,
+                                    width: 3.5,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              child: Text(
+                                "$pos",
+                                style: const TextStyle(color: Colors.white54),
+                              ),
+                            ),
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  ClipOval(
+                                    child: CachedNetworkImage(
+                                      imageUrl: team.flag,
+                                      width: 20,
+                                      height: 20,
+                                      fit: BoxFit.cover,
+                                      errorWidget: (_, __, ___) => const Icon(
+                                        Icons.circle,
+                                        size: 20,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      team.teamName,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              width: 30,
+                              child: Center(
+                                child: Text(
+                                  "${team.points}",
+                                  style: const TextStyle(
+                                    color: AppColors.primaryGold,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 30,
+                              child: Center(
+                                child: Text(
+                                  "${team.played}",
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 30,
+                              child: Center(
+                                child: Text(
+                                  "${team.goalDifference}",
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
               ),
             ),
           ],
@@ -503,7 +573,8 @@ class _GroupHeader extends StatelessWidget {
     final bool canEdit = showEdit && placeholders.isNotEmpty;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       margin: const EdgeInsets.only(top: 20, bottom: 5),
       color: Colors.white.withOpacity(0.03),
       child: Row(
@@ -519,6 +590,9 @@ class _GroupHeader extends StatelessWidget {
           ),
           if (canEdit)
             IconButton(
+              constraints:
+                  const BoxConstraints(), // Deixa o botão mais compacto
+              padding: EdgeInsets.zero, // Deixa o ícone mais compacto
               icon: const Icon(
                 Icons.edit,
                 color: AppColors.primaryGold,

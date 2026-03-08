@@ -4,8 +4,8 @@ import '../../domain/repositories/world_cup_repository.dart';
 import '../../domain/usecases/get_matches_usecase.dart';
 import '../../../../core/utils/local_storage_service.dart';
 import '../../domain/logic/bracket_calculator.dart';
-import 'world_cup_event.dart';
-import 'world_cup_state.dart';
+import '../bloc/world_cup_event.dart';
+import '../bloc/world_cup_state.dart';
 
 class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
   final GetMatchesUseCase getMatchesUseCase;
@@ -96,6 +96,27 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
         event.newTeamName,
         event.newTeamFlag,
       );
+
+      on<ResetAllPredictionsEvent>((event, emit) async {
+        // 1. Limpa tudo do armazenamento local
+        await LocalStorageService.clearAllPredictions(); // Limpa tudo do armazenamento local
+        final clearedMatches = state.matches.map((match) {
+          return match.copyWith(
+            userHomePrediction: null,
+            userAwayPrediction: null,
+          );
+        }).toList();
+        // Recalcula o mata-mata para garantir que tudo esteja consistente
+        final recalculatedMatches = BracketCalculator.populate(clearedMatches);
+        emit(
+          state.copyWith(
+            matches: recalculatedMatches,
+            successMessage: "Todos os palpites foram resetados! 🧹",
+          ),
+        );
+        // Limpa a mensagem de sucesso após mostrar por um momento
+        emit(state.copyWith(successMessage: null));
+      });
 
       final swappedList = state.matches.map((match) {
         // Substitui em qualquer lugar que o placeholder apareça
