@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:math' as math;
-
 import '../../../../core/constants/app_theme.dart';
 import '../bloc/world_cup_bloc.dart';
 import '../bloc/world_cup_event.dart';
@@ -203,40 +202,4 @@ class ActionButton extends StatelessWidget {
       ),
     );
   }
-}
-
-void _resetAllPredictions(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      backgroundColor: AppColors.cardSurface,
-      title: const Text(
-        'Resetar todos os palpites?',
-        style: TextStyle(color: AppColors.primaryGold),
-      ),
-      content: const Text(
-        'Isso apagará todos os seus palpites e simulações.',
-        style: TextStyle(color: Colors.white70),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('CANCELAR', style: TextStyle(color: Colors.grey)),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryGold,
-          ),
-          onPressed: () {
-            context.read<WorldCupBloc>().add(ResetAllPredictionsEvent());
-            Navigator.pop(context);
-          },
-          child: const Text(
-            'RESETAR',
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
-    ),
-  );
 }

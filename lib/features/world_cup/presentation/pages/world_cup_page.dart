@@ -52,7 +52,8 @@ class _WorldCupPageState extends State<WorldCupPage> {
   void _resetAllPredictions(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
+        // Renomeei para dialogContext para evitar confusão
         backgroundColor: AppColors.cardSurface,
         title: const Text(
           'Resetar todos os palpites?',
@@ -64,7 +65,8 @@ class _WorldCupPageState extends State<WorldCupPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () =>
+                Navigator.pop(dialogContext), // Fecha apenas o modal
             child: const Text('CANCELAR', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
@@ -72,8 +74,11 @@ class _WorldCupPageState extends State<WorldCupPage> {
               backgroundColor: AppColors.primaryGold,
             ),
             onPressed: () {
+              // 1. Dispara o evento pro Bloc
               context.read<WorldCupBloc>().add(ResetAllPredictionsEvent());
-              Navigator.pop(context);
+
+              // 2. Fecha o modal DEPOIS de despachar o evento
+              Navigator.pop(dialogContext);
             },
             child: const Text(
               'RESETAR',
@@ -91,8 +96,15 @@ class _WorldCupPageState extends State<WorldCupPage> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<WorldCupBloc, WorldCupState>(
+      // Ouve mudanças de estado para mostrar a SnackBar
+      listenWhen: (previous, current) =>
+          current.successMessage != previous.successMessage &&
+          current.successMessage != null,
       listener: (context, state) {
         if (state.successMessage != null) {
+          // Limpa qualquer SnackBar antiga antes de mostrar a nova
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -104,11 +116,13 @@ class _WorldCupPageState extends State<WorldCupPage> {
               ),
               backgroundColor: AppColors.primaryGold,
               behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2), // Tempo agradável
             ),
           );
         }
       },
       builder: (context, state) {
+        // ... O resto do seu código de construtor (DefaultTabController, Scaffold...) continua IGUAL daqui para baixo ...
         final String? championCode = _getChampionCode(
           BracketCalculator.populate(state.matches),
         );
@@ -371,8 +385,7 @@ class _StandingsTab extends StatelessWidget {
     final sortedGroups = standingsMap.keys.toList()..sort();
 
     return ListView.builder(
-      padding: EdgeInsets
-          .zero, // MUDANÇA 1: Zerei o padding geral para alinhar o topo
+      padding: EdgeInsets.zero,
       itemCount: sortedGroups.length + 1,
       itemBuilder: (context, index) {
         if (index == sortedGroups.length) return const SizedBox(height: 50);
@@ -382,17 +395,15 @@ class _StandingsTab extends StatelessWidget {
           children: [
             _GroupHeader(title: groupName, showEdit: false),
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-              ), // MUDANÇA 2: Padding lateral apenas no Container
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.cardSurface,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
                   children: [
+                    // --- CABEÇALHO DA TABELA ---
                     Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Row(
@@ -457,95 +468,127 @@ class _StandingsTab extends StatelessWidget {
                       ),
                     ),
                     const Divider(height: 1, color: Colors.white10),
+
+                    // --- LINHAS DOS TIMES (Aqui está a mudança) ---
                     ...teams.asMap().entries.map((entry) {
                       final pos = entry.key + 1;
                       final team = entry.value;
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          border: pos <= 2
-                              ? const Border(
-                                  left: BorderSide(
-                                    color: AppColors.successGreen,
-                                    width: 3.5,
-                                  ),
-                                )
-                              : null,
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              child: Text(
-                                "$pos",
-                                style: const TextStyle(color: Colors.white54),
-                              ),
+
+                      // Mudamos para Stack para sobrepor a barrinha
+                      return Stack(
+                        alignment: Alignment
+                            .centerLeft, // Centraliza a barrinha verticalmente
+                        children: [
+                          // 1. O CONTEÚDO PRINCIPAL DA LINHA
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 12,
                             ),
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  ClipOval(
-                                    child: CachedNetworkImage(
-                                      imageUrl: team.flag,
-                                      width: 20,
-                                      height: 20,
-                                      fit: BoxFit.cover,
-                                      errorWidget: (_, __, ___) => const Icon(
-                                        Icons.circle,
-                                        size: 20,
-                                        color: Colors.white,
-                                      ),
+                            // *** IMPORTANTE: Removemos a decoração de borda daqui! ***
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  child: Text(
+                                    "$pos",
+                                    style: const TextStyle(
+                                      color: Colors.white54,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
+                                ),
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      ClipOval(
+                                        child: CachedNetworkImage(
+                                          imageUrl: team.flag,
+                                          width: 20,
+                                          height: 20,
+                                          fit: BoxFit.cover,
+                                          errorWidget: (_, __, ___) =>
+                                              const Icon(
+                                                Icons.circle,
+                                                size: 20,
+                                                color: Colors.white,
+                                              ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          team.teamName,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 30,
+                                  child: Center(
                                     child: Text(
-                                      team.teamName,
-                                      overflow: TextOverflow.ellipsis,
+                                      "${team.points}",
                                       style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.primaryGold,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                SizedBox(
+                                  width: 30,
+                                  child: Center(
+                                    child: Text(
+                                      "${team.played}",
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 30,
+                                  child: Center(
+                                    child: Text(
+                                      "${team.goalDifference}",
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(
-                              width: 30,
+                          ),
+
+                          // 2. A BARRINHA VERDE CURTA (Aparece apenas para pos <= 2)
+                          if (pos <= 2)
+                            Positioned(
+                              left: 0, // Encostada na borda esquerda absoluta
+                              top: 0,
+                              bottom: 0,
                               child: Center(
-                                child: Text(
-                                  "${team.points}",
-                                  style: const TextStyle(
-                                    color: AppColors.primaryGold,
-                                    fontWeight: FontWeight.bold,
+                                // Centraliza verticalmente no espaço disponível
+                                child: Container(
+                                  width:
+                                      3.5, // Largura (espessura) original, mantida
+                                  height:
+                                      20, // COMPRIMENTO (ALTURA) REDUZIDO! Você pode ajustar esse valor.
+                                  decoration: BoxDecoration(
+                                    color: AppColors.successGreen, // Cor verde
+                                    borderRadius: const BorderRadius.horizontal(
+                                      right: Radius.circular(2),
+                                    ), // Arredondado só no lado direito
                                   ),
                                 ),
                               ),
                             ),
-                            SizedBox(
-                              width: 30,
-                              child: Center(
-                                child: Text(
-                                  "${team.played}",
-                                  style: const TextStyle(color: Colors.white70),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 30,
-                              child: Center(
-                                child: Text(
-                                  "${team.goalDifference}",
-                                  style: const TextStyle(color: Colors.white70),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        ],
                       );
                     }).toList(),
                   ],

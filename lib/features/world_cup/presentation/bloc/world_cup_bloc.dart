@@ -14,31 +14,25 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
   WorldCupBloc({required this.getMatchesUseCase, required this.repository})
     : super(const WorldCupState()) {
     // ==========================================================
-    // 1. CARREGAR JOGOS (Quando o app abre)
+    // 1. CARREGAR JOGOS
     // ==========================================================
     on<LoadMatchesEvent>((event, emit) async {
       emit(state.copyWith(isLoading: true));
       final matchesFromFirebase = await getMatchesUseCase();
-
-      // 1. Restaurar as trocas de seleções da repescagem (Novo)
       final matchesWithSwaps = await LocalStorageService.restoreSwaps(
         matchesFromFirebase,
       );
-
-      // 2. Restaurar palpites
       final restoredMatches = await LocalStorageService.restorePredictions(
         matchesWithSwaps,
       );
-
       final calculatedMatches = BracketCalculator.populate(restoredMatches);
       emit(state.copyWith(isLoading: false, matches: calculatedMatches));
     });
 
     // ==========================================================
-    // 2. SALVAR PALPITE (Faltava este bloco no seu código)
+    // 2. SALVAR PALPITE
     // ==========================================================
     on<SavePredictionEvent>((event, emit) async {
-      // 1. Salva o placar (ou apaga) no disco do celular
       await LocalStorageService.savePrediction(
         event.matchId,
         event.homeScore,
@@ -46,24 +40,9 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
       );
 
       final currentMatches = state.matches;
-
-      // 2. Atualiza o placar do jogo
       final updatedList = currentMatches.map((match) {
         if (match.id == event.matchId) {
-          return MatchEntity(
-            id: match.id,
-            homeTeam: match.homeTeam,
-            homeFlag: match.homeFlag,
-            awayTeam: match.awayTeam,
-            awayFlag: match.awayFlag,
-            date: match.date,
-            stadium: match.stadium,
-            country: match.country,
-            location: match.location,
-            group: match.group,
-            status: match.status,
-            homeScore: match.homeScore,
-            awayScore: match.awayScore,
+          return match.copyWith(
             userHomePrediction: event.homeScore,
             userAwayPrediction: event.awayScore,
           );
@@ -71,7 +50,6 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
         return match;
       }).toList();
 
-      // 3. Recalcula o mata-mata com os novos placares
       final matchesWithBrackets = BracketCalculator.populate(updatedList);
 
       emit(
@@ -82,7 +60,6 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
               : "Palpite salvo! 🏆",
         ),
       );
-
       emit(state.copyWith(successMessage: null));
     });
 
@@ -90,36 +67,13 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
     // 3. TROCA DE TIMES DA REPESCAGEM (SWAP)
     // ==========================================================
     on<SwapTeamEvent>((event, emit) async {
-      // 1. Persistir a troca localmente
       await LocalStorageService.saveTeamSwap(
         event.oldTeamName,
         event.newTeamName,
         event.newTeamFlag,
       );
 
-      on<ResetAllPredictionsEvent>((event, emit) async {
-        // 1. Limpa tudo do armazenamento local
-        await LocalStorageService.clearAllPredictions(); // Limpa tudo do armazenamento local
-        final clearedMatches = state.matches.map((match) {
-          return match.copyWith(
-            userHomePrediction: null,
-            userAwayPrediction: null,
-          );
-        }).toList();
-        // Recalcula o mata-mata para garantir que tudo esteja consistente
-        final recalculatedMatches = BracketCalculator.populate(clearedMatches);
-        emit(
-          state.copyWith(
-            matches: recalculatedMatches,
-            successMessage: "Todos os palpites foram resetados! 🧹",
-          ),
-        );
-        // Limpa a mensagem de sucesso após mostrar por um momento
-        emit(state.copyWith(successMessage: null));
-      });
-
       final swappedList = state.matches.map((match) {
-        // Substitui em qualquer lugar que o placeholder apareça
         String hName = match.homeTeam == event.oldTeamName
             ? event.newTeamName
             : match.homeTeam;
@@ -138,7 +92,6 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
           homeFlag: hFlag,
           awayTeam: aName,
           awayFlag: aFlag,
-          // Ao trocar o time, limpamos o palpite para evitar bugs de lógica
           userHomePrediction:
               (match.homeTeam == event.oldTeamName ||
                   match.awayTeam == event.oldTeamName)
@@ -157,6 +110,30 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
         state.copyWith(
           matches: finalCalculatedList,
           successMessage: "Seleção definida!",
+        ),
+      );
+      emit(state.copyWith(successMessage: null));
+    });
+
+    // ==========================================================
+    // 4. RESETAR TODOS OS PALPITES (AGORA NO LUGAR CERTO!)
+    // ==========================================================
+    on<ResetAllPredictionsEvent>((event, emit) async {
+      await LocalStorageService.clearAllPredictions();
+
+      final clearedMatches = state.matches.map((match) {
+        return match.copyWith(
+          userHomePrediction: null,
+          userAwayPrediction: null,
+        );
+      }).toList();
+
+      final recalculatedMatches = BracketCalculator.populate(clearedMatches);
+
+      emit(
+        state.copyWith(
+          matches: recalculatedMatches,
+          successMessage: "Todos os palpites foram resetados! 🧹",
         ),
       );
       emit(state.copyWith(successMessage: null));
