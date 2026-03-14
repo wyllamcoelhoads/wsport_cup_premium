@@ -725,7 +725,9 @@ class _GroupHeader extends StatelessWidget {
                                 break;
                               }
                             }
+                            // Agora que temos o nome do time real que está ocupando a vaga da repescagem (ou o placeholder original se ainda não tiver sido definido), podemos disparar o evento de troca de time no Bloc, informando qual time deve ser substituído e qual é o novo time escolhido para ocupar a vaga da repescagem
                             context.read<WorldCupBloc>().add(
+                              // DISPARA O EVENTO DE TROCA DE TIME, INFORMANDO QUAL TIME ESTÁ SENDO SUBSTITUÍDO (PODE SER O NOME DO TIME REAL OU O PLACEHOLDER ORIGINAL) E QUAL É O NOVO TIME ESCOLHIDO
                               SwapTeamEvent(
                                 oldTeamName:
                                     teamToReplace, // Substituímos o placeholder ou o time atualmente na vaga
