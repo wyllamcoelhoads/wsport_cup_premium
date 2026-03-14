@@ -18,7 +18,7 @@ class RepescagemData {
       {'name': 'Albânia', 'flag': 'https://flagcdn.com/w320/al.png'},
     ],
     'Vencedor Rep C': [
-      {'name': 'Turquia', 'flag': 'https://flagcdn.com/w320/tr.png'},
+      {'name': 'Republica Tcheca', 'flag': 'https://flagcdn.com/w320/tr.png'},
       {'name': 'Romênia', 'flag': 'https://flagcdn.com/w320/ro.png'},
       {'name': 'Eslováquia', 'flag': 'https://flagcdn.com/w320/sk.png'},
       {'name': 'Kosovo', 'flag': 'https://flagcdn.com/w320/xk.png'},
