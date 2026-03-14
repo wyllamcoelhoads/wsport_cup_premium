@@ -116,7 +116,7 @@ class _WorldCupPageState extends State<WorldCupPage> {
                 ),
               ),
               backgroundColor: AppColors.primaryGold,
-              behavior: SnackBarBehavior.floating,
+              behavior: SnackBarBehavior.fixed,
               duration: const Duration(seconds: 2), // Tempo agradável
             ),
           );
@@ -692,11 +692,39 @@ class _GroupHeader extends StatelessWidget {
                         final team = options[index];
                         return GestureDetector(
                           onTap: () {
+                            // pegar a lista de jogos atual do estado Bloc
+                            final currentMatches = context
+                                .read<WorldCupBloc>()
+                                .state
+                                .matches;
+
+                            // Encontra quem está atualmente na vaga atual da repescagem (placeholder)
+                            // Começando assumindo que é o placeholder orginial (Ex: "VENCEDOR REPESCAGEM A"), mas se já tiver um time trocado, usamos ele
+                            String teamToReplace = placeholder;
+
+                            // Pegar apenas os nomes dos times que estão disponiveis para troca nessa vaga de repescagem
+                            // se estiver, siginifica que ele é o time que deve ser substituído, e não o placeholder
+                            for (var match in currentMatches) {
+                              if (match.homeTeam == placeholder) {
+                                // Encontramos o time que está atualmente ocupando a vaga da repescagem
+                                teamToReplace = match
+                                    .homeTeam; // Atualizamos o time a ser substituído para o nome real do time que está na vaga
+                                break;
+                              } else if (match.awayTeam == placeholder) {
+                                // Verificamos o outro lado do jogo, caso o time da repescagem esteja lá
+                                teamToReplace = match
+                                    .awayTeam; // Atualizamos o time a ser substituído para o nome real do time que está na vaga
+                                break;
+                              }
+                            }
                             context.read<WorldCupBloc>().add(
                               SwapTeamEvent(
-                                oldTeamName: placeholder,
-                                newTeamName: team['name']!,
-                                newTeamFlag: team['flag']!,
+                                oldTeamName:
+                                    teamToReplace, // Substituímos o placeholder ou o time atualmente na vaga
+                                newTeamName:
+                                    team['name']!, // O novo time escolhido para ocupar a vaga da repescagem
+                                newTeamFlag:
+                                    team['flag']!, // A bandeira do novo time escolhido
                               ),
                             );
                             Navigator.pop(context);
