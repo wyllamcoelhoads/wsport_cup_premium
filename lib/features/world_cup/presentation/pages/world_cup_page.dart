@@ -701,16 +701,24 @@ class _GroupHeader extends StatelessWidget {
                             // Encontra quem está atualmente na vaga atual da repescagem (placeholder)
                             // Começando assumindo que é o placeholder orginial (Ex: "VENCEDOR REPESCAGEM A"), mas se já tiver um time trocado, usamos ele
                             String teamToReplace = placeholder;
+                            // Pegamos os nomes das opções para comparação
+                            final nomesDasOpcoes = options
+                                .map((t) => t['name']!)
+                                .toList();
 
                             // Pegar apenas os nomes dos times que estão disponiveis para troca nessa vaga de repescagem
                             // se estiver, siginifica que ele é o time que deve ser substituído, e não o placeholder
                             for (var match in currentMatches) {
-                              if (match.homeTeam == placeholder) {
+                              if (nomesDasOpcoes.contains(match.homeTeam)) {
+                                // Verifica se o time da casa é o placeholder (ou seja, ainda não foi definido um time real para a vaga da repescagem)
                                 // Encontramos o time que está atualmente ocupando a vaga da repescagem
                                 teamToReplace = match
                                     .homeTeam; // Atualizamos o time a ser substituído para o nome real do time que está na vaga
                                 break;
-                              } else if (match.awayTeam == placeholder) {
+                              } else if (nomesDasOpcoes.contains(
+                                match.awayTeam,
+                              )) {
+                                // Verifica se o time visitante é o placeholder
                                 // Verificamos o outro lado do jogo, caso o time da repescagem esteja lá
                                 teamToReplace = match
                                     .awayTeam; // Atualizamos o time a ser substituído para o nome real do time que está na vaga

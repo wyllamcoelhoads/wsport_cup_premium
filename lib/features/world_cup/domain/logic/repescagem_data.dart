@@ -26,7 +26,7 @@ class RepescagemData {
     'Vencedor Rep D': [
       {'name': 'Dinamarca', 'flag': 'https://flagcdn.com/w320/dk.png'},
       {'name': 'Macedônia do Norte', 'flag': 'https://flagcdn.com/w320/mk.png'},
-      {'name': 'Tchéquia', 'flag': 'https://flagcdn.com/w320/cz.png'},
+      {'name': 'Turquia', 'flag': 'https://flagcdn.com/w320/cz.png'},
       {'name': 'Rep. da Irlanda', 'flag': 'https://flagcdn.com/w320/ie.png'},
     ],
     'Vencedor Rep 1': [
