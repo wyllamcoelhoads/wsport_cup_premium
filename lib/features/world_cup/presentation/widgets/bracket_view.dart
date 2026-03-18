@@ -72,13 +72,11 @@ class _BracketViewState extends State<BracketView> {
     final currentY = _transformationController.value.getTranslation().y;
 
     setState(() {
-      _transformationController.value = Matrix4.identity()
-        ..translateByDouble(
-          xOffset,
-          currentY,
-          0,
-          0,
-        ); // Aplica o deslocamento horizontal e mantém o vertical
+      _transformationController.value = Matrix4.translationValues(
+        xOffset,
+        currentY,
+        0,
+      ); // Aplica o deslocamento horizontal e mantém o vertical
     });
   }
 
