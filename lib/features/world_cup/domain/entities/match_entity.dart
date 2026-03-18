@@ -43,19 +43,19 @@ class MatchEntity extends Equatable {
   // Método para limpar palpites de forma segura
   MatchEntity clearPredictions() {
     return MatchEntity(
-      id: this.id,
-      homeTeam: this.homeTeam,
-      homeFlag: this.homeFlag,
-      awayTeam: this.awayTeam,
-      awayFlag: this.awayFlag,
-      date: this.date,
-      stadium: this.stadium,
-      country: this.country,
-      location: this.location,
-      group: this.group,
-      status: this.status,
-      homeScore: this.homeScore,
-      awayScore: this.awayScore,
+      id: id,
+      homeTeam: homeTeam,
+      homeFlag: homeFlag,
+      awayTeam: awayTeam,
+      awayFlag: awayFlag,
+      date: date,
+      stadium: stadium,
+      country: country,
+      location: location,
+      group: group,
+      status: status,
+      homeScore: homeScore,
+      awayScore: awayScore,
 
       // O SEGREDO: Forçamos os palpites a ficarem nulos direto na raiz
       userHomePrediction: null,

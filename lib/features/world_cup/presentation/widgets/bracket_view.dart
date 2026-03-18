@@ -73,7 +73,12 @@ class _BracketViewState extends State<BracketView> {
 
     setState(() {
       _transformationController.value = Matrix4.identity()
-        ..translate(xOffset, currentY);
+        ..translateByDouble(
+          xOffset,
+          currentY,
+          0,
+          0,
+        ); // Aplica o deslocamento horizontal e mantém o vertical
     });
   }
 
@@ -278,18 +283,20 @@ class _BracketViewState extends State<BracketView> {
           ),
         ),
         const SizedBox(height: 20),
-        ...matches.map((match) {
-          return Container(
-            height: isFinal ? null : gap,
-            alignment: Alignment.center,
-            child: _BracketMatchCard(
-              match: match,
-              isFinal: isFinal,
-              width: cardWidth,
-              height: cardHeight,
-            ),
-          );
-        }).toList(),
+        ...matches.map(
+          (match) {
+            return Container(
+              height: isFinal ? null : gap,
+              alignment: Alignment.center,
+              child: _BracketMatchCard(
+                match: match,
+                isFinal: isFinal,
+                width: cardWidth,
+                height: cardHeight,
+              ),
+            );
+          },
+        ), // Mapeia cada partida para um card, com espaçamento definido pelo gap removi o .toList()
       ],
     );
   }
@@ -513,10 +520,10 @@ class _BracketMatchCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.15),
+                      color: Colors.red.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: Colors.redAccent.withOpacity(0.5),
+                        color: Colors.redAccent.withValues(alpha: 0.5),
                       ),
                     ),
                     child: Row(
@@ -599,7 +606,7 @@ class _BracketMatchCard extends StatelessWidget {
       width: 24,
       height: 24,
       fit: BoxFit.cover,
-      errorWidget: (_, __, ___) => const Icon(Icons.flag, size: 20),
+      errorWidget: (_, _, _) => const Icon(Icons.flag, size: 20),
     ),
   );
 
@@ -610,7 +617,7 @@ class _BracketMatchCard extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: Colors.white10),
         borderRadius: BorderRadius.circular(4),
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
       ),
       child: Text(
         label,
@@ -651,7 +658,7 @@ class BracketLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.primaryGold.withOpacity(0.4)
+      ..color = AppColors.primaryGold.withValues(alpha: 0.4)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 

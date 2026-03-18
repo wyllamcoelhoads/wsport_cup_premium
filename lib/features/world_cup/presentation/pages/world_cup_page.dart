@@ -183,8 +183,8 @@ class _WorldCupPageState extends State<WorldCupPage> {
                                     Icons.sports_soccer,
                                     size: 28,
                                     color: championCode != null
-                                        ? Colors.white.withOpacity(0.8)
-                                        : Colors.white.withOpacity(0.1),
+                                        ? Colors.white.withValues(alpha: 0.8)
+                                        : Colors.white.withValues(alpha: 0.1),
                                   ),
                                 if (isExpanded) const SizedBox(height: 4),
                                 Text(
@@ -322,9 +322,9 @@ class _CalendarTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _GroupHeader(title: "DATA: $dateKey", showEdit: false),
-            ...dayMatches
-                .map((match) => _PremiumMatchCard(match: match))
-                .toList(),
+            ...dayMatches.map(
+              (match) => _PremiumMatchCard(match: match),
+            ), // Usa o mesmo card de jogo removi o .toList(),
           ],
         );
       },
@@ -350,9 +350,9 @@ class _MatchesTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _GroupHeader(title: groupName, showEdit: true),
-            ...groupMatches
-                .map((match) => _PremiumMatchCard(match: match))
-                .toList(),
+            ...groupMatches.map(
+              (match) => _PremiumMatchCard(match: match),
+            ), // Usa o mesmo card de jogo removi o .toList(),
           ],
         );
       },
@@ -507,7 +507,12 @@ class _StandingsTab extends StatelessWidget {
                                           width: 20,
                                           height: 20,
                                           fit: BoxFit.cover,
-                                          errorWidget: (_, __, ___) =>
+                                          errorWidget:
+                                              (
+                                                _,
+                                                _,
+                                                _,
+                                              ) => // Ícone de círculo cinza se a imagem falhar
                                               const Icon(
                                                 Icons.circle,
                                                 size: 20,
@@ -591,7 +596,7 @@ class _StandingsTab extends StatelessWidget {
                             ),
                         ],
                       );
-                    }).toList(),
+                    }), // Fim do map dos times removi .toList()
                   ],
                 ),
               ),
@@ -620,7 +625,7 @@ class _GroupHeader extends StatelessWidget {
       height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       margin: const EdgeInsets.only(top: 20, bottom: 5),
-      color: Colors.white.withOpacity(0.03),
+      color: Colors.white.withValues(alpha: 0.03),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -743,7 +748,7 @@ class _GroupHeader extends StatelessWidget {
                             width: 80,
                             margin: const EdgeInsets.only(right: 12),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.05),
+                              color: Colors.white.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: Colors.white10),
                             ),
@@ -779,7 +784,7 @@ class _GroupHeader extends StatelessWidget {
                   const SizedBox(height: 20),
                 ],
               );
-            }).toList(),
+            }), // Fim do map dos placeholders removido o .toList()
           ],
         ),
       ),
@@ -845,7 +850,9 @@ class _PremiumMatchCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(
+                  alpha: 0.05,
+                ), // Fundo levemente destacado para a área de informações mudei para withValues
                 borderRadius: const BorderRadius.vertical(
                   bottom: Radius.circular(16),
                 ),
@@ -867,8 +874,9 @@ class _PremiumMatchCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    TextSpan(text: "${match.friendlyGroupName}"),
-
+                    TextSpan(
+                      text: match.friendlyGroupName,
+                    ), // Nome do grupo removido a interpolação do número do grupo, pois já temos o nome amigável completo no match
                     // 2. Ícone de Calendário
                     const WidgetSpan(
                       alignment: PlaceholderAlignment
@@ -1052,10 +1060,10 @@ class _PremiumMatchCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.15),
+                      color: Colors.red.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: Colors.redAccent.withOpacity(0.5),
+                        color: Colors.redAccent.withValues(alpha: 0.5),
                       ),
                     ),
                     child: Row(
@@ -1144,8 +1152,7 @@ class _PremiumMatchCard extends StatelessWidget {
         width: 32,
         height: 32,
         fit: BoxFit.cover,
-        errorWidget: (_, __, ___) =>
-            const Icon(Icons.flag, color: Colors.white24),
+        errorWidget: (_, _, _) => const Icon(Icons.flag, color: Colors.white24),
       ),
     );
   }
@@ -1160,7 +1167,7 @@ class _PremiumMatchCard extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.white10),
           borderRadius: BorderRadius.circular(4),
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
         ),
         child: Text(
           label,
@@ -1194,7 +1201,7 @@ class _TeamFlag extends StatelessWidget {
                 width: 40,
                 height: 40,
                 fit: BoxFit.cover,
-                errorWidget: (_, __, ___) => const Icon(Icons.flag),
+                errorWidget: (_, _, _) => const Icon(Icons.flag),
               ),
             ),
           ),

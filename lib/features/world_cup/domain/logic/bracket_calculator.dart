@@ -63,9 +63,10 @@ class BracketCalculator {
       if (!matchMap.containsKey(matchId)) return null;
       final match = matchMap[matchId]!;
 
-      if (match.userHomePrediction == null || match.userAwayPrediction == null)
+      if (match.userHomePrediction == null ||
+          match.userAwayPrediction == null) {
         return null;
-
+      }
       if (match.userHomePrediction! > match.userAwayPrediction!) {
         return TeamStanding(teamName: match.homeTeam, flag: match.homeFlag);
       } else if (match.userAwayPrediction! > match.userHomePrediction!) {
@@ -108,8 +109,10 @@ class BracketCalculator {
     // Ordena todos os terceiros por Pontos, depois Saldo, depois Gols
     allThirds.sort((a, b) {
       if (b.points != a.points) return b.points.compareTo(a.points);
-      if (b.goalDifference != a.goalDifference)
+      if (b.goalDifference != a.goalDifference) {
         return b.goalDifference.compareTo(a.goalDifference);
+      }
+
       return b.goalsFor.compareTo(a.goalsFor);
     });
 
@@ -119,8 +122,9 @@ class BracketCalculator {
     // Função auxiliar para saber de qual grupo aquele terceiro lugar veio
     String getGroupOfTeam(TeamStanding team) {
       for (var entry in groups.entries) {
-        if (entry.value.any((t) => t.teamName == team.teamName))
+        if (entry.value.any((t) => t.teamName == team.teamName)) {
           return entry.key;
+        }
       }
       return '';
     }

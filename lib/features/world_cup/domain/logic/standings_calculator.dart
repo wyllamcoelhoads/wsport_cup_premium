@@ -60,8 +60,9 @@ class StandingsCalculator {
 
       teamList.sort((a, b) {
         if (b.points != a.points) return b.points.compareTo(a.points);
-        if (b.goalDifference != a.goalDifference)
+        if (b.goalDifference != a.goalDifference) {
           return b.goalDifference.compareTo(a.goalDifference);
+        }
         return b.goalsFor.compareTo(a.goalsFor);
       });
 

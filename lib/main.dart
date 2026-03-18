@@ -1526,7 +1526,7 @@ Future<void> popularGruposFirebase() async {
     },
   ];
 
-  print('⏳ Enviando grupos oficias para o Firebase...');
+  // print('⏳ Enviando grupos oficias para o Firebase...');
 
   for (var jogo in jogos) {
     await collection.doc(jogo['id'] as String).set({
@@ -1543,5 +1543,5 @@ Future<void> popularGruposFirebase() async {
       'status': jogo['status'],
     });
   }
-  print('🔥 GRUPOS POPULADOS COM SUCESSO!');
+  // print('🔥 GRUPOS POPULADOS COM SUCESSO!');
 }
