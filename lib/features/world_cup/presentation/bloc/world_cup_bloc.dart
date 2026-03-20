@@ -32,6 +32,9 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
     // 2. SALVAR PALPITE
     // ==========================================================
     on<SavePredictionEvent>((event, emit) async {
+      // Limpa qualquer mensagem antiga antes de processar o novo salvamento
+      emit(state.copyWith(successMessage: null));
+
       await LocalStorageService.savePrediction(
         event.matchId,
         event.homeScore,
@@ -49,8 +52,10 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
         return match;
       }).toList();
 
+      // Recalcula o chaveamento com a lógica de Cascata (que te passei antes)
       final matchesWithBrackets = BracketCalculator.populate(updatedList);
 
+      // Emite o sucesso! A tela vai escutar isso e mostrar o SnackBar
       emit(
         state.copyWith(
           matches: matchesWithBrackets,
@@ -59,7 +64,6 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
               : "Palpite salvo! 🏆",
         ),
       );
-      emit(state.copyWith(successMessage: null));
     });
 
     // ==========================================================

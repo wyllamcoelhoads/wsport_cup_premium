@@ -10,116 +10,127 @@ class BracketCalculator {
       for (var m in allMatches) m.id: m,
     };
 
-    // Atualiza a entidade de forma inteligente (Com efeito cascata)
+    // =========================================================================
+    // EFEITO CASCATA: Limpa a chave se os times mudarem ou não estiverem definidos
+    // =========================================================================
     void setMatchTeams(String matchId, TeamStanding? home, TeamStanding? away) {
-      if (matchMap.containsKey(matchId)) {
-        final match = matchMap[matchId]!;
+      if (!matchMap.containsKey(matchId)) return; // Proteção extra
 
-        final newHome = home?.teamName ?? "A Definir";
-        final newAway = away?.teamName ?? "A Definir";
+      final match = matchMap[matchId]!;
 
-        int? newHomePred = match.userHomePrediction;
-        int? newAwayPred = match.userAwayPrediction;
+      final newHome = home?.teamName ?? "A Definir";
+      final newAway = away?.teamName ?? "A Definir";
 
-        // ==========================================
-        // O EFEITO CASCATA CORRIGIDO AQUI 👇
-        // ==========================================
-        // Se qualquer um dos times for "A Definir" OU se os times mudaram,
-        // nós TEMOS que zerar o placar dessa chave obrigatoriamente!
-        if (newHome == "A Definir" ||
-            newAway == "A Definir" ||
-            match.homeTeam != newHome ||
-            match.awayTeam != newAway) {
-          newHomePred = null;
-          newAwayPred = null;
-        }
+      int? newHomePred = match.userHomePrediction;
+      int? newAwayPred = match.userAwayPrediction;
 
-        matchMap[matchId] = MatchEntity(
-          id: match.id,
-          homeTeam: newHome,
-          homeFlag:
-              home?.flag ??
-              "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png",
-          awayTeam: newAway,
-          awayFlag:
-              away?.flag ??
-              "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png",
-          date: match.date,
-          stadium: match.stadium,
-          country: match.country,
-          location: match.location,
-          group: match.group,
-          status: match.status,
-          homeScore: match.homeScore,
-          awayScore: match.awayScore,
-          userHomePrediction: newHomePred,
-          userAwayPrediction: newAwayPred,
-        );
+      // Zera o placar se um time sair da chave ou for "A Definir"
+      if (newHome == "A Definir" ||
+          newAway == "A Definir" ||
+          match.homeTeam != newHome ||
+          match.awayTeam != newAway) {
+        newHomePred = null;
+        newAwayPred = null;
       }
+
+      matchMap[matchId] = MatchEntity(
+        id: match.id,
+        homeTeam: newHome,
+        homeFlag:
+            home?.flag ??
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png",
+        awayTeam: newAway,
+        awayFlag:
+            away?.flag ??
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Placeholder_no_text.svg/150px-Placeholder_no_text.svg.png",
+        date: match.date,
+        stadium: match.stadium,
+        country: match.country,
+        location: match.location,
+        group: match.group,
+        status: match.status,
+        homeScore: match.homeScore,
+        awayScore: match.awayScore,
+        userHomePrediction: newHomePred,
+        userAwayPrediction: newAwayPred,
+      );
     }
 
-    // Pega o vencedor de um jogo do mata-mata
+    // =========================================================================
+    // O MOTOR DO MATA-MATA (Com travas de empate e chave incompleta)
+    // =========================================================================
     TeamStanding? getWinner(String matchId) {
       if (!matchMap.containsKey(matchId)) return null;
       final match = matchMap[matchId]!;
 
+      // Trava 1: Se a chave não tem os dois times, ninguém avança
+      if (match.homeTeam == "A Definir" || match.awayTeam == "A Definir") {
+        return null;
+      }
+
+      // Trava 2: Verifica se há palpite
       if (match.userHomePrediction == null ||
           match.userAwayPrediction == null) {
         return null;
       }
+
+      // Trava 3: Desempate obrigatório
       if (match.userHomePrediction! > match.userAwayPrediction!) {
         return TeamStanding(teamName: match.homeTeam, flag: match.homeFlag);
       } else if (match.userAwayPrediction! > match.userHomePrediction!) {
         return TeamStanding(teamName: match.awayTeam, flag: match.awayFlag);
       } else {
-        // Empate simples: avança quem está em "casa" no layout
-        return TeamStanding(teamName: match.homeTeam, flag: match.homeFlag);
+        return null; // Empate: trava a tela até o usuário dar a vitória a um lado
       }
     }
 
-    // Pega 1º ou 2º colocado de um grupo (mas SÓ se já tiver jogado)
+    // =========================================================================
+    // BUSCA DE TIMES DOS GRUPOS (Blindado contra Listas Vazias)
+    // =========================================================================
     TeamStanding? getTeam(String groupName, int position) {
-      if (groups.containsKey(groupName) &&
-          groups[groupName]!.length > position) {
-        final team = groups[groupName]![position];
+      final groupTeams = groups[groupName];
 
-        // A MÁGICA AQUI: O time só avança se tiver entrado em campo!
+      // GARANTIA MÁXIMA: Só tenta pegar o time se a lista existir e for grande o suficiente
+      if (groupTeams != null && groupTeams.length > position) {
+        final team = groupTeams[position];
+
         if (team.played > 0) {
           return team;
         }
       }
-      return null; // Retorna nulo, o que fará a tela mostrar "A Definir"
+      return null;
     }
 
     // =========================================================================
     // LÓGICA DE CLASSIFICAÇÃO DOS 8 MELHORES TERCEIROS COLOCADOS
     // =========================================================================
     List<TeamStanding> allThirds = [];
-    groups.forEach((groupName, teams) {
-      if (teams.length >= 3) {
-        final thirdPlace = teams[2]; // Pega o 3º lugar (índice 2)
 
-        // SÓ ENTRA NA REPESCAGEM DOS MELHORES 3ºs SE TIVER JOGADO
+    // Usando `for` clássico para evitar o erro de `anonymous closure` do seu print
+    for (var entry in groups.entries) {
+      final teams = entry.value;
+
+      // Só tenta pegar o 3º lugar se o grupo de fato tiver 3 ou mais times
+      if (teams.length >= 3) {
+        final thirdPlace = teams[2];
+
         if (thirdPlace.played > 0) {
           allThirds.add(thirdPlace);
         }
       }
-    });
+    }
 
-    // Ordena todos os terceiros por Pontos, depois Saldo, depois Gols
+    // Ordena por Pontos > Saldo > Gols
     allThirds.sort((a, b) {
       if (b.points != a.points) return b.points.compareTo(a.points);
       if (b.goalDifference != a.goalDifference) {
         return b.goalDifference.compareTo(a.goalDifference);
       }
-
       return b.goalsFor.compareTo(a.goalsFor);
     });
 
-    // Filtra apenas os 8 melhores
     List<TeamStanding> best8 = allThirds.take(8).toList();
 
-    // Função auxiliar para saber de qual grupo aquele terceiro lugar veio
     String getGroupOfTeam(TeamStanding team) {
       for (var entry in groups.entries) {
         if (entry.value.any((t) => t.teamName == team.teamName)) {
@@ -129,17 +140,16 @@ class BracketCalculator {
       return '';
     }
 
-    // Distribui os terceiros colocados conforme as chaves permitidas
     TeamStanding? getBestThird(List<String> allowedGroups) {
+      if (best8.isEmpty) return null; // Proteção extra
+
       for (int i = 0; i < best8.length; i++) {
         final group = getGroupOfTeam(best8[i]);
         if (allowedGroups.contains(group)) {
-          return best8.removeAt(
-            i,
-          ); // Remove da lista para não ser usado duas vezes
+          return best8.removeAt(i);
         }
       }
-      // Se não achar o encaixe perfeito, pega o próximo disponível para não travar o app
+
       if (best8.isNotEmpty) return best8.removeAt(0);
       return null;
     }
@@ -148,7 +158,7 @@ class BracketCalculator {
     // 1. ROUND OF 32 (Cruzamentos Oficiais FIFA 2026)
     // =========================================================================
 
-    // Lado Esquerdo do Chaveamento
+    // Lado Esquerdo
     setMatchTeams('r32_1', getTeam('GRUPO A', 1), getTeam('GRUPO B', 1));
     setMatchTeams('r32_2', getTeam('GRUPO F', 0), getTeam('GRUPO C', 1));
     setMatchTeams(
@@ -174,7 +184,7 @@ class BracketCalculator {
     setMatchTeams('r32_7', getTeam('GRUPO K', 1), getTeam('GRUPO L', 1));
     setMatchTeams('r32_8', getTeam('GRUPO H', 0), getTeam('GRUPO J', 1));
 
-    // Lado Direito do Chaveamento
+    // Lado Direito
     setMatchTeams('r32_9', getTeam('GRUPO C', 0), getTeam('GRUPO F', 1));
     setMatchTeams('r32_10', getTeam('GRUPO E', 1), getTeam('GRUPO I', 1));
     setMatchTeams(
