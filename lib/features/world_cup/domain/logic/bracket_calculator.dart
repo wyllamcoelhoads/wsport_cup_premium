@@ -4,7 +4,21 @@ import 'standings_calculator.dart';
 
 class BracketCalculator {
   static List<MatchEntity> populate(List<MatchEntity> allMatches) {
-    final groups = StandingsCalculator.calculate(allMatches);
+    // =========================================================================
+    // FIX 1: Filtra APENAS jogos da fase de grupos antes de calcular standings.
+    //
+    // ANTES: StandingsCalculator.calculate(allMatches) processava todos os
+    // jogos, inclusive r32/r16/qf/sf/final. Isso criava grupos fantasmas
+    // ('R32', 'R16'...) na tabela, corrompendo getGroupOfTeam() e allThirds.
+    //
+    // AGORA: Só jogos cujo group começa com 'GRUPO' são considerados.
+    // =========================================================================
+
+    final groupStageMatches = allMatches
+        .where((m) => m.group.startsWith('GRUPO'))
+        .toList();
+
+    final groups = StandingsCalculator.calculate(groupStageMatches);
 
     final Map<String, MatchEntity> matchMap = {
       for (var m in allMatches) m.id: m,

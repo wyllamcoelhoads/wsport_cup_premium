@@ -804,7 +804,7 @@ Future<void> popularGruposFirebase() async {
       'id': 'gJ_2',
       'group': 'GRUPO J',
       'homeTeam': 'Áustria',
-      'homeFlag': 'https://flagcdn.com/w320/au.png',
+      'homeFlag': 'https://flagcdn.com/w320/at.png',
       'awayTeam': 'Jordânia',
       'awayFlag': 'https://flagcdn.com/w320/jo.png',
       'date': DateTime(2026, 6, 17, 01, 0),

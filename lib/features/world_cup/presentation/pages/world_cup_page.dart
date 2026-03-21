@@ -26,10 +26,11 @@ class _WorldCupPageState extends State<WorldCupPage> {
 
   String? _getChampionCode(List<MatchEntity> matches) {
     try {
-      final finalMatch = matches.firstWhere((m) => m.id == 'final');
+      final finalMatch = matches.firstWhere((m) => m.id == 'final_1');
       if (finalMatch.userHomePrediction != null &&
           finalMatch.userAwayPrediction != null) {
-        String winnerFlagUrl = '';
+        String winnerFlagUrl = ''; //.
+
         if (finalMatch.userHomePrediction! > finalMatch.userAwayPrediction!) {
           winnerFlagUrl = finalMatch.homeFlag;
         } else if (finalMatch.userAwayPrediction! >
