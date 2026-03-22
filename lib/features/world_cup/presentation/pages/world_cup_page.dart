@@ -26,6 +26,7 @@ class WorldCupPage extends StatefulWidget {
 class _WorldCupPageState extends State<WorldCupPage> {
   // Variável para controlar se as abas podem deslizar lateralmente
   bool _canScrollTabs = true;
+  final _fabKey = GlobalKey<ExpandableFabState>();
 
   String? _getChampionCode(List<MatchEntity> matches) {
     try {
@@ -78,15 +79,15 @@ class _WorldCupPageState extends State<WorldCupPage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryGold,
             ),
-            onPressed: () {
+            onPressed: () async {
+              Navigator.pop(dialogContext);
               // 1. Dispara o evento pro Bloc
               context.read<WorldCupBloc>().add(ResetAllPredictionsEvent());
 
               // 2. Fecha o modal DEPOIS de despachar o evento
-              Navigator.pop(dialogContext);
-              Future.delayed(const Duration(milliseconds: 500), () {
-                AdService.showRewarded();
-              });
+
+              await Future.delayed(const Duration(milliseconds: 800));
+              await AdService.showRewarded();
             },
             child: const Text(
               'RESETAR',
@@ -140,21 +141,30 @@ class _WorldCupPageState extends State<WorldCupPage> {
           child: Scaffold(
             backgroundColor: AppColors.background,
             floatingActionButton: ExpandableFab(
+              key: _fabKey,
               distance: 80.0,
               children: [
                 ActionButton(
-                  onPressed: () => _resetAllPredictions(context),
+                  onPressed: () {
+                    _fabKey.currentState?.close();
+                    _resetAllPredictions(context);
+                  },
                   icon: FaIcon(FontAwesomeIcons.trashCan, size: 20),
                 ),
                 ActionButton(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => PremiumPage()),
-                  ),
+                  onPressed: () {
+                    _fabKey.currentState?.close();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => PremiumPage()),
+                    );
+                  },
                   icon: FaIcon(FontAwesomeIcons.star, size: 20),
                 ),
                 ActionButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    _fabKey.currentState?.close();
+                  },
                   icon: FaIcon(FontAwesomeIcons.personThroughWindow, size: 20),
                 ),
               ],
@@ -757,11 +767,14 @@ class _GroupHeader extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryGold,
             ),
-            onPressed: () {
-              context.read<WorldCupBloc>().add(
-                GenerateRandomScoresEvent(matchIds: matchIds),
-              );
+            onPressed: () async {
               Navigator.pop(dialogContext);
+              final watched = await AdService.showRewarded();
+              if (watched) {
+                context.read<WorldCupBloc>().add(
+                  GenerateRandomScoresEvent(matchIds: matchIds),
+                );
+              }
             },
             child: const Row(
               mainAxisSize: MainAxisSize.min,

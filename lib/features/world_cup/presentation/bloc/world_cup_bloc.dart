@@ -154,8 +154,9 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
     on<GenerateRandomScoresEvent>((event, emit) async {
       emit(state.copyWith(successMessage: null));
 
-      final watched = await AdService.showRewarded();
-      if (!watched) return;
+      // quem cuida do anuncio é apenas o UI
+      //final watched = await AdService.showRewarded();
+      //if (!watched) return;
       final random = Random();
 
       final updatedList = state.matches.map((match) {
