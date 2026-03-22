@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:wsports_cup_premium/core/services/ad_service.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../../../core/widgets/banner_ad_widget.dart';
 import '../../domain/entities/match_entity.dart';
@@ -83,6 +84,9 @@ class _WorldCupPageState extends State<WorldCupPage> {
 
               // 2. Fecha o modal DEPOIS de despachar o evento
               Navigator.pop(dialogContext);
+              Future.delayed(const Duration(milliseconds: 500), () {
+                AdService.showRewarded();
+              });
             },
             child: const Text(
               'RESETAR',
