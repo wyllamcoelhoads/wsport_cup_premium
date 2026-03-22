@@ -4,13 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:wsports_cup_premium/features/splash/presentation/pages/video_splash_screen.dart';
 import 'package:wsports_cup_premium/features/world_cup/presentation/bloc/world_cup_bloc.dart';
 import 'package:wsports_cup_premium/features/world_cup/presentation/bloc/world_cup_event.dart';
 import 'package:wsports_cup_premium/injection_container.dart';
 import 'package:wsports_cup_premium/injection_container.dart' as di;
-
+import './core/services/ad_service.dart';
 import 'core/constants/app_theme.dart';
 
 void main() async {
@@ -22,6 +21,7 @@ void main() async {
 
   // 3. Inicialização da Injeção de Dependência (agora segura, pois o Firebase já acordou)
   await di.init();
+  await AdService.initialize(); // Inicializa a monetização pelo admob
   // 1. Descomente esta linha para rodar o insert, depois comente novamente!
   //await popularGruposFirebase(); ////////////////////////////EENVIAR DADOS PARA O BANCO FIREBASE (RODAR APENAS UMA VEZ, DEPOIS COMENTAR NOVAMENTE)
   runApp(const MyApp());

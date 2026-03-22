@@ -358,20 +358,40 @@ class _BracketMatchCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _row(match.homeTeam, match.userHomePrediction, isFinal),
+            _row(
+              match.homeTeam,
+              match.homeFlag,
+              match.userHomePrediction,
+              isFinal,
+            ),
             const Divider(height: 8, color: Colors.white10),
-            _row(match.awayTeam, match.userAwayPrediction, isFinal),
+            _row(
+              match.awayTeam,
+              match.awayFlag,
+              match.userAwayPrediction,
+              isFinal,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _row(String name, int? score, bool isFinal) {
+  Widget _row(String name, String flag, int? score, bool isFinal) {
     final color = isFinal ? Colors.black : Colors.white;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        if (name != "A Definir")
+          ClipRRect(
+            child: CachedNetworkImage(
+              imageUrl: flag,
+              width: 16,
+              height: 10,
+              fit: BoxFit.cover,
+            ),
+          ),
+        if (name != "A Definir") const SizedBox(width: 4),
         Expanded(
           child: Text(
             name,
@@ -482,7 +502,7 @@ class _BracketMatchCard extends StatelessWidget {
                 ),
                 Wrap(
                   spacing: 4,
-                  children: [1, 2, 3]
+                  children: [1, 2, 3, 4]
                       .map(
                         (v) => _buildIncBtn(
                           // Usando o nome correto daqui
@@ -499,7 +519,7 @@ class _BracketMatchCard extends StatelessWidget {
                 ),
                 Wrap(
                   spacing: 4,
-                  children: [1, 2, 3]
+                  children: [1, 2, 3, 4]
                       .map(
                         (v) => _buildIncBtn(
                           // Usando o nome correto daqui

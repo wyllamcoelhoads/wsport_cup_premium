@@ -24,17 +24,18 @@ class _VideoSplashScreenState extends State<VideoSplashScreen> {
       });
 
     // Fica escutando o vídeo. Quando chegar no fim, navega para a Home
-    _controller.addListener(() {
-      if (_controller.value.position == _controller.value.duration) {
-        _navigateToHome();
-      }
-    });
+    _controller.addListener(_onVideoProgress);
+  }
+
+  void _onVideoProgress() {
+    if (_controller.value.position >= _controller.value.duration &&
+        _controller.value.duration >= Duration.zero) {
+      _controller.removeListener(_onVideoProgress); // agora funciona!
+      _navigateToHome();
+    }
   }
 
   void _navigateToHome() {
-    // Remove o listener para não chamar duas vezes
-    _controller.removeListener(() {});
-
     // Navega para a WorldCupPage substituindo a tela de splash (para o usuário não conseguir voltar para o vídeo)
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => const WorldCupPage()),

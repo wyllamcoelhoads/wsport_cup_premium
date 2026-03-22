@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../core/constants/app_theme.dart';
+import '../../../../core/widgets/banner_ad_widget.dart';
 import '../../domain/entities/match_entity.dart';
 import '../../domain/logic/bracket_calculator.dart';
 import '../../domain/logic/standings_calculator.dart';
 import '../../domain/logic/repescagem_data.dart';
+import '../../premium/pages/premium_page.dart';
 import '../bloc/world_cup_bloc.dart';
 import '../bloc/world_cup_event.dart';
 import '../bloc/world_cup_state.dart';
@@ -141,8 +143,11 @@ class _WorldCupPageState extends State<WorldCupPage> {
                   icon: FaIcon(FontAwesomeIcons.trashCan, size: 20),
                 ),
                 ActionButton(
-                  onPressed: () {},
-                  icon: FaIcon(FontAwesomeIcons.question, size: 20),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => PremiumPage()),
+                  ),
+                  icon: FaIcon(FontAwesomeIcons.star, size: 20),
                 ),
                 ActionButton(
                   onPressed: () {},
@@ -150,136 +155,151 @@ class _WorldCupPageState extends State<WorldCupPage> {
                 ),
               ],
             ), // CORREÇÃO: O FAB agora é apenas o botão, sem receber o estado ou bloc
-            body: NestedScrollView(
-              headerSliverBuilder: (context, innerBoxIsScrolled) {
-                return [
-                  SliverAppBar(
-                    expandedHeight: 200.0,
-                    pinned: true,
-                    backgroundColor: AppColors.background,
-                    elevation: 0,
-                    flexibleSpace: LayoutBuilder(
-                      builder: (context, constraints) {
-                        // Calcula o percentual de expansão (1.0 totalmente aberto, 0.0 fechado)
-                        final double appBarHeight = constraints.maxHeight;
-                        final bool isExpanded =
-                            appBarHeight >
-                            150; // Altura arbitrária para detecção
+            body: Column(
+              children: [
+                Expanded(
+                  child: NestedScrollView(
+                    headerSliverBuilder: (context, innerBoxIsScrolled) {
+                      return [
+                        SliverAppBar(
+                          expandedHeight: 200.0,
+                          pinned: true,
+                          backgroundColor: AppColors.background,
+                          elevation: 0,
+                          flexibleSpace: LayoutBuilder(
+                            builder: (context, constraints) {
+                              // Calcula o percentual de expansão (1.0 totalmente aberto, 0.0 fechado)
+                              final double appBarHeight = constraints.maxHeight;
+                              final bool isExpanded =
+                                  appBarHeight >
+                                  150; // Altura arbitrária para detecção
 
-                        return FlexibleSpaceBar(
-                          centerTitle: true,
-                          // Se estiver aberto, usa 90 de padding. Se fechar, usa 50 para caber.
-                          titlePadding: EdgeInsets.only(
-                            bottom: isExpanded ? 90 : 55,
-                          ),
-                          title: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Opcional: Esconder o ícone quando a barra encolher para limpar o visual
-                                if (isExpanded)
-                                  Icon(
-                                    Icons.sports_soccer,
-                                    size: 28,
-                                    color: championCode != null
-                                        ? Colors.white.withValues(alpha: 0.8)
-                                        : Colors.white.withValues(alpha: 0.1),
-                                  ),
-                                if (isExpanded) const SizedBox(height: 4),
-                                Text(
-                                  championCode != null
-                                      ? "CAMPEÃO 2026"
-                                      : "SIMULADOR 2026",
-                                  style: const TextStyle(
-                                    color: AppColors.primaryGold,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    shadows: [
-                                      Shadow(
-                                        color: Colors.black,
-                                        blurRadius: 10,
+                              return FlexibleSpaceBar(
+                                centerTitle: true,
+                                // Se estiver aberto, usa 90 de padding. Se fechar, usa 50 para caber.
+                                titlePadding: EdgeInsets.only(
+                                  bottom: isExpanded ? 90 : 55,
+                                ),
+                                title: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Opcional: Esconder o ícone quando a barra encolher para limpar o visual
+                                      if (isExpanded)
+                                        Icon(
+                                          Icons.sports_soccer,
+                                          size: 28,
+                                          color: championCode != null
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.8,
+                                                )
+                                              : Colors.white.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                        ),
+                                      if (isExpanded) const SizedBox(height: 4),
+                                      Text(
+                                        championCode != null
+                                            ? "CAMPEÃO 2026"
+                                            : "SIMULADOR 2026",
+                                        style: const TextStyle(
+                                          color: AppColors.primaryGold,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          shadows: [
+                                            Shadow(
+                                              color: Colors.black,
+                                              blurRadius: 10,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
+                                background: Container(
+                                  /* ... seu código de background atual ... */
+                                ),
+                              );
+                            },
+                          ),
+                          bottom: const PreferredSize(
+                            preferredSize: Size.fromHeight(48),
+                            child: Center(
+                              child: TabBar(
+                                indicatorColor: AppColors.primaryGold,
+                                labelColor: AppColors.primaryGold,
+                                unselectedLabelColor: Colors.grey,
+                                indicatorWeight: 3,
+                                isScrollable: false,
+                                labelPadding: EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                tabs: [
+                                  Tab(
+                                    text: "CALENDÁRIO",
+                                    icon: Icon(Icons.calendar_today, size: 18),
+                                  ),
+                                  Tab(
+                                    text: "GRUPOS",
+                                    icon: Icon(Icons.group, size: 18),
+                                  ),
+                                  Tab(
+                                    text: "TABELA",
+                                    icon: Icon(Icons.table_chart, size: 18),
+                                  ),
+                                  Tab(
+                                    text: "MATA-MATA",
+                                    icon: Icon(Icons.emoji_events, size: 18),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          background: Container(
-                            /* ... seu código de background atual ... */
-                          ),
-                        );
-                      },
-                    ),
-                    bottom: const PreferredSize(
-                      preferredSize: Size.fromHeight(48),
-                      child: Center(
-                        child: TabBar(
-                          indicatorColor: AppColors.primaryGold,
-                          labelColor: AppColors.primaryGold,
-                          unselectedLabelColor: Colors.grey,
-                          indicatorWeight: 3,
-                          isScrollable: false,
-                          labelPadding: EdgeInsets.symmetric(horizontal: 8),
-                          tabs: [
-                            Tab(
-                              text: "CALENDÁRIO",
-                              icon: Icon(Icons.calendar_today, size: 18),
-                            ),
-                            Tab(
-                              text: "GRUPOS",
-                              icon: Icon(Icons.group, size: 18),
-                            ),
-                            Tab(
-                              text: "TABELA",
-                              icon: Icon(Icons.table_chart, size: 18),
-                            ),
-                            Tab(
-                              text: "MATA-MATA",
-                              icon: Icon(Icons.emoji_events, size: 18),
-                            ),
-                          ],
                         ),
-                      ),
-                    ),
+                      ];
+                    },
+                    body: state.isLoading
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primaryGold,
+                            ),
+                          )
+                        : state.matches.isEmpty
+                        ? const Center(
+                            child: Text(
+                              "Nenhum jogo encontrado.",
+                              style: TextStyle(color: Colors.white54),
+                            ),
+                          )
+                        : TabBarView(
+                            // Trava o scroll lateral se _canScrollTabs for falso
+                            physics: _canScrollTabs
+                                ? const BouncingScrollPhysics()
+                                : const NeverScrollableScrollPhysics(),
+                            children: [
+                              _CalendarTab(matches: state.matches),
+                              _MatchesTab(matches: state.matches),
+                              _StandingsTab(matches: state.matches),
+                              BracketView(
+                                matches: BracketCalculator.populate(
+                                  state.matches,
+                                ),
+                                // Quando o Mata-mata trava para mover, avisamos a página pai
+                                onLockScroll: (isLocked) {
+                                  setState(() {
+                                    _canScrollTabs = !isLocked;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
                   ),
-                ];
-              },
-              body: state.isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primaryGold,
-                      ),
-                    )
-                  : state.matches.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "Nenhum jogo encontrado.",
-                        style: TextStyle(color: Colors.white54),
-                      ),
-                    )
-                  : TabBarView(
-                      // Trava o scroll lateral se _canScrollTabs for falso
-                      physics: _canScrollTabs
-                          ? const BouncingScrollPhysics()
-                          : const NeverScrollableScrollPhysics(),
-                      children: [
-                        _CalendarTab(matches: state.matches),
-                        _MatchesTab(matches: state.matches),
-                        _StandingsTab(matches: state.matches),
-                        BracketView(
-                          matches: BracketCalculator.populate(state.matches),
-                          // Quando o Mata-mata trava para mover, avisamos a página pai
-                          onLockScroll: (isLocked) {
-                            setState(() {
-                              _canScrollTabs = !isLocked;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
+                ),
+                const BannerAdWidget(),
+              ],
             ),
           ),
         );
@@ -1017,10 +1037,10 @@ class _PremiumMatchCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 4),
                 Wrap(
                   spacing: 4,
-                  children: [1, 2, 3, 4, 5]
+                  children: [1, 2, 3, 4]
                       .map(
                         (val) => _buildIncrementButton(
                           "+ $val",
@@ -1040,10 +1060,10 @@ class _PremiumMatchCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 4),
                 Wrap(
                   spacing: 4,
-                  children: [1, 2, 3, 4, 5]
+                  children: [1, 2, 3, 4]
                       .map(
                         (val) => _buildIncrementButton(
                           "+ $val",
