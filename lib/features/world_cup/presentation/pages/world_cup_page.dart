@@ -339,10 +339,17 @@ class _CalendarTab extends StatelessWidget {
         if (index == groupedByDate.length) return const SizedBox(height: 50);
         final dateKey = groupedByDate.keys.elementAt(index);
         final dayMatches = groupedByDate[dateKey]!;
+
+        final dayMatchIds = dayMatches.map((m) => m.id).toList();
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _GroupHeader(title: "DATA: $dateKey", showEdit: false),
+            _GroupHeader(
+              title: "DATA: $dateKey",
+              showEdit: false,
+              matchIds: dayMatchIds,
+            ),
             ...dayMatches.map(
               (match) => _PremiumMatchCard(match: match),
             ), // Usa o mesmo card de jogo removi o .toList(),
@@ -367,10 +374,15 @@ class _MatchesTab extends StatelessWidget {
         if (index == matchesByGroup.length) return const SizedBox(height: 50);
         final groupName = matchesByGroup.keys.elementAt(index);
         final groupMatches = matchesByGroup[groupName]!;
+        final groupMatchIds = groupMatches.map((m) => m.id).toList();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _GroupHeader(title: groupName, showEdit: true),
+            _GroupHeader(
+              title: groupName,
+              showEdit: true,
+              matchIds: groupMatchIds,
+            ),
             ...groupMatches.map(
               (match) => _PremiumMatchCard(match: match),
             ), // Usa o mesmo card de jogo removi o .toList(),
@@ -633,14 +645,20 @@ class _StandingsTab extends StatelessWidget {
 class _GroupHeader extends StatelessWidget {
   final String title;
   final bool showEdit;
+  final List<String> matchIds;
 
-  const _GroupHeader({required this.title, this.showEdit = true});
+  const _GroupHeader({
+    required this.title,
+    this.showEdit = true,
+    this.matchIds = const [],
+  });
 
   @override
   Widget build(BuildContext context) {
     // Verifica se este grupo tem algum placeholder de repescagem
     final placeholders = RepescagemData.placeholdersNoGrupo(title);
     final bool canEdit = showEdit && placeholders.isNotEmpty;
+    final bool canDice = matchIds.isNotEmpty;
 
     return Container(
       height: 50,
@@ -658,18 +676,104 @@ class _GroupHeader extends StatelessWidget {
               fontSize: 16,
             ),
           ),
-          if (canEdit)
-            IconButton(
-              constraints:
-                  const BoxConstraints(), // Deixa o botão mais compacto
-              padding: EdgeInsets.zero, // Deixa o ícone mais compacto
-              icon: const Icon(
-                Icons.edit,
-                color: AppColors.primaryGold,
-                size: 20,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 1),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: AppColors.primaryGold.withValues(alpha: 0.5),
+                width: 1.5,
               ),
-              onPressed: () => _showEditRepescagemDialog(context, placeholders),
+              borderRadius: BorderRadius.circular(8),
             ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (canEdit)
+                  IconButton(
+                    constraints: const BoxConstraints(),
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(
+                      Icons.edit,
+                      color: AppColors.primaryGold,
+                      size: 20,
+                    ),
+                    onPressed: () =>
+                        _showEditRepescagemDialog(context, placeholders),
+                  ),
+                if (canEdit && canDice)
+                  Container(
+                    width: 1,
+                    height: 18,
+                    color: AppColors.primaryGold.withValues(alpha: 0.3),
+                    margin: const EdgeInsets.symmetric(horizontal: 1),
+                  ),
+                if (canDice)
+                  IconButton(
+                    constraints: const BoxConstraints(),
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(
+                      Icons.casino,
+                      color: AppColors.primaryGold,
+                      size: 20,
+                    ),
+                    onPressed: () => _showRandomDialog(context),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRandomDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.cardSurface,
+        title: const Text(
+          'Gerar Placares Aleatórios?',
+          style: TextStyle(
+            color: AppColors.primaryGold,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          'Isso vai gerar placares aleatórios para todos os jogos de "$title".\n\nPalpites existentes serão substituídos.',
+          style: const TextStyle(color: Colors.white70),
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('CANCELAR', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryGold,
+            ),
+            onPressed: () {
+              context.read<WorldCupBloc>().add(
+                GenerateRandomScoresEvent(matchIds: matchIds),
+              );
+              Navigator.pop(dialogContext);
+            },
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.casino, color: Colors.black, size: 16),
+                SizedBox(width: 6),
+                Text(
+                  'GERAR',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

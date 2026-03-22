@@ -5,6 +5,7 @@ import '../../../../core/utils/local_storage_service.dart';
 import '../../domain/logic/bracket_calculator.dart';
 import '../bloc/world_cup_event.dart';
 import '../bloc/world_cup_state.dart';
+import 'dart:math';
 
 class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
   final GetMatchesUseCase getMatchesUseCase;
@@ -147,6 +148,52 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
       // 5. Micro-atraso mágico para garantir que a SnackBar apareça corretamente
       await Future.delayed(const Duration(milliseconds: 100));
       emit(state.copyWith(successMessage: null));
+    });
+
+    on<GenerateRandomScoresEvent>((event, emit) async {
+      emit(state.copyWith(successMessage: null));
+
+      final random = Random();
+
+      final updatedList = state.matches.map((match) {
+        if (!event.matchIds.contains(match.id)) return match;
+
+        int home = random.nextInt(6); // 0 a 5
+        int away = random.nextInt(6); // 0 a 5
+
+        // Mata-mata não pode empatar!
+        if (match.isKnockout && home == away) {
+          if (random.nextBool()) {
+            home++;
+          } else {
+            away++;
+          }
+        }
+
+        return match.copyWith(
+          userHomePrediction: home,
+          userAwayPrediction: away,
+        );
+      }).toList();
+
+      // Salva cada palpite gerado no armazenamento local
+      for (var match in updatedList) {
+        if (event.matchIds.contains(match.id)) {
+          await LocalStorageService.savePrediction(
+            match.id,
+            match.userHomePrediction,
+            match.userAwayPrediction,
+          );
+        }
+      }
+
+      final calculated = BracketCalculator.populate(updatedList);
+      emit(
+        state.copyWith(
+          matches: calculated,
+          successMessage: "Placares gerados! 🎲",
+        ),
+      );
     });
   }
 }

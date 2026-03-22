@@ -29,7 +29,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
         onAdLoaded: (_) => setState(() => _isLoaded = true),
 
         onAdFailedToLoad: (ad, error) {
-          print('Banner falhou: ${error.message}');
+          //print('Banner falhou: ${error.message}');
           ad.dispose();
           setState(() => _isLoaded = false);
         },

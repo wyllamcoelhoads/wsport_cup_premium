@@ -47,3 +47,13 @@ class SwapTeamEvent extends WorldCupEvent {
 
 // Evento 4: Resetar completamente os palpites
 class ResetAllPredictionsEvent extends WorldCupEvent {}
+
+// Evento 5: Gerar placares aleatórios para uma lista de jogos
+class GenerateRandomScoresEvent extends WorldCupEvent {
+  final List<String> matchIds;
+
+  const GenerateRandomScoresEvent({required this.matchIds});
+
+  @override
+  List<Object?> get props => [matchIds];
+}
