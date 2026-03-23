@@ -72,8 +72,9 @@ class AdService {
         ad.dispose();
         _rewardedAd = null;
         loadRewarded();
-        if (!completer.isCompleted)
+        if (!completer.isCompleted) {
           completer.complete(true); // falhou, deixa passar
+        }
       },
     );
 
