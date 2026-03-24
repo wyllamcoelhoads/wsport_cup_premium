@@ -429,7 +429,11 @@ class _StandingsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final standingsMap = StandingsCalculator.calculate(matches);
+    final groupMatches = matches
+        .where((m) => m.group.startsWith('GRUPO'))
+        .toList();
+
+    final standingsMap = StandingsCalculator.calculate(groupMatches);
     final sortedGroups = standingsMap.keys.toList()..sort();
 
     return ListView.builder(
@@ -451,12 +455,12 @@ class _StandingsTab extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    // --- CABEÇALHO DA TABELA ---
+                    // CABEÇALHO COM TOOLTIPS
                     Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Row(
-                        children: const [
-                          SizedBox(
+                        children: [
+                          const SizedBox(
                             width: 20,
                             child: Text(
                               "#",
@@ -466,7 +470,7 @@ class _StandingsTab extends StatelessWidget {
                               ),
                             ),
                           ),
-                          Expanded(
+                          const Expanded(
                             child: Text(
                               "SELEÇÃO",
                               style: TextStyle(
@@ -475,65 +479,32 @@ class _StandingsTab extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(
-                            width: 30,
-                            child: Center(
-                              child: Text(
-                                "P",
-                                style: TextStyle(
-                                  color: AppColors.primaryGold,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 30,
-                            child: Center(
-                              child: Text(
-                                "J",
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 30,
-                            child: Center(
-                              child: Text(
-                                "SG",
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ),
-                          ),
+                          _TooltipHeader("P", "Pontos"),
+                          _TooltipHeader("J", "Jogos"),
+                          _TooltipHeader("V", "Vitórias"),
+                          _TooltipHeader("E", "Empates"),
+                          _TooltipHeader("D", "Derrotas"),
+                          _TooltipHeader("GP", "Gols Pró"),
+                          _TooltipHeader("GC", "Gols Contra"),
+                          _TooltipHeader("SG", "Saldo de Gols"),
                         ],
                       ),
                     ),
                     const Divider(height: 1, color: Colors.white10),
 
-                    // --- LINHAS DOS TIMES (Aqui está a mudança) ---
+                    // LINHAS DOS TIMES
                     ...teams.asMap().entries.map((entry) {
                       final pos = entry.key + 1;
                       final team = entry.value;
 
-                      // Mudamos para Stack para sobrepor a barrinha
                       return Stack(
-                        alignment: Alignment
-                            .centerLeft, // Centraliza a barrinha verticalmente
+                        alignment: Alignment.centerLeft,
                         children: [
-                          // 1. O CONTEÚDO PRINCIPAL DA LINHA
                           Container(
                             padding: const EdgeInsets.symmetric(
                               vertical: 12,
                               horizontal: 12,
                             ),
-                            // *** IMPORTANTE: Removemos a decoração de borda daqui! ***
                             child: Row(
                               children: [
                                 SizedBox(
@@ -554,17 +525,11 @@ class _StandingsTab extends StatelessWidget {
                                           width: 20,
                                           height: 20,
                                           fit: BoxFit.cover,
-                                          errorWidget:
-                                              (
-                                                _,
-                                                _,
-                                                _,
-                                              ) => // Ícone de círculo cinza se a imagem falhar
-                                              const Icon(
-                                                Icons.circle,
-                                                size: 20,
-                                                color: Colors.white,
-                                              ),
+                                          errorWidget: (_, _, _) => const Icon(
+                                            Icons.circle,
+                                            size: 20,
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -581,69 +546,58 @@ class _StandingsTab extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                SizedBox(
-                                  width: 30,
-                                  child: Center(
-                                    child: Text(
-                                      "${team.points}",
-                                      style: const TextStyle(
-                                        color: AppColors.primaryGold,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
+                                _StatCell(
+                                  "${team.points}",
+                                  color: AppColors.primaryGold,
+                                  bold: true,
                                 ),
-                                SizedBox(
-                                  width: 30,
-                                  child: Center(
-                                    child: Text(
-                                      "${team.played}",
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                  ),
+                                _StatCell("${team.played}"),
+                                _StatCell(
+                                  "${team.won}",
+                                  color: AppColors.successGreen,
                                 ),
-                                SizedBox(
-                                  width: 30,
-                                  child: Center(
-                                    child: Text(
-                                      "${team.goalDifference}",
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                  ),
+                                _StatCell(
+                                  "${team.drawn}",
+                                  color: Colors.white54,
+                                ),
+                                _StatCell(
+                                  "${team.lost}",
+                                  color: Colors.redAccent,
+                                ),
+                                _StatCell("${team.goalsFor}"),
+                                _StatCell("${team.goalsAgainst}"),
+                                _StatCell(
+                                  "${team.goalDifference}",
+                                  color: team.goalDifference > 0
+                                      ? AppColors.successGreen
+                                      : team.goalDifference < 0
+                                      ? Colors.redAccent
+                                      : Colors.white70,
                                 ),
                               ],
                             ),
                           ),
-
-                          // 2. A BARRINHA VERDE CURTA (Aparece apenas para pos <= 2)
                           if (pos <= 2)
                             Positioned(
-                              left: 0, // Encostada na borda esquerda absoluta
+                              left: 0,
                               top: 0,
                               bottom: 0,
                               child: Center(
-                                // Centraliza verticalmente no espaço disponível
                                 child: Container(
-                                  width:
-                                      3.5, // Largura (espessura) original, mantida
-                                  height:
-                                      20, // COMPRIMENTO (ALTURA) REDUZIDO! Você pode ajustar esse valor.
+                                  width: 3.5,
+                                  height: 20,
                                   decoration: BoxDecoration(
-                                    color: AppColors.successGreen, // Cor verde
+                                    color: AppColors.successGreen,
                                     borderRadius: const BorderRadius.horizontal(
                                       right: Radius.circular(2),
-                                    ), // Arredondado só no lado direito
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                         ],
                       );
-                    }), // Fim do map dos times removi .toList()
+                    }),
                   ],
                 ),
               ),
@@ -651,6 +605,68 @@ class _StandingsTab extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+// Widget do cabeçalho com tooltip
+class _TooltipHeader extends StatelessWidget {
+  final String label;
+  final String tooltip;
+  const _TooltipHeader(this.label, this.tooltip);
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      triggerMode: TooltipTriggerMode.tap,
+      decoration: BoxDecoration(
+        color: AppColors.primaryGold,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      textStyle: const TextStyle(
+        color: Colors.black,
+        fontWeight: FontWeight.bold,
+        fontSize: 12,
+      ),
+      child: SizedBox(
+        width: 30,
+        child: Center(
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.primaryGold,
+              fontWeight: FontWeight.bold,
+              fontSize: 10,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Widget de célula de estatística
+class _StatCell extends StatelessWidget {
+  final String value;
+  final Color color;
+  final bool bold;
+  const _StatCell(this.value, {this.color = Colors.white70, this.bold = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 30,
+      child: Center(
+        child: Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+            fontSize: 11,
+          ),
+        ),
+      ),
     );
   }
 }
