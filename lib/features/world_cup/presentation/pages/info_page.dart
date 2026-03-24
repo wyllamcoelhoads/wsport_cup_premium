@@ -1,0 +1,1664 @@
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import '../../../../core/constants/app_theme.dart';
+
+// ============================================================
+// DATA MODELS
+// ============================================================
+
+class _HostCity {
+  final String city;
+  final String country;
+  final String flagCode;
+  final String stadium;
+  final String capacity;
+  final int games;
+  final String description;
+  final bool isHighlight;
+
+  const _HostCity({
+    required this.city,
+    required this.country,
+    required this.flagCode,
+    required this.stadium,
+    required this.capacity,
+    required this.games,
+    required this.description,
+    this.isHighlight = false,
+  });
+}
+
+// ============================================================
+// STATIC DATA
+// ============================================================
+
+const List<_HostCity> _hostCities = [
+  _HostCity(
+    city: 'Nova York / New Jersey',
+    country: 'Estados Unidos',
+    flagCode: 'us',
+    stadium: 'MetLife Stadium',
+    capacity: '82.500',
+    games: 8,
+    description:
+        '🏆 SEDE DA FINAL! O maior estádio da competição, em East Rutherford. Recebeu o Super Bowl e grandes shows internacionais.',
+    isHighlight: true,
+  ),
+  _HostCity(
+    city: 'Los Angeles',
+    country: 'Estados Unidos',
+    flagCode: 'us',
+    stadium: 'SoFi Stadium',
+    capacity: '70.240',
+    games: 7,
+    description:
+        'Capital mundial do entretenimento. O SoFi é uma das arenas mais modernas e tecnológicas do planeta, inaugurada em 2020.',
+  ),
+  _HostCity(
+    city: 'Dallas / Fort Worth',
+    country: 'Estados Unidos',
+    flagCode: 'us',
+    stadium: 'AT&T Stadium',
+    capacity: '80.000',
+    games: 7,
+    description:
+        'O lendário "Jerry World", lar do Dallas Cowboys. Um dos estádios mais famosos do mundo, sede de grandes espetáculos.',
+  ),
+  _HostCity(
+    city: 'San Francisco / Bay Area',
+    country: 'Estados Unidos',
+    flagCode: 'us',
+    stadium: "Levi's Stadium",
+    capacity: '68.500',
+    games: 6,
+    description:
+        'Em Santa Clara, com vista para as montanhas. Lar do San Francisco 49ers e próximo ao Vale do Silício.',
+  ),
+  _HostCity(
+    city: 'Seattle',
+    country: 'Estados Unidos',
+    flagCode: 'us',
+    stadium: 'Lumen Field',
+    capacity: '72.000',
+    games: 6,
+    description:
+        'Na cidade de Seattle, com vista para as montanhas e o Puget Sound. Famoso pela torcida ensandecida dos Seahawks.',
+  ),
+  _HostCity(
+    city: 'Boston',
+    country: 'Estados Unidos',
+    flagCode: 'us',
+    stadium: 'Gillette Stadium',
+    capacity: '65.878',
+    games: 6,
+    description:
+        'Em Foxborough, próximo a Boston. Lar do New England Patriots, um dos times de maior tradição do futebol americano.',
+  ),
+  _HostCity(
+    city: 'Miami',
+    country: 'Estados Unidos',
+    flagCode: 'us',
+    stadium: 'Hard Rock Stadium',
+    capacity: '65.326',
+    games: 6,
+    description:
+        'Cidade do sol da Flórida! Lar do Miami Dolphins, com clima tropical e a maior comunidade latina dos EUA.',
+  ),
+  _HostCity(
+    city: 'Atlanta',
+    country: 'Estados Unidos',
+    flagCode: 'us',
+    stadium: 'Mercedes-Benz Stadium',
+    capacity: '71.000',
+    games: 6,
+    description:
+        'Estádio com teto retrátil petal único no mundo. Sede da Copa de 1994. Considerado o mais avançado arquitetonicamente.',
+  ),
+  _HostCity(
+    city: 'Kansas City',
+    country: 'Estados Unidos',
+    flagCode: 'us',
+    stadium: 'Arrowhead Stadium',
+    capacity: '76.416',
+    games: 6,
+    description:
+        'Um dos estádios mais barulhentos do planeta! Lar do Kansas City Chiefs, campeões do Super Bowl.',
+  ),
+  _HostCity(
+    city: 'Houston',
+    country: 'Estados Unidos',
+    flagCode: 'us',
+    stadium: 'NRG Stadium',
+    capacity: '72.220',
+    games: 6,
+    description:
+        'A maior cidade do Texas. O NRG tem teto retrátil e foi sede de grandes eventos esportivos internacionais.',
+  ),
+  _HostCity(
+    city: 'Philadelphia',
+    country: 'Estados Unidos',
+    flagCode: 'us',
+    stadium: 'Lincoln Financial Field',
+    capacity: '69.796',
+    games: 6,
+    description:
+        'A cidade da independência americana e do Rocky! Lar do Philadelphia Eagles com uma das torcidas mais apaixonadas.',
+  ),
+  _HostCity(
+    city: 'Toronto',
+    country: 'Canadá',
+    flagCode: 'ca',
+    stadium: 'BMO Field',
+    capacity: '45.000',
+    games: 6,
+    description:
+        'A maior cidade canadense e um dos maiores centros multiculturais do mundo. Lar do Toronto FC, o mais popular futebol canadense.',
+  ),
+  _HostCity(
+    city: 'Vancouver',
+    country: 'Canadá',
+    flagCode: 'ca',
+    stadium: 'BC Place Stadium',
+    capacity: '54.500',
+    games: 6,
+    description:
+        'Uma das cidades mais belas do mundo, entre montanhas e oceano. BC Place tem teto inflável retrátil único no mundo.',
+  ),
+  _HostCity(
+    city: 'Cidade do México',
+    country: 'México',
+    flagCode: 'mx',
+    stadium: 'Estadio Azteca',
+    capacity: '87.523',
+    games: 8,
+    description:
+        '🔥 O LENDÁRIO AZTECA! Único estádio a sediar 3 Copas do Mundo (1970, 1986 e 2026). A 2.240m de altitude, em 1986 ocorreram aqui a "Mão de Deus" e o gol do século de Maradona!',
+    isHighlight: true,
+  ),
+  _HostCity(
+    city: 'Zapopan / Guadalajara',
+    country: 'México',
+    flagCode: 'mx',
+    stadium: 'Estadio Akron',
+    capacity: '49.850',
+    games: 6,
+    description:
+        'Na "Perla de Occidente", segunda maior cidade do México. Lar do Chivas, o clube com mais apaixonados do país.',
+  ),
+  _HostCity(
+    city: 'Monterrey',
+    country: 'México',
+    flagCode: 'mx',
+    stadium: 'Estadio BBVA',
+    capacity: '53.500',
+    games: 6,
+    description:
+        'A industrial cidade do norte do México. O BBVA Stadium é eleito um dos mais modernos e bonitos da América Latina.',
+  ),
+];
+
+const List<Map<String, dynamic>> _groups = [
+  {
+    'group': 'GRUPO A',
+    'teams': [
+      {'name': 'México', 'flag': 'mx', 'conf': 'CONCACAF'},
+      {'name': 'África do Sul', 'flag': 'za', 'conf': 'CAF'},
+      {'name': 'Coreia do Sul', 'flag': 'kr', 'conf': 'AFC'},
+      {'name': 'Repescagem UEFA D', 'flag': 'eu', 'conf': 'UEFA'},
+    ],
+  },
+  {
+    'group': 'GRUPO B',
+    'teams': [
+      {'name': 'Canadá', 'flag': 'ca', 'conf': 'CONCACAF'},
+      {'name': 'Repescagem UEFA A', 'flag': 'eu', 'conf': 'UEFA'},
+      {'name': 'Catar', 'flag': 'qa', 'conf': 'AFC'},
+      {'name': 'Suíça', 'flag': 'ch', 'conf': 'UEFA'},
+    ],
+  },
+  {
+    'group': 'GRUPO C',
+    'teams': [
+      {'name': 'Brasil 🇧🇷', 'flag': 'br', 'conf': 'CONMEBOL'},
+      {'name': 'Marrocos', 'flag': 'ma', 'conf': 'CAF'},
+      {'name': 'Haiti', 'flag': 'ht', 'conf': 'CONCACAF'},
+      {'name': 'Escócia', 'flag': 'gb-sct', 'conf': 'UEFA'},
+    ],
+  },
+  {
+    'group': 'GRUPO D',
+    'teams': [
+      {'name': 'Estados Unidos', 'flag': 'us', 'conf': 'CONCACAF'},
+      {'name': 'Paraguai', 'flag': 'py', 'conf': 'CONMEBOL'},
+      {'name': 'Austrália', 'flag': 'au', 'conf': 'AFC'},
+      {'name': 'Repescagem UEFA C', 'flag': 'eu', 'conf': 'UEFA'},
+    ],
+  },
+  {
+    'group': 'GRUPO E',
+    'teams': [
+      {'name': 'Alemanha', 'flag': 'de', 'conf': 'UEFA'},
+      {'name': 'Curaçao', 'flag': 'cw', 'conf': 'CONCACAF'},
+      {'name': 'Costa do Marfim', 'flag': 'ci', 'conf': 'CAF'},
+      {'name': 'Equador', 'flag': 'ec', 'conf': 'CONMEBOL'},
+    ],
+  },
+  {
+    'group': 'GRUPO F',
+    'teams': [
+      {'name': 'Holanda', 'flag': 'nl', 'conf': 'UEFA'},
+      {'name': 'Japão', 'flag': 'jp', 'conf': 'AFC'},
+      {'name': 'Repescagem UEFA B', 'flag': 'eu', 'conf': 'UEFA'},
+      {'name': 'Tunísia', 'flag': 'tn', 'conf': 'CAF'},
+    ],
+  },
+  {
+    'group': 'GRUPO G',
+    'teams': [
+      {'name': 'Bélgica', 'flag': 'be', 'conf': 'UEFA'},
+      {'name': 'Egito', 'flag': 'eg', 'conf': 'CAF'},
+      {'name': 'Irã', 'flag': 'ir', 'conf': 'AFC'},
+      {'name': 'Nova Zelândia', 'flag': 'nz', 'conf': 'OFC'},
+    ],
+  },
+  {
+    'group': 'GRUPO H',
+    'teams': [
+      {'name': 'Espanha', 'flag': 'es', 'conf': 'UEFA'},
+      {'name': 'Cabo Verde', 'flag': 'cv', 'conf': 'CAF'},
+      {'name': 'Arábia Saudita', 'flag': 'sa', 'conf': 'AFC'},
+      {'name': 'Uruguai', 'flag': 'uy', 'conf': 'CONMEBOL'},
+    ],
+  },
+  {
+    'group': 'GRUPO I',
+    'teams': [
+      {'name': 'França', 'flag': 'fr', 'conf': 'UEFA'},
+      {'name': 'Senegal', 'flag': 'sn', 'conf': 'CAF'},
+      {'name': 'Rep. Intercont. 2', 'flag': 'un', 'conf': 'Intercont.'},
+      {'name': 'Noruega', 'flag': 'no', 'conf': 'UEFA'},
+    ],
+  },
+  {
+    'group': 'GRUPO J',
+    'teams': [
+      {'name': 'Argentina', 'flag': 'ar', 'conf': 'CONMEBOL'},
+      {'name': 'Argélia', 'flag': 'dz', 'conf': 'CAF'},
+      {'name': 'Áustria', 'flag': 'at', 'conf': 'UEFA'},
+      {'name': 'Jordânia', 'flag': 'jo', 'conf': 'AFC'},
+    ],
+  },
+  {
+    'group': 'GRUPO K',
+    'teams': [
+      {'name': 'Portugal', 'flag': 'pt', 'conf': 'UEFA'},
+      {'name': 'Rep. Intercont. 1', 'flag': 'un', 'conf': 'Intercont.'},
+      {'name': 'Uzbequistão', 'flag': 'uz', 'conf': 'AFC'},
+      {'name': 'Colômbia', 'flag': 'co', 'conf': 'CONMEBOL'},
+    ],
+  },
+  {
+    'group': 'GRUPO L',
+    'teams': [
+      {'name': 'Inglaterra', 'flag': 'gb-eng', 'conf': 'UEFA'},
+      {'name': 'Croácia', 'flag': 'hr', 'conf': 'UEFA'},
+      {'name': 'Gana', 'flag': 'gh', 'conf': 'CAF'},
+      {'name': 'Panamá', 'flag': 'pa', 'conf': 'CONCACAF'},
+    ],
+  },
+];
+
+// ============================================================
+// MAIN PAGE
+// ============================================================
+
+class InfoPage extends StatefulWidget {
+  const InfoPage({super.key});
+
+  @override
+  State<InfoPage> createState() => _InfoPageState();
+}
+
+class _InfoPageState extends State<InfoPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: AppColors.primaryGold,
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '⚽ COPA DO MUNDO',
+              style: TextStyle(
+                color: AppColors.primaryGold,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                letterSpacing: 1.5,
+              ),
+            ),
+            Text(
+              'FIFA 2026™',
+              style: TextStyle(color: Colors.white54, fontSize: 11),
+            ),
+          ],
+        ),
+        centerTitle: true,
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppColors.primaryGold,
+          labelColor: AppColors.primaryGold,
+          unselectedLabelColor: Colors.white38,
+          indicatorWeight: 3,
+          labelStyle: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.8,
+          ),
+          tabs: const [
+            Tab(icon: Icon(Icons.location_city, size: 16), text: 'SEDES'),
+            Tab(icon: Icon(Icons.emoji_flags, size: 16), text: 'SELEÇÕES'),
+            Tab(icon: Icon(Icons.sports_soccer, size: 16), text: 'COPA 2026'),
+            Tab(icon: Icon(Icons.play_circle_fill, size: 16), text: 'VÍDEOS'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: const [
+          _SedesTab(),
+          _SelecaoTab(),
+          _Copa2026Tab(),
+          _VideosTab(),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// TAB 1: SEDES
+// ============================================================
+
+class _SedesTab extends StatelessWidget {
+  const _SedesTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: _hostCities.length + 1,
+      itemBuilder: (context, index) {
+        if (index == 0) return _buildHeader();
+        return _buildCityCard(_hostCities[index - 1]);
+      },
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryGold.withValues(alpha: 0.2),
+            Colors.blue.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primaryGold.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            '16 CIDADES-SEDE',
+            style: TextStyle(
+              color: AppColors.primaryGold,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Três países, um torneio único na história',
+            style: TextStyle(color: Colors.white54, fontSize: 11),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _statBadge('🇺🇸', '11', 'cidades EUA'),
+              Container(width: 1, height: 40, color: Colors.white12),
+              _statBadge('🇨🇦', '2', 'cidades Canadá'),
+              Container(width: 1, height: 40, color: Colors.white12),
+              _statBadge('🇲🇽', '3', 'cidades México'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statBadge(String emoji, String count, String label) {
+    return Column(
+      children: [
+        Text(emoji, style: const TextStyle(fontSize: 22)),
+        const SizedBox(height: 2),
+        Text(
+          count,
+          style: const TextStyle(
+            color: AppColors.primaryGold,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white38, fontSize: 10),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCityCard(_HostCity city) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: AppColors.cardSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: city.isHighlight
+            ? Border.all(color: AppColors.primaryGold, width: 1.5)
+            : Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        children: [
+          // Header row
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: city.isHighlight
+                  ? AppColors.primaryGold.withValues(alpha: 0.12)
+                  : Colors.transparent,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: 'https://flagcdn.com/w80/${city.flagCode}.png',
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                    errorWidget: (_, _, _) => Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white12,
+                      ),
+                      child: const Icon(
+                        Icons.flag,
+                        color: Colors.white54,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              city.city,
+                              style: TextStyle(
+                                color: city.isHighlight
+                                    ? AppColors.primaryGold
+                                    : Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          if (city.isHighlight)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryGold,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                '★ DESTAQUE',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      Text(
+                        city.country,
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Info chips
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+            child: Row(
+              children: [
+                _chip(Icons.stadium_outlined, city.stadium, flex: 3),
+                const SizedBox(width: 6),
+                _chip(Icons.people_outline, city.capacity, flex: 2),
+                const SizedBox(width: 6),
+                _chip(
+                  Icons.sports_soccer_outlined,
+                  '${city.games} jogos',
+                  flex: 2,
+                ),
+              ],
+            ),
+          ),
+          // Description
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            child: Text(
+              city.description,
+              style: const TextStyle(
+                color: Colors.white60,
+                fontSize: 12,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip(IconData icon, String text, {required int flex}) {
+    return Expanded(
+      flex: flex,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 11, color: AppColors.primaryGold),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                text,
+                style: const TextStyle(color: Colors.white60, fontSize: 10),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// TAB 2: SELEÇÕES
+// ============================================================
+
+class _SelecaoTab extends StatelessWidget {
+  const _SelecaoTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: _groups.length + 1,
+      itemBuilder: (context, index) {
+        if (index == 0) return _buildConfederationsHeader();
+        return _buildGroupCard(_groups[index - 1]);
+      },
+    );
+  }
+
+  Widget _buildConfederationsHeader() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryGold.withValues(alpha: 0.2),
+            Colors.transparent,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primaryGold.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            '48 SELEÇÕES — 12 GRUPOS',
+            style: TextStyle(
+              color: AppColors.primaryGold,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'A maior Copa do Mundo da história',
+            style: TextStyle(color: Colors.white54, fontSize: 11),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [
+              _confBadge('UEFA', '16', const Color(0xFF1565C0)),
+              _confBadge('CONCACAF', '8', const Color(0xFF2E7D32)),
+              _confBadge('CAF', '9', const Color(0xFFE65100)),
+              _confBadge('CONMEBOL', '6', const Color(0xFF6A1B9A)),
+              _confBadge('AFC', '8', const Color(0xFF00838F)),
+              _confBadge('OFC + Rep.', '1+', Colors.white38),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _confBadge(String conf, String count, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            count,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            conf,
+            style: TextStyle(color: color.withValues(alpha: 0.8), fontSize: 10),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupCard(Map<String, dynamic> group) {
+    final teams = group['teams'] as List<Map<String, dynamic>>;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: AppColors.cardSurface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.primaryGold.withValues(alpha: 0.1),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(14),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.group, color: AppColors.primaryGold, size: 15),
+                const SizedBox(width: 8),
+                Text(
+                  group['group'],
+                  style: const TextStyle(
+                    color: AppColors.primaryGold,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(10),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 3.2,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: teams.length,
+            itemBuilder: (context, i) => _buildTeamTile(teams[i]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTeamTile(Map<String, dynamic> team) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        children: [
+          ClipOval(
+            child: CachedNetworkImage(
+              imageUrl: 'https://flagcdn.com/w40/${team['flag']}.png',
+              width: 26,
+              height: 26,
+              fit: BoxFit.cover,
+              errorWidget: (_, _, _) => Container(
+                width: 26,
+                height: 26,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white12,
+                ),
+                child: const Icon(Icons.flag, size: 13, color: Colors.white38),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  team['name'],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  team['conf'],
+                  style: const TextStyle(color: Colors.white38, fontSize: 9),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================
+// TAB 3: COPA 2026
+// ============================================================
+
+class _Copa2026Tab extends StatelessWidget {
+  const _Copa2026Tab();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _buildHeroCard(),
+        const SizedBox(height: 16),
+        _buildSectionCard(
+          title: '🦁  MASCOTE OFICIAL',
+          icon: Icons.pets,
+          child: _buildMascotContent(),
+        ),
+        const SizedBox(height: 14),
+        _buildSectionCard(
+          title: '⚽  BOLA OFICIAL',
+          icon: Icons.sports_soccer,
+          child: _buildBallContent(),
+        ),
+        const SizedBox(height: 14),
+        _buildSectionCard(
+          title: '📋  FORMATO DA COMPETIÇÃO',
+          icon: Icons.format_list_bulleted,
+          child: _buildFormatContent(),
+        ),
+        const SizedBox(height: 14),
+        _buildSectionCard(
+          title: '📅  CALENDÁRIO RESUMIDO',
+          icon: Icons.calendar_today,
+          child: _buildTimelineContent(),
+        ),
+        const SizedBox(height: 14),
+        _buildSectionCard(
+          title: '💡  CURIOSIDADES',
+          icon: Icons.lightbulb_outline,
+          child: _buildCuriositiesContent(),
+        ),
+        const SizedBox(height: 50),
+      ],
+    );
+  }
+
+  Widget _buildHeroCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryGold.withValues(alpha: 0.25),
+            Colors.blue.withValues(alpha: 0.08),
+            Colors.transparent,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primaryGold.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'FIFA WORLD CUP 2026™',
+            style: TextStyle(
+              color: AppColors.primaryGold,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            '11 de Junho — 19 de Julho de 2026',
+            style: TextStyle(color: Colors.white60, fontSize: 13),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            '🇺🇸 Estados Unidos  •  🇨🇦 Canadá  •  🇲🇽 México',
+            style: TextStyle(color: Colors.white38, fontSize: 11),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _heroStat('48', 'Seleções'),
+              _verticalDivider(),
+              _heroStat('104', 'Jogos'),
+              _verticalDivider(),
+              _heroStat('3', 'Países'),
+              _verticalDivider(),
+              _heroStat('16', 'Cidades'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _heroStat(String value, String label) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            color: AppColors.primaryGold,
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white54, fontSize: 11),
+        ),
+      ],
+    );
+  }
+
+  Widget _verticalDivider() =>
+      Container(width: 1, height: 40, color: Colors.white12);
+
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required Widget child,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.cardSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            decoration: BoxDecoration(
+              color: AppColors.primaryGold.withValues(alpha: 0.08),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: AppColors.primaryGold, size: 18),
+                const SizedBox(width: 10),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.primaryGold,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(padding: const EdgeInsets.all(16), child: child),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMascotContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.orange.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '"Tala" & "Rumi"',
+                style: TextStyle(
+                  color: Colors.orange,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Tala é uma criatura feminina energética que representa velocidade e agilidade. Rumi é seu parceiro masculino, símbolo de força e determinação.',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Juntos, personificam o espírito do futebol e a diversidade cultural das três nações anfitriãs.',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _infoChip('🌟 Criaturas místicas', Colors.orange),
+                  _infoChip('🇺🇸🇨🇦🇲🇽 Três países', Colors.orange),
+                  _infoChip('⚡ Velocidade e Força', Colors.orange),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBallContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.blue.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Adidas — Bola Oficial FIFA 2026',
+                style: TextStyle(
+                  color: Colors.lightBlueAccent,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'A Adidas é fornecedora oficial de bolas da Copa do Mundo desde 1970. Para 2026, a empresa desenvolverá uma bola com tecnologia de ponta e design inspirado nos três países anfitriões.',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _infoChip('🏭 Adidas', Colors.blue),
+                  _infoChip('⚡ Alta Tecnologia', Colors.blue),
+                  _infoChip('📅 Desde 1970', Colors.blue),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Previous balls timeline
+        const Text(
+          'Bolas das Copas recentes:',
+          style: TextStyle(
+            color: Colors.white54,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _ballRow('2022 Qatar', 'Al Rihla'),
+        _ballRow('2018 Russia', 'Telstar 18'),
+        _ballRow('2014 Brasil', 'Brazuca'),
+        _ballRow('2010 África do Sul', 'Jabulani'),
+        _ballRow('2026 USA/CAN/MEX', 'A ser revelada ⚽'),
+      ],
+    );
+  }
+
+  Widget _ballRow(String edition, String name) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.sports_soccer,
+            size: 14,
+            color: AppColors.primaryGold,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            edition,
+            style: const TextStyle(color: Colors.white54, fontSize: 12),
+          ),
+          const Spacer(),
+          Text(
+            name,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormatContent() {
+    final stages = [
+      {
+        'stage': 'Fase de Grupos',
+        'desc': '12 grupos de 4 seleções • 48 jogos',
+        'icon': Icons.grid_view,
+        'color': Colors.blue,
+      },
+      {
+        'stage': '32-avos de Final',
+        'desc': '16 confrontos • Os 2 primeiros e 8 melhores 3ºs avançam',
+        'icon': Icons.looks_one,
+        'color': Colors.cyan,
+      },
+      {
+        'stage': 'Oitavas de Final',
+        'desc': '8 duelos • Eliminação direta',
+        'icon': Icons.looks_two,
+        'color': Colors.teal,
+      },
+      {
+        'stage': 'Quartas de Final',
+        'desc': '4 batalhas • Os 8 melhores',
+        'icon': Icons.looks_3,
+        'color': Colors.orange,
+      },
+      {
+        'stage': 'Semifinais',
+        'desc': '2 jogos • Luta por uma vaga na final',
+        'icon': Icons.looks_4,
+        'color': Colors.deepOrange,
+      },
+      {
+        'stage': '🏆 Grande Final',
+        'desc': 'MetLife Stadium • Nova York / New Jersey',
+        'icon': Icons.emoji_events,
+        'color': AppColors.primaryGold,
+      },
+    ];
+
+    return Column(
+      children: stages
+          .map(
+            (s) => _stageItem(
+              stage: s['stage'] as String,
+              desc: s['desc'] as String,
+              icon: s['icon'] as IconData,
+              color: s['color'] as Color,
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _stageItem({
+    required String stage,
+    required String desc,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withValues(alpha: 0.15),
+            ),
+            child: Icon(icon, color: color, size: 17),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  stage,
+                  style: TextStyle(
+                    color: color == AppColors.primaryGold
+                        ? AppColors.primaryGold
+                        : Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                Text(
+                  desc,
+                  style: const TextStyle(color: Colors.white54, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimelineContent() {
+    final events = [
+      {
+        'date': '11 Jun 2026',
+        'event': '⚽ Jogo de Abertura',
+        'detail': 'Estadio Azteca • Cidade do México',
+        'special': true,
+      },
+      {
+        'date': '11–27 Jun',
+        'event': 'Fase de Grupos',
+        'detail': '3 rodadas × 12 grupos = 48 jogos',
+        'special': false,
+      },
+      {
+        'date': '28 Jun–3 Jul',
+        'event': '32-avos de Final',
+        'detail': '16 confrontos eliminatórios',
+        'special': false,
+      },
+      {
+        'date': '4–7 Jul',
+        'event': 'Oitavas de Final',
+        'detail': '8 grandes duelos',
+        'special': false,
+      },
+      {
+        'date': '9–11 Jul',
+        'event': 'Quartas de Final',
+        'detail': '4 batalhas épicas',
+        'special': false,
+      },
+      {
+        'date': '14–15 Jul',
+        'event': 'Semifinais',
+        'detail': 'Os 4 últimos na luta pela taça',
+        'special': false,
+      },
+      {
+        'date': '19 Jul 2026',
+        'event': '🏆 GRANDE FINAL',
+        'detail': 'MetLife Stadium • Nova York',
+        'special': true,
+      },
+    ];
+
+    return Column(
+      children: events.map((e) {
+        final isSpecial = e['special'] as bool;
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isSpecial
+                ? AppColors.primaryGold.withValues(alpha: 0.12)
+                : Colors.white.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSpecial
+                  ? AppColors.primaryGold.withValues(alpha: 0.5)
+                  : Colors.white10,
+            ),
+          ),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 75,
+                child: Text(
+                  e['date'] as String,
+                  style: TextStyle(
+                    color: isSpecial ? AppColors.primaryGold : Colors.white38,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Container(width: 1, height: 30, color: Colors.white12),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      e['event'] as String,
+                      style: TextStyle(
+                        color: isSpecial ? AppColors.primaryGold : Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    Text(
+                      e['detail'] as String,
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildCuriositiesContent() {
+    final curiosities = [
+      (
+        '🏆',
+        'Primeira Copa com 48 seleções — 50% a mais que as Copas anteriores com 32 equipes!',
+      ),
+      (
+        '🌎',
+        'Primeira Copa em 3 países diferentes! EUA, Canadá e México se uniram em candidatura histórica.',
+      ),
+      (
+        '🏟️',
+        'O Estadio Azteca será a única arena a sediar 3 Copas do Mundo (1970, 1986 e 2026).',
+      ),
+      (
+        '📅',
+        '104 partidas ao total — a Copa mais longa da história, com mais de 38 dias de competição.',
+      ),
+      (
+        '🆕',
+        'Nova fase criada: os 32-avos de final, fase inédita no formato do Mundial.',
+      ),
+      (
+        '⛰️',
+        'Cidade do México e seu Estadio Azteca ficam a 2.240 metros de altitude!',
+      ),
+      (
+        '📺',
+        'Estima-se que mais de 5 bilhões de pessoas acompanharão a Copa 2026 — recorde histórico.',
+      ),
+      (
+        '💰',
+        'Maior evento esportivo da história em termos de geração de renda e audiência global.',
+      ),
+      (
+        '🌐',
+        'Brasil, Argentina e México são as únicas seleções com jogos em seus próprios continentes e nas Américas do Norte.',
+      ),
+    ];
+
+    return Column(
+      children: curiosities.map((c) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(c.$1, style: const TextStyle(fontSize: 22)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  c.$2,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _infoChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// TAB 4: VÍDEOS (YouTube WebView)
+// ============================================================
+
+class _VideosTab extends StatefulWidget {
+  const _VideosTab();
+
+  @override
+  State<_VideosTab> createState() => _VideosTabState();
+}
+
+class _VideosTabState extends State<_VideosTab> {
+  late WebViewController _controller;
+  bool _isLoading = true;
+  String _currentFilter = 'geral';
+
+  static const Map<String, Map<String, String>> _filters = {
+    'geral': {'label': '⚽ Geral', 'query': 'Copa do Mundo 2026 FIFA oficial'},
+    'brasil': {
+      'label': '🇧🇷 Brasil',
+      'query': 'Brasil Copa do Mundo 2026 seleção',
+    },
+    'grupos': {
+      'label': '👥 Grupos',
+      'query': 'sorteio grupos Copa do Mundo 2026',
+    },
+    'noticias': {
+      'label': '📰 Notícias',
+      'query': 'Copa do Mundo 2026 últimas notícias',
+    },
+    'estrelas': {
+      'label': '🌟 Estrelas',
+      'query': 'Mbappé Vinicius Messi Haaland Copa 2026',
+    },
+    'sedes': {
+      'label': '🏟️ Estádios',
+      'query': 'estádios sedes Copa do Mundo 2026',
+    },
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _setupWebView();
+  }
+
+  void _setupWebView() {
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setUserAgent(
+        'Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 '
+        '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+      )
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (_) {
+            if (mounted) setState(() => _isLoading = true);
+          },
+          onPageFinished: (_) {
+            if (mounted) setState(() => _isLoading = false);
+          },
+          onWebResourceError: (_) {
+            if (mounted) setState(() => _isLoading = false);
+          },
+          onNavigationRequest: (request) {
+            final url = request.url;
+            if (url.contains('youtube.com') ||
+                url.contains('youtu.be') ||
+                url.contains('google.com') ||
+                url.contains('googleapis.com') ||
+                url.contains('gstatic.com') ||
+                url.contains('yt3.ggpht.com') ||
+                url.contains('ytimg.com')) {
+              return NavigationDecision.navigate;
+            }
+            return NavigationDecision.prevent;
+          },
+        ),
+      )
+      ..loadRequest(_buildSearchUri('geral'));
+  }
+
+  Uri _buildSearchUri(String filterKey) {
+    final query = _filters[filterKey]?['query'] ?? 'Copa do Mundo 2026';
+    final encoded = Uri.encodeComponent(query);
+    return Uri.parse('https://m.youtube.com/results?search_query=$encoded');
+  }
+
+  void _applyFilter(String filterKey) {
+    if (_currentFilter == filterKey) return;
+    setState(() => _currentFilter = filterKey);
+    _controller.loadRequest(_buildSearchUri(filterKey));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Filter chips bar
+        Container(
+          height: 52,
+          color: AppColors.background,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            children: _filters.entries.map((entry) {
+              final isSelected = _currentFilter == entry.key;
+              return GestureDetector(
+                onTap: () => _applyFilter(entry.key),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.primaryGold
+                        : Colors.white.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.primaryGold
+                          : Colors.white24,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    entry.value['label']!,
+                    style: TextStyle(
+                      color: isSelected ? Colors.black : Colors.white60,
+                      fontSize: 12,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        // Divider
+        Container(height: 1, color: Colors.white10),
+        // WebView
+        Expanded(
+          child: Stack(
+            children: [
+              WebViewWidget(controller: _controller),
+              if (_isLoading)
+                Container(
+                  color: AppColors.background,
+                  child: const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(
+                          color: AppColors.primaryGold,
+                          strokeWidth: 2.5,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'Carregando vídeos...',
+                          style: TextStyle(color: Colors.white54, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}

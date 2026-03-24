@@ -15,6 +15,7 @@ import '../bloc/world_cup_event.dart';
 import '../bloc/world_cup_state.dart';
 import '../widgets/bracket_view.dart';
 import '../widgets/expandable_fab.dart';
+import 'info_page.dart';
 
 class WorldCupPage extends StatefulWidget {
   const WorldCupPage({super.key});
@@ -164,6 +165,10 @@ class _WorldCupPageState extends State<WorldCupPage> {
                 ActionButton(
                   onPressed: () {
                     _fabKey.currentState?.close();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const InfoPage()),
+                    );
                   },
                   icon: FaIcon(FontAwesomeIcons.personThroughWindow, size: 20),
                 ),
@@ -339,7 +344,7 @@ class _CalendarTab extends StatelessWidget {
     final Map<String, List<MatchEntity>> groupedByDate = {};
     for (var match in groupMatches) {
       final dateStr =
-          "${match.date.day.toString().padLeft(2, '0')}/${match.date.month.toString().padLeft(2, '0')}";
+          "${match.date.day.toString().padLeft(2, '0')}/${match.date.month.toString().padLeft(2, '0')}/${match.date.year}";
       if (!groupedByDate.containsKey(dateStr)) {
         groupedByDate[dateStr] = [];
       }
@@ -361,6 +366,7 @@ class _CalendarTab extends StatelessWidget {
           children: [
             _GroupHeader(
               title: "DATA: $dateKey",
+
               showEdit: false,
               matchIds: dayMatchIds,
             ),
@@ -1027,7 +1033,7 @@ class _PremiumMatchCard extends StatelessWidget {
                         padding: EdgeInsets.only(right: 4.0),
                         child: Icon(
                           Icons.group,
-                          size: 10,
+                          size: 12,
                           color: Colors.white38,
                         ),
                       ),
@@ -1046,7 +1052,7 @@ class _PremiumMatchCard extends StatelessWidget {
                         ), // Dá um espacinho entre o ícone e a data
                         child: Icon(
                           Icons.calendar_today,
-                          size: 10,
+                          size: 12,
                           color: Colors.white38,
                         ),
                       ),
@@ -1055,7 +1061,7 @@ class _PremiumMatchCard extends StatelessWidget {
                     // 3. Data e Horário)
                     TextSpan(
                       text:
-                          "${match.date.day.toString().padLeft(2, '0')}/${match.date.month.toString().padLeft(2, '0')} às ${match.date.hour.toString().padLeft(2, '0')}:${match.date.minute.toString().padLeft(2, '0')}",
+                          "${match.date.day.toString().padLeft(2, '0')}/${match.date.month.toString().padLeft(2, '0')}/${match.date.year}   às ${match.date.hour.toString().padLeft(2, '0')}:${match.date.minute.toString().padLeft(2, '0')}",
                     ),
 
                     // 4. Ícone de Localização
@@ -1065,7 +1071,7 @@ class _PremiumMatchCard extends StatelessWidget {
                         padding: EdgeInsets.only(left: 16.0, right: 4.0),
                         child: Icon(
                           Icons.location_on,
-                          size: 10,
+                          size: 12,
                           color: Colors.white38,
                         ),
                       ),
