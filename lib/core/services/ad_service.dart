@@ -7,12 +7,12 @@ import 'package:flutter/foundation.dart';
 class AdService {
   static const String _premiumKey = 'is_premium';
 
-  // IDs de TESTE — substitua pelos reais antes de publicar
-  static const String bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
+  // IDs de meus substituidos
+  static const String bannerAdUnitId = 'ca-app-pub-7718977064043887/6584385600';
   static const String interstitialAdUnitId =
-      'ca-app-pub-3940256099942544/1033173712';
+      'ca-app-pub-7718977064043887/6276296249';
   static const String rewardedAdUnitId =
-      'ca-app-pub-3940256099942544/5224354917'; // ← NOVO
+      'ca-app-pub-7718977064043887/1874984407'; // ← NOVO
 
   static bool _isPremium = false;
   static InterstitialAd? _interstitialAd;

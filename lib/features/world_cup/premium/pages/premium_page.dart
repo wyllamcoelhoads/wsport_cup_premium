@@ -125,7 +125,7 @@ class _PremiumPageState extends State<PremiumPage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
-          'WSports Premium',
+          'Copa do Mundo 2026',
           style: TextStyle(color: AppColors.primaryGold),
         ),
         backgroundColor: AppColors.background,
@@ -156,7 +156,7 @@ class _PremiumPageState extends State<PremiumPage> {
                   ),
                   const SizedBox(height: 24),
                   const Text(
-                    'WSports Premium',
+                    'Copa Do Mundo 2026 - bracket Premium',
                     style: TextStyle(
                       color: AppColors.primaryGold,
                       fontSize: 28,
@@ -211,7 +211,7 @@ class _PremiumPageState extends State<PremiumPage> {
                           ? const CircularProgressIndicator(color: Colors.black)
                           : Text(
                               _product != null
-                                  ? 'COMPRAR POR ${_product!.price}'
+                                  ? 'Seja Premium por apenas ${_product!.price}'
                                   : 'CARREGANDO...',
                               style: const TextStyle(
                                 color: Colors.black,
