@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // 1. Importações obrigatórias do Firebase
 import 'package:firebase_core/firebase_core.dart';
+import 'core/widgets/update_banner.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wsports_cup_premium/features/splash/presentation/pages/video_splash_screen.dart';
@@ -21,7 +22,8 @@ void main() async {
 
   // 3. Inicialização da Injeção de Dependência (agora segura, pois o Firebase já acordou)
   await di.init();
-  await AdService.initialize(); // Inicializa a monetização pelo admob
+  // 4. Inicializa o AdMob em background para NÃO travar o seu Splash Screen
+  AdService.initialize().catchError((e) => debugPrint('Erro AdMob: $e'));
   // 1. Descomente esta linha para rodar o insert, depois comente novamente!
   //await popularGruposFirebase(); ////////////////////////////EENVIAR DADOS PARA O BANCO FIREBASE (RODAR APENAS UMA VEZ, DEPOIS COMENTAR NOVAMENTE)
   runApp(const MyApp());
@@ -35,11 +37,19 @@ class MyApp extends StatelessWidget {
     return BlocProvider<WorldCupBloc>(
       create: (context) => sl<WorldCupBloc>()..add(LoadMatchesEvent()),
       child: MaterialApp(
-        title: 'WSports World Cup',
+        title: 'Copa do Mundo 2026',
         debugShowCheckedModeBanner: false,
 
         // Aplica o Tema Premium
         theme: AppTheme.darkTheme,
+        // Envelopa toda a navegação do app dentro do UpdateBanner
+        // CORREÇÃO: Envelopa toda a navegação com verificação de segurança (Null Safety)
+        builder: (context, child) {
+          if (child == null) {
+            return const SizedBox.shrink(); // Proteção: Se for nulo, desenha nada temporariamente
+          }
+          return UpdateBanner(child: child);
+        },
 
         // Injeta o Bloco da Copa e carrega os jogos
         home: const VideoSplashScreen(),

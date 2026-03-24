@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'wsporte-cup-premium.firebasestorage.app',
     measurementId: 'G-SEQMZP9B21',
   );
+
 }

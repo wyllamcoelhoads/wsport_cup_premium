@@ -365,8 +365,8 @@ class _CalendarTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _GroupHeader(
-              title: "DATA: $dateKey",
-
+              icon: Icons.calendar_today,
+              title: dateKey,
               showEdit: false,
               matchIds: dayMatchIds,
             ),
@@ -682,11 +682,13 @@ class _GroupHeader extends StatelessWidget {
   final String title;
   final bool showEdit;
   final List<String> matchIds;
+  final IconData? icon;
 
   const _GroupHeader({
     required this.title,
     this.showEdit = true,
     this.matchIds = const [],
+    this.icon,
   });
 
   @override
@@ -704,13 +706,22 @@ class _GroupHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title.toUpperCase(),
-            style: const TextStyle(
-              color: AppColors.primaryGold,
-              fontWeight: FontWeight.w900,
-              fontSize: 16,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: AppColors.primaryGold, size: 18),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                title.toUpperCase(),
+                style: const TextStyle(
+                  color: AppColors.primaryGold,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                ),
+              ),
+            ],
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 1, vertical: 1),
