@@ -8,7 +8,7 @@ import '../../main.dart';
 class UpdateBanner extends StatelessWidget {
   final Widget child; // O restante do seu aplicativo
 
-  const UpdateBanner({Key? key, required this.child}) : super(key: key);
+  const UpdateBanner({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {

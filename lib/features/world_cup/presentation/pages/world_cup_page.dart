@@ -807,11 +807,17 @@ class _GroupHeader extends StatelessWidget {
             ),
             onPressed: () async {
               Navigator.pop(dialogContext);
+              // antes de começar o Adservice o context é salvo para ser usado
+              // com segurança de não cacher no retorno do aqait
+              final bloc = context.read<WorldCupBloc>();
+
               final watched = await AdService.showRewarded();
+              // Verificando se o widhget ainda existe para ser usado em sequencia
+              // para tratar a possibilidade de a tela cacher devido ao widget não existir mais depois de voltar do Adservice
+              //if (!context.mounted) return;
+
               if (watched) {
-                context.read<WorldCupBloc>().add(
-                  GenerateRandomScoresEvent(matchIds: matchIds),
-                );
+                bloc.add(GenerateRandomScoresEvent(matchIds: matchIds));
               }
             },
             child: const Row(
