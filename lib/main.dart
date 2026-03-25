@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // 1. Importações obrigatórias do Firebase
 import 'package:firebase_core/firebase_core.dart';
+import 'core/services/version_check_service.dart';
 import 'core/widgets/update_banner.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,6 +13,8 @@ import 'package:wsports_cup_premium/injection_container.dart';
 import 'package:wsports_cup_premium/injection_container.dart' as di;
 import './core/services/ad_service.dart';
 import 'core/constants/app_theme.dart';
+
+final ValueNotifier<bool> showUpdateBannerNotifier = ValueNotifier<bool>(false);
 
 void main() async {
   // 1. Inicialização do Flutter
@@ -27,6 +30,18 @@ void main() async {
   // 1. Descomente esta linha para rodar o insert, depois comente novamente!
   //await popularGruposFirebase(); ////////////////////////////EENVIAR DADOS PARA O BANCO FIREBASE (RODAR APENAS UMA VEZ, DEPOIS COMENTAR NOVAMENTE)
   runApp(const MyApp());
+
+  _verificarAtualizacao();
+}
+
+Future<void> _verificarAtualizacao() async {
+  VersionCheckService checker = VersionCheckService();
+  bool atualizado = await checker.isAppUpToDate();
+
+  // Se não estiver atualizado, mostra o banner!
+  if (!atualizado) {
+    showUpdateBannerNotifier.value = true;
+  }
 }
 
 class MyApp extends StatelessWidget {

@@ -940,7 +940,7 @@ class _Copa2026Tab extends StatelessWidget {
       child: Column(
         children: [
           const Text(
-            'FIFA WORLD CUP 2026™',
+            'COPA DO MUNDO FIFA 2026™',
             style: TextStyle(
               color: AppColors.primaryGold,
               fontSize: 20,

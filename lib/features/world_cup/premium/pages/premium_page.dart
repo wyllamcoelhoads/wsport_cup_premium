@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:wsports_cup_premium/core/constants/app_theme.dart';
 import 'package:wsports_cup_premium/core/services/ad_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class PremiumPage extends StatefulWidget {
   const PremiumPage({super.key});
@@ -19,6 +20,8 @@ class _PremiumPageState extends State<PremiumPage> {
   String? _errorMessage;
   ProductDetails? _product;
 
+  String _appVersion = '';
+
   late StreamSubscription<List<PurchaseDetails>> _subscription;
 
   @override
@@ -26,6 +29,18 @@ class _PremiumPageState extends State<PremiumPage> {
     super.initState();
     _listenToPurchases();
     _loadProduct();
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        // Você pode usar apenas packageInfo.version (ex: 1.0.2)
+        // Ou adicionar o buildNumber também (ex: 1.0.2+6) usando packageInfo.buildNumber
+        _appVersion = 'Versão ${packageInfo.version}';
+      });
+    }
   }
 
   void _listenToPurchases() {
@@ -125,7 +140,7 @@ class _PremiumPageState extends State<PremiumPage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
-          'Copa do Mundo 2026',
+          'Simulador Copa do Mundo 2026',
           style: TextStyle(color: AppColors.primaryGold),
         ),
         backgroundColor: AppColors.background,
@@ -156,7 +171,7 @@ class _PremiumPageState extends State<PremiumPage> {
                   ),
                   const SizedBox(height: 24),
                   const Text(
-                    'Copa Do Mundo 2026 - bracket Premium',
+                    'Simulador Copa do Mundo 2026 Premium',
                     style: TextStyle(
                       color: AppColors.primaryGold,
                       fontSize: 28,
@@ -227,6 +242,16 @@ class _PremiumPageState extends State<PremiumPage> {
                     style: TextStyle(color: Colors.white38, fontSize: 11),
                     textAlign: TextAlign.center,
                   ),
+
+                  const SizedBox(height: 24),
+                  if (_appVersion.isNotEmpty)
+                    Text(
+                      _appVersion,
+                      style: const TextStyle(
+                        color: Colors.white24, // Uma cor bem sutil
+                        fontSize: 12,
+                      ),
+                    ),
                 ],
               ),
             ),

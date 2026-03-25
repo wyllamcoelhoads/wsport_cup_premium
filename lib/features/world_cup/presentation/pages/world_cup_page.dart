@@ -222,7 +222,7 @@ class _WorldCupPageState extends State<WorldCupPage> {
                                       Text(
                                         championCode != null
                                             ? "CAMPEÃO 2026"
-                                            : "SIMULADOR 2026",
+                                            : "Simulador Copa do Mundo 2026",
                                         style: const TextStyle(
                                           color: AppColors.primaryGold,
                                           fontWeight: FontWeight.bold,
