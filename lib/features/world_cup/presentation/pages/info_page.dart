@@ -314,7 +314,14 @@ const List<Map<String, dynamic>> _groups = [
 // ============================================================
 
 class InfoPage extends StatefulWidget {
-  const InfoPage({super.key});
+  final int initialTabIndex;
+  final String initialVideoFilter;
+
+  const InfoPage({
+    super.key,
+    this.initialTabIndex = 0,
+    this.initialVideoFilter = 'geral',
+  });
 
   @override
   State<InfoPage> createState() => _InfoPageState();
@@ -327,7 +334,11 @@ class _InfoPageState extends State<InfoPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
   }
 
   @override
@@ -391,11 +402,11 @@ class _InfoPageState extends State<InfoPage>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [
-          _SedesTab(),
-          _SelecaoTab(),
-          _Copa2026Tab(),
-          _VideosTab(),
+        children: [
+          const _SedesTab(),
+          const _SelecaoTab(),
+          const _Copa2026Tab(),
+          _VideosTab(initialFilter: widget.initialVideoFilter),
         ],
       ),
     );
@@ -1493,7 +1504,9 @@ class _Copa2026Tab extends StatelessWidget {
 // ============================================================
 
 class _VideosTab extends StatefulWidget {
-  const _VideosTab();
+  final String initialFilter;
+
+  const _VideosTab({this.initialFilter = 'geral'});
 
   @override
   State<_VideosTab> createState() => _VideosTabState();
@@ -1502,9 +1515,11 @@ class _VideosTab extends StatefulWidget {
 class _VideosTabState extends State<_VideosTab> {
   late WebViewController _controller;
   bool _isLoading = true;
-  String _currentFilter = 'geral';
+  late String _currentFilter;
 
   static const Map<String, Map<String, String>> _filters = {
+    'aovivo': {'label': '🔴 Ao Vivo', 'query': ''},
+    'canais': {'label': '📺 Canais', 'query': ''},
     'geral': {'label': '⚽ Geral', 'query': 'Copa do Mundo 2026 FIFA oficial'},
     'brasil': {
       'label': '🇧🇷 Brasil',
@@ -1531,6 +1546,7 @@ class _VideosTabState extends State<_VideosTab> {
   @override
   void initState() {
     super.initState();
+    _currentFilter = widget.initialFilter;
     _setupWebView();
   }
 
@@ -1560,17 +1576,32 @@ class _VideosTabState extends State<_VideosTab> {
                 url.contains('googleapis.com') ||
                 url.contains('gstatic.com') ||
                 url.contains('yt3.ggpht.com') ||
-                url.contains('ytimg.com')) {
+                url.contains('ytimg.com') ||
+                url.contains('ge.globo.com') ||
+                url.contains('cazefutebol.com') ||
+                url.contains('caze.com.br')) {
               return NavigationDecision.navigate;
             }
             return NavigationDecision.prevent;
           },
         ),
       )
-      ..loadRequest(_buildSearchUri('geral'));
+      ..loadRequest(_buildSearchUri(_currentFilter));
   }
 
   Uri _buildSearchUri(String filterKey) {
+    if (filterKey == 'aovivo') {
+      // YouTube com filtro de conteúdo ao vivo
+      return Uri.parse(
+        'https://m.youtube.com/results?search_query=Copa+do+Mundo+2026+ao+vivo&sp=EgJAAQ%3D%3D',
+      );
+    }
+    if (filterKey == 'canais') {
+      // Busca pelos canais de transmissão
+      return Uri.parse(
+        'https://m.youtube.com/results?search_query=CAZE+TV+GE+Globo+Copa+Mundo+2026+transmissao+ao+vivo',
+      );
+    }
     final query = _filters[filterKey]?['query'] ?? 'Copa do Mundo 2026';
     final encoded = Uri.encodeComponent(query);
     return Uri.parse('https://m.youtube.com/results?search_query=$encoded');
@@ -1586,7 +1617,7 @@ class _VideosTabState extends State<_VideosTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Filter chips bar
+        // Barra de filtros principal
         Container(
           height: 52,
           color: AppColors.background,
@@ -1595,6 +1626,9 @@ class _VideosTabState extends State<_VideosTab> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             children: _filters.entries.map((entry) {
               final isSelected = _currentFilter == entry.key;
+              final isLive = entry.key == 'aovivo';
+              final isChannel = entry.key == 'canais';
+
               return GestureDetector(
                 onTap: () => _applyFilter(entry.key),
                 child: AnimatedContainer(
@@ -1603,33 +1637,200 @@ class _VideosTabState extends State<_VideosTab> {
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? AppColors.primaryGold
-                        : Colors.white.withValues(alpha: 0.08),
+                        ? (isLive
+                              ? Colors.red
+                              : isChannel
+                              ? Colors.blueGrey.shade700
+                              : AppColors.primaryGold)
+                        : (isLive
+                              ? Colors.red.withValues(alpha: 0.12)
+                              : isChannel
+                              ? Colors.blueGrey.withValues(alpha: 0.12)
+                              : Colors.white.withValues(alpha: 0.08)),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected
-                          ? AppColors.primaryGold
+                          ? Colors.transparent
+                          : isLive
+                          ? Colors.red.withValues(alpha: 0.5)
+                          : isChannel
+                          ? Colors.blueGrey.withValues(alpha: 0.5)
                           : Colors.white24,
                     ),
                   ),
                   alignment: Alignment.center,
-                  child: Text(
-                    entry.value['label']!,
-                    style: TextStyle(
-                      color: isSelected ? Colors.black : Colors.white60,
-                      fontSize: 12,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Indicador pulsante para Ao Vivo
+                      if (isLive && !isSelected) ...[
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.red,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      Text(
+                        entry.value['label']!,
+                        style: TextStyle(
+                          color: isSelected
+                              ? (isLive || isChannel
+                                    ? Colors.white
+                                    : Colors.black)
+                              : isLive
+                              ? Colors.red.withValues(alpha: 0.9)
+                              : isChannel
+                              ? Colors.blueGrey.shade300
+                              : Colors.white60,
+                          fontSize: 12,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );
             }).toList(),
           ),
         ),
+
+        // Banner especial para o filtro "Canais"
+        if (_currentFilter == 'canais')
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.blueGrey.shade900,
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.blueGrey.withValues(alpha: 0.3),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.tv, color: Colors.white54, size: 16),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'Canais que transmitirão a Copa 2026',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                // Botão GE
+                GestureDetector(
+                  onTap: () {
+                    _controller.loadRequest(
+                      Uri.parse(
+                        'https://m.youtube.com/results?search_query=GE+Globo+Copa+do+Mundo+2026',
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0066CC).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: const Color(0xFF0066CC).withValues(alpha: 0.6),
+                      ),
+                    ),
+                    child: const Text(
+                      '📺 GE',
+                      style: TextStyle(
+                        color: Color(0xFF4DA6FF),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                // Botão CAZE TV
+                GestureDetector(
+                  onTap: () {
+                    _controller.loadRequest(
+                      Uri.parse(
+                        'https://m.youtube.com/results?search_query=CAZE+TV+Copa+do+Mundo+2026+ao+vivo',
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.orange.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    child: const Text(
+                      '⚡ CAZE',
+                      style: TextStyle(
+                        color: Colors.orange,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+        // Banner especial para Ao Vivo
+        if (_currentFilter == 'aovivo')
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.08),
+              border: Border(
+                bottom: BorderSide(color: Colors.red.withValues(alpha: 0.2)),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Conteúdo ao vivo da Copa do Mundo 2026',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
         // Divider
         Container(height: 1, color: Colors.white10),
+
         // WebView
         Expanded(
           child: Stack(
