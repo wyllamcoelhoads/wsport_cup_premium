@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import '../../../../main.dart';
 import '../../../world_cup/presentation/pages/world_cup_page.dart'; // Sua tela principal
 
 class VideoSplashScreen extends StatefulWidget {
@@ -36,6 +37,8 @@ class _VideoSplashScreenState extends State<VideoSplashScreen> {
   }
 
   void _navigateToHome() {
+    // Ela vai rodar em segundo plano assim que o usuário sair do splash screen.
+    verificarAtualizacao();
     // Navega para a WorldCupPage substituindo a tela de splash (para o usuário não conseguir voltar para o vídeo)
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => const WorldCupPage()),

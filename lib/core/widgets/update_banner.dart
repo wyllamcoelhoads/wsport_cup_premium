@@ -36,7 +36,7 @@ class UpdateBanner extends StatelessWidget {
                   children: [
                     const Expanded(
                       child: Text(
-                        "Nova versão disponível! Atualize o app para receber as últimas novidades da Copa.",
+                        "Nova versão disponível, atualize o App!",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 13,
@@ -53,7 +53,9 @@ class UpdateBanner extends StatelessWidget {
                       onPressed: () async {
                         // O link da sua loja
                         final Uri url = Uri.parse(
-                          'https://play.google.com/store/apps/details?id=br.com.william.wsports_cup_premium',
+                          // link do teste aqui
+                          'https://play.google.com/apps/internaltest/4700377440538203475',
+                          //'https://play.google.com/store/apps/details?id=br.com.william.wsports_cup_premium',
                         );
                         if (await canLaunchUrl(url)) {
                           await launchUrl(

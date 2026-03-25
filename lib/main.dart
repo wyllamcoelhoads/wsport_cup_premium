@@ -30,11 +30,9 @@ void main() async {
   // 1. Descomente esta linha para rodar o insert, depois comente novamente!
   //await popularGruposFirebase(); ////////////////////////////EENVIAR DADOS PARA O BANCO FIREBASE (RODAR APENAS UMA VEZ, DEPOIS COMENTAR NOVAMENTE)
   runApp(const MyApp());
-
-  _verificarAtualizacao();
 }
 
-Future<void> _verificarAtualizacao() async {
+Future<void> verificarAtualizacao() async {
   VersionCheckService checker = VersionCheckService();
   bool atualizado = await checker.isAppUpToDate();
 
