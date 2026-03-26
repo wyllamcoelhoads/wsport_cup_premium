@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // 1. Importações obrigatórias do Firebase
 import 'package:firebase_core/firebase_core.dart';
+import 'package:wsports_cup_premium/features/world_cup/presentation/pages/world_cup_page.dart';
 import 'core/services/version_check_service.dart';
 import 'core/widgets/update_banner.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:wsports_cup_premium/features/splash/presentation/pages/video_splash_screen.dart';
+//import 'package:wsports_cup_premium/features/splash/presentation/pages/video_splash_screen.dart';
 import 'package:wsports_cup_premium/features/world_cup/presentation/bloc/world_cup_bloc.dart';
 import 'package:wsports_cup_premium/features/world_cup/presentation/bloc/world_cup_event.dart';
 import 'package:wsports_cup_premium/injection_container.dart';
@@ -65,7 +66,8 @@ class MyApp extends StatelessWidget {
         },
 
         // Injeta o Bloco da Copa e carrega os jogos
-        home: const VideoSplashScreen(),
+        //home: const VideoSplashScreen(),
+        home: const WorldCupPage(),
       ),
     );
   }

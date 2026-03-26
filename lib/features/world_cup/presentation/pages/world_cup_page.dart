@@ -33,18 +33,23 @@ class _WorldCupPageState extends State<WorldCupPage> {
   @override
   void initState() {
     super.initState();
-    // Assim que a tela carregar, damos um pequeno atraso e verificamos se devemos pedir permissão
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(seconds: 3), () {
-        _checkAndShowNotificationPrompt();
-      });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 1. Registra a abertura ANTES de verificar
+      await NotificationService.incrementLaunchCount();
+
+      // 2. Aguarda 3 segundos para não atrapalhar o carregamento
+      await Future.delayed(const Duration(seconds: 3));
+
+      // 3. Verifica se deve mostrar
+      await _checkAndShowNotificationPrompt();
     });
   }
 
   Future<void> _checkAndShowNotificationPrompt() async {
-    // Só mostra se o usuário nunca tiver visto esse aviso
-    bool hasShown = await NotificationService.hasShownPrePrompt();
-    if (!hasShown && mounted) {
+    final should = await NotificationService.shouldShowPrompt();
+    if (should && mounted) {
+      // Registra que estamos mostrando (conta a tentativa)
+      await NotificationService.recordPromptShown();
       _showPremiumNotificationDialog(context);
     }
   }
@@ -79,8 +84,7 @@ class _WorldCupPageState extends State<WorldCupPage> {
           ],
         ),
         content: const Text(
-          'Quer ser avisado quando os jogos do seu chaveamento começarem?\n\n'
-          'Brasil 🇧🇷 x Japão 🇯🇵... quem vence essa batalha? Fique por dentro de tudo!',
+          'Quer ser avisado quando os jogos começarem?\n',
           style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.5),
           textAlign: TextAlign.center,
         ),
@@ -98,13 +102,11 @@ class _WorldCupPageState extends State<WorldCupPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
+                // Botão "SIM"
                 onPressed: () async {
-                  Navigator.pop(dialogContext); // Fecha nosso dialog bonito
-                  await NotificationService.markPrePromptAsShown(); // Salva que já viu
-
-                  // AGORA SIM, CHAMA A PERMISSÃO OFICIAL DO SISTEMA!
-                  bool granted = await NotificationService.requestPermission();
-
+                  Navigator.pop(dialogContext);
+                  final granted = await NotificationService.requestPermission();
+                  // requestPermission já chama markAsGranted() internamente
                   if (granted && mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -130,8 +132,9 @@ class _WorldCupPageState extends State<WorldCupPage> {
               ),
               const SizedBox(height: 10),
               TextButton(
-                onPressed: () async {
-                  await NotificationService.markPrePromptAsShown();
+                // Botão "AGORA NÃO"
+                onPressed: () {
+                  // Não marca nada — o contador de aberturas cuida do próximo momento
                   if (mounted) Navigator.pop(dialogContext);
                 },
                 child: const Text(

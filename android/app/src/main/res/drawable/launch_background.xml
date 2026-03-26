@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Cor de fundo preta -->
+    <item android:drawable="@android:color/black" />
+
+    <!-- Imagem centralizada (seu logo/ícone) -->
     <item>
-        <bitmap android:gravity="fill" android:src="@drawable/background"/>
+        <bitmap
+            android:gravity="fill"
+            android:src="@drawable/splash_background" />
     </item>
+
 </layer-list>
+```
+
+### Passo 3 — Configure o `styles.xml`
+Abra:
+```
+android/app/src/main/res/values/styles.xml
