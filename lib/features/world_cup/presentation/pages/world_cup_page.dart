@@ -167,7 +167,9 @@ class _WorldCupPageState extends State<WorldCupPage> {
                     _fabKey.currentState?.close();
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const InfoPage()),
+                      MaterialPageRoute(
+                        builder: (_) => InfoPage(matches: state.matches),
+                      ),
                     );
                   },
                   icon: FaIcon(FontAwesomeIcons.personThroughWindow, size: 20),
@@ -371,7 +373,7 @@ class _CalendarTab extends StatelessWidget {
               matchIds: dayMatchIds,
             ),
             ...dayMatches.map(
-              (match) => _PremiumMatchCard(match: match),
+              (match) => _PremiumMatchCard(match: match, showDate: false),
             ), // Usa o mesmo card de jogo removi o .toList(),
           ],
         );
@@ -399,12 +401,13 @@ class _MatchesTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _GroupHeader(
+              icon: Icons.group,
               title: groupName,
               showEdit: true,
               matchIds: groupMatchIds,
             ),
             ...groupMatches.map(
-              (match) => _PremiumMatchCard(match: match),
+              (match) => _PremiumMatchCard(match: match, showGroup: false),
             ), // Usa o mesmo card de jogo removi o .toList(),
           ],
         );
@@ -980,7 +983,13 @@ class _GroupHeader extends StatelessWidget {
 
 class _PremiumMatchCard extends StatelessWidget {
   final MatchEntity match;
-  const _PremiumMatchCard({required this.match});
+  final bool showDate;
+  final bool showGroup;
+  const _PremiumMatchCard({
+    required this.match,
+    this.showDate = true,
+    this.showGroup = true,
+  });
 
   // ── Helpers de status do jogo ──────────────────────────────
   bool get _isLive {
@@ -1185,18 +1194,38 @@ class _PremiumMatchCard extends StatelessWidget {
                         fontSize: 10,
                       ),
                       children: [
-                        const WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Padding(
-                            padding: EdgeInsets.only(right: 4.0),
-                            child: Icon(
-                              Icons.group,
-                              size: 11,
-                              color: Colors.white38,
+                        if (showDate) ...[
+                          const WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 4.0),
+                              child: Icon(
+                                Icons.calendar_today,
+                                size: 11,
+                                color: Colors.white38,
+                              ),
                             ),
                           ),
-                        ),
-                        TextSpan(text: match.friendlyGroupName),
+                          TextSpan(
+                            text:
+                                "${match.date.day.toString().padLeft(2, '0')}/${match.date.month.toString().padLeft(2, '0')}/${match.date.year}    ",
+                          ),
+                        ],
+
+                        if (showGroup) ...[
+                          const WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 4.0),
+                              child: Icon(
+                                Icons.group,
+                                size: 11,
+                                color: Colors.white38,
+                              ),
+                            ),
+                          ),
+                          TextSpan(text: "${match.friendlyGroupName}   "),
+                        ],
                         const WidgetSpan(
                           alignment: PlaceholderAlignment.middle,
                           child: Padding(
