@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/constants/app_theme.dart';
+import '../../domain/entities/match_entity.dart';
+import '../../domain/logic/repescagem_data.dart';
 
 // ============================================================
 // DATA MODELS
@@ -316,11 +318,13 @@ const List<Map<String, dynamic>> _groups = [
 class InfoPage extends StatefulWidget {
   final int initialTabIndex;
   final String initialVideoFilter;
+  final List<MatchEntity> matches;
 
   const InfoPage({
     super.key,
     this.initialTabIndex = 0,
     this.initialVideoFilter = 'geral',
+    this.matches = const [],
   });
 
   @override
@@ -339,6 +343,12 @@ class _InfoPageState extends State<InfoPage>
       vsync: this,
       initialIndex: widget.initialTabIndex,
     );
+
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -402,9 +412,12 @@ class _InfoPageState extends State<InfoPage>
       ),
       body: TabBarView(
         controller: _tabController,
+        physics: _tabController.index == 3
+            ? const NeverScrollableScrollPhysics()
+            : const BouncingScrollPhysics(),
         children: [
           const _SedesTab(),
-          const _SelecaoTab(),
+          _SelecaoTab(matches: widget.matches),
           const _Copa2026Tab(),
           _VideosTab(initialFilter: widget.initialVideoFilter),
         ],
@@ -669,16 +682,37 @@ class _SedesTab extends StatelessWidget {
 // ============================================================
 
 class _SelecaoTab extends StatelessWidget {
-  const _SelecaoTab();
+  final List<MatchEntity> matches;
+  const _SelecaoTab({required this.matches});
+
+  Map<String, Map<String, String>> _buildSwapMap() {
+    final result = <String, Map<String, String>>{};
+    for (final entry in RepescagemData.opcoes.entries) {
+      final key = entry.key;
+      final optionNames = entry.value.map((o) => o['name']!).toList();
+      for (final match in matches) {
+        if (match.homeTeam == key || optionNames.contains(match.homeTeam)) {
+          result[key] = {'name': match.homeTeam, 'flag': match.homeFlag};
+          break;
+        }
+        if (match.awayTeam == key || optionNames.contains(match.awayTeam)) {
+          result[key] = {'name': match.awayTeam, 'flag': match.awayFlag};
+          break;
+        }
+      }
+    }
+    return result;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final swapMap = _buildSwapMap();
     return ListView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: _groups.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) return _buildConfederationsHeader();
-        return _buildGroupCard(_groups[index - 1]);
+        return _buildGroupCard(_groups[index - 1], swapMap);
       },
     );
   }
@@ -763,8 +797,14 @@ class _SelecaoTab extends StatelessWidget {
     );
   }
 
-  Widget _buildGroupCard(Map<String, dynamic> group) {
+  Widget _buildGroupCard(
+    Map<String, dynamic> group,
+    Map<String, Map<String, String>> swapMap,
+  ) {
     final teams = group['teams'] as List<Map<String, dynamic>>;
+    final groupName = group['group'] as String;
+    final placeholders = RepescagemData.placeholdersNoGrupo(groupName);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -789,7 +829,7 @@ class _SelecaoTab extends StatelessWidget {
                 const Icon(Icons.group, color: AppColors.primaryGold, size: 15),
                 const SizedBox(width: 8),
                 Text(
-                  group['group'],
+                  groupName,
                   style: const TextStyle(
                     color: AppColors.primaryGold,
                     fontWeight: FontWeight.bold,
@@ -811,14 +851,49 @@ class _SelecaoTab extends StatelessWidget {
               mainAxisSpacing: 8,
             ),
             itemCount: teams.length,
-            itemBuilder: (context, i) => _buildTeamTile(teams[i]),
+            itemBuilder: (context, i) {
+              final team = Map<String, dynamic>.from(teams[i]);
+
+              // Verifica se este time é um placeholder de repescagem neste grupo
+              for (final placeholder in placeholders) {
+                final current = swapMap[placeholder];
+                if (current != null) {
+                  // Se o time estático é o placeholder EU/UN (repescagem),
+                  // substitui pelo time atual
+                  final isRepescagemSlot =
+                      team['flag'] == 'eu' || team['flag'] == 'un';
+                  if (isRepescagemSlot &&
+                      (team['name'].toString().contains('Repescagem') ||
+                          team['name'].toString().contains('Rep.'))) {
+                    team['name'] = current['name'];
+                    team['flag'] = current['flag']; // URL completa
+                    team['conf'] = _getConfFromFlag(current['flag'] ?? '');
+                  }
+                }
+              }
+
+              return _buildTeamTile(team);
+            },
           ),
         ],
       ),
     );
   }
 
+  String _getConfFromFlag(String flagUrl) {
+    // Extrai a confederação baseada na bandeira (simplificado)
+    if (flagUrl.contains('/eu') || flagUrl.contains('Europe')) return 'UEFA';
+    return 'Repescagem';
+  }
+
   Widget _buildTeamTile(Map<String, dynamic> team) {
+    final flagValue = team['flag'] as String;
+    // Detecta se é URL completa ou código de país
+    final isUrl = flagValue.startsWith('http');
+    final flagUrl = isUrl
+        ? flagValue.replaceAll('/w320/', '/w40/') // usa tamanho menor
+        : 'https://flagcdn.com/w40/$flagValue.png';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
@@ -830,7 +905,7 @@ class _SelecaoTab extends StatelessWidget {
         children: [
           ClipOval(
             child: CachedNetworkImage(
-              imageUrl: 'https://flagcdn.com/w40/${team['flag']}.png',
+              imageUrl: flagUrl,
               width: 26,
               height: 26,
               fit: BoxFit.cover,

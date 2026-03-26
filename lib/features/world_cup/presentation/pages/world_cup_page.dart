@@ -1009,11 +1009,18 @@ class _PremiumMatchCard extends StatelessWidget {
       return GestureDetector(
         onTap: () => _navigateToVideos(context, 'aovivo'),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.red.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.red.withValues(alpha: 0.8)),
+            color: Colors.red.shade900.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.red.shade400, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.red.withValues(alpha: 0.4),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -1026,16 +1033,14 @@ class _PremiumMatchCard extends StatelessWidget {
                   color: Colors.red,
                 ),
               ),
-              const SizedBox(width: 6),
-              const Icon(Icons.cast, color: Colors.red, size: 12),
-              const SizedBox(width: 4),
+              const SizedBox(width: 5),
               const Text(
                 'AO VIVO',
                 style: TextStyle(
-                  color: Colors.red,
+                  color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 1.0,
+                  letterSpacing: 1.2,
                 ),
               ),
             ],
@@ -1046,26 +1051,31 @@ class _PremiumMatchCard extends StatelessWidget {
       return GestureDetector(
         onTap: () => _navigateToVideos(context, 'geral'),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.primaryGold.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppColors.primaryGold.withValues(alpha: 0.5),
-            ),
+            color: const Color(0xFF1B5E20).withValues(alpha: 0.85),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.green.shade400, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.green.withValues(alpha: 0.25),
+                blurRadius: 6,
+                spreadRadius: 1,
+              ),
+            ],
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.cast, color: AppColors.primaryGold, size: 12),
+              Icon(Icons.play_circle_fill, color: Colors.greenAccent, size: 13),
               SizedBox(width: 5),
               Text(
-                'ASSISTIR',
+                'REPLAY',
                 style: TextStyle(
-                  color: AppColors.primaryGold,
+                  color: Colors.greenAccent,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 0.8,
+                  letterSpacing: 1.0,
                 ),
               ),
             ],
@@ -1073,25 +1083,26 @@ class _PremiumMatchCard extends StatelessWidget {
         ),
       );
     } else {
-      // Jogo futuro
+      // Jogo futuro — discreto, sem destaque
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.white12),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.schedule, color: Colors.white30, size: 12),
-            SizedBox(width: 5),
+            const Icon(Icons.schedule, color: Colors.white24, size: 12),
+            const SizedBox(width: 5),
             Text(
-              'A DEFINIR',
-              style: TextStyle(
+              "${match.date.hour.toString().padLeft(2, '0')}:${match.date.minute.toString().padLeft(2, '0')}",
+              style: const TextStyle(
                 color: Colors.white30,
                 fontSize: 10,
-                letterSpacing: 0.8,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.5,
               ),
             ),
           ],
@@ -1104,21 +1115,21 @@ class _PremiumMatchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool hasPrediction = match.userHomePrediction != null;
 
-    return GestureDetector(
-      // 1. O clique chama a função abaixo
-      onTap: () => _showPredictionDialog(context, match),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppColors.cardSurface,
-          borderRadius: BorderRadius.circular(16),
-          border: hasPrediction
-              ? Border.all(color: AppColors.primaryGold, width: 1.0)
-              : Border.all(color: Colors.transparent),
-        ),
-        child: Column(
-          children: [
-            Padding(
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.cardSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: hasPrediction
+            ? Border.all(color: AppColors.primaryGold, width: 1.0)
+            : Border.all(color: Colors.transparent),
+      ),
+      child: Column(
+        children: [
+          // ── Zona 1: toque abre o diálogo de palpite ──────────
+          GestureDetector(
+            onTap: () => _showPredictionDialog(context, match),
+            child: Padding(
               padding: const EdgeInsets.all(12.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1150,85 +1161,67 @@ class _PremiumMatchCard extends StatelessWidget {
                 ],
               ),
             ),
+          ),
 
-            // ── Barra inferior com info + botão de status ─────────
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(16),
-                ),
+          // ── Zona 2: infos + botão de status (sem conflito) ───
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(12, 7, 12, 7),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(16),
               ),
-              child: Column(
-                children: [
-                  // Linha de informações (grupo, data, estádio)
-                  Text.rich(
+            ),
+            child: // Linha de info sem a data (já exibida no cabeçalho do grupo)
+            Row(
+              children: [
+                // Grupo + local — expandido à esquerda
+                Expanded(
+                  child: Text.rich(
                     TextSpan(
                       style: const TextStyle(
                         color: Colors.white38,
                         fontSize: 10,
                       ),
                       children: [
-                        // 1. Nome do Grupo
                         const WidgetSpan(
                           alignment: PlaceholderAlignment.middle,
                           child: Padding(
                             padding: EdgeInsets.only(right: 4.0),
                             child: Icon(
                               Icons.group,
-                              size: 12,
+                              size: 11,
                               color: Colors.white38,
                             ),
                           ),
                         ),
                         TextSpan(text: match.friendlyGroupName),
-                        // 2. Ícone de Calendário
                         const WidgetSpan(
                           alignment: PlaceholderAlignment.middle,
                           child: Padding(
-                            padding: EdgeInsets.only(left: 16.0, right: 4.0),
-                            child: Icon(
-                              Icons.calendar_today,
-                              size: 12,
-                              color: Colors.white38,
-                            ),
-                          ),
-                        ),
-                        // 3. Data e Horário
-                        TextSpan(
-                          text:
-                              "${match.date.day.toString().padLeft(2, '0')}/${match.date.month.toString().padLeft(2, '0')}/${match.date.year}   às ${match.date.hour.toString().padLeft(2, '0')}:${match.date.minute.toString().padLeft(2, '0')}",
-                        ),
-                        // 4. Ícone de Localização
-                        const WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Padding(
-                            padding: EdgeInsets.only(left: 16.0, right: 4.0),
+                            padding: EdgeInsets.only(left: 10.0, right: 4.0),
                             child: Icon(
                               Icons.location_on,
-                              size: 12,
+                              size: 11,
                               color: Colors.white38,
                             ),
                           ),
                         ),
-                        // 5. Estádio e País
                         TextSpan(text: "${match.stadium}, ${match.country}"),
                       ],
                     ),
-                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-
-                  const SizedBox(height: 8),
-
-                  // Chip de status (Ao Vivo / Assistir / A Definir)
-                  _buildStatusChip(context),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                // Botão de status fixo à direita
+                _buildStatusChip(context),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
