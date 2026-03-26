@@ -288,6 +288,74 @@ class _WorldCupPageState extends State<WorldCupPage> {
                               color: AppColors.primaryGold,
                             ),
                           )
+                        // NOVA VERIFICAÇÃO DE ERRO AQUI:
+                        : state.errorMessage != null
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // SUA IMAGEM DA COPA ENTRA AQUI
+                                  Image.asset(
+                                    'assets/images/sem_internet.png',
+                                    width: 200,
+                                  ),
+                                  const SizedBox(height: 20),
+                                  const Text(
+                                    "Ops! Você está offline.",
+                                    style: TextStyle(
+                                      color: AppColors.primaryGold,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  const Text(
+                                    "O aplicativo precisa de internet para carregar os dados iniciais do torneio.",
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 14,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 30),
+                                  ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primaryGold,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    icon: const Icon(
+                                      Icons.refresh,
+                                      color: Colors.black,
+                                    ),
+                                    label: const Text(
+                                      "TENTAR NOVAMENTE",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      // Dispara o evento de novo quando o botão é clicado
+                                      context.read<WorldCupBloc>().add(
+                                        LoadMatchesEvent(),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        // FIM DA NOVA VERIFICAÇÃO
                         : state.matches.isEmpty
                         ? const Center(
                             child: Text(

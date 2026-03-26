@@ -6,6 +6,7 @@ import '../../domain/logic/bracket_calculator.dart';
 import '../bloc/world_cup_event.dart';
 import '../bloc/world_cup_state.dart';
 import 'dart:math';
+import 'dart:io';
 
 class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
   final GetMatchesUseCase getMatchesUseCase;
@@ -13,22 +14,67 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
 
   WorldCupBloc({required this.getMatchesUseCase, required this.repository})
     : super(const WorldCupState()) {
+    Future<bool> hasInternet() async {
+      try {
+        final result = await InternetAddress.lookup('google.com');
+        return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+      } on SocketException catch (_) {
+        return false;
+      }
+    }
+
     // ==========================================================
     // 1. CARREGAR JOGOS
     // ==========================================================
     on<LoadMatchesEvent>((event, emit) async {
-      emit(state.copyWith(isLoading: true));
-      final matchesFromFirebase = await getMatchesUseCase();
-      final matchesWithSwaps = await LocalStorageService.restoreSwaps(
-        matchesFromFirebase,
-      );
-      final restoredMatches = await LocalStorageService.restorePredictions(
-        matchesWithSwaps,
-      );
-      final calculatedMatches = BracketCalculator.populate(restoredMatches);
-      emit(state.copyWith(isLoading: false, matches: calculatedMatches));
-    });
+      emit(state.copyWith(isLoading: true, clearError: true));
+      try {
+        final matchesFromFirebase = await getMatchesUseCase();
 
+        // Se a lista vier vazia, o Firebase não tem cache. Vamos validar a internet!
+        if (matchesFromFirebase.isEmpty) {
+          bool isConnected = await hasInternet();
+          if (!isConnected) {
+            emit(
+              state.copyWith(
+                isLoading: false,
+                errorMessage: "Sem conexão com a internet.",
+              ),
+            );
+            return; // Para a execução aqui
+          }
+        }
+
+        final matchesWithSwaps = await LocalStorageService.restoreSwaps(
+          matchesFromFirebase,
+        );
+        final restoredMatches = await LocalStorageService.restorePredictions(
+          matchesWithSwaps,
+        );
+        final calculatedMatches = BracketCalculator.populate(restoredMatches);
+
+        emit(state.copyWith(isLoading: false, matches: calculatedMatches));
+      } catch (e) {
+        // Se o Firebase estourar um erro direto, checamos a rede
+        bool isConnected = await hasInternet();
+        if (!isConnected) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              errorMessage: "Sem conexão com a internet.",
+            ),
+          );
+        } else {
+          // Erro genérico no servidor
+          emit(
+            state.copyWith(
+              isLoading: false,
+              errorMessage: "Erro ao carregar dados do servidor.",
+            ),
+          );
+        }
+      }
+    });
     // ==========================================================
     // 2. SALVAR PALPITE
     // ==========================================================

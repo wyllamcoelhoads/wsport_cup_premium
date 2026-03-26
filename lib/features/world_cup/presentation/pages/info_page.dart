@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:wsports_cup_premium/core/widgets/network_aware_tab.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../domain/entities/match_entity.dart';
 import '../../domain/logic/repescagem_data.dart';
@@ -417,9 +418,12 @@ class _InfoPageState extends State<InfoPage>
             : const BouncingScrollPhysics(),
         children: [
           const _SedesTab(),
-          _SelecaoTab(matches: widget.matches),
+          NetworkAwareTab(child: _SelecaoTab(matches: widget.matches)),
+
           const _Copa2026Tab(),
-          _VideosTab(initialFilter: widget.initialVideoFilter),
+          NetworkAwareTab(
+            child: _VideosTab(initialFilter: widget.initialVideoFilter),
+          ),
         ],
       ),
     );
