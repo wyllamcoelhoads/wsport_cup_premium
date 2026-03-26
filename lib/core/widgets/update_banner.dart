@@ -54,8 +54,7 @@ class UpdateBanner extends StatelessWidget {
                         // O link da sua loja
                         final Uri url = Uri.parse(
                           // link do teste aqui
-                          'https://play.google.com/apps/internaltest/4700377440538203475',
-                          //'https://play.google.com/store/apps/details?id=br.com.william.wsports_cup_premium',
+                          'https://play.google.com/store/apps/details?id=br.com.william.wsports_cup_premium',
                         );
                         if (await canLaunchUrl(url)) {
                           await launchUrl(
