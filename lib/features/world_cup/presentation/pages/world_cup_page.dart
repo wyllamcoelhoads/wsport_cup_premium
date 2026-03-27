@@ -47,11 +47,13 @@ class _WorldCupPageState extends State<WorldCupPage> {
 
   Future<void> _checkAndShowNotificationPrompt() async {
     final should = await NotificationService.shouldShowPrompt();
-    if (should && mounted) {
-      // Registra que estamos mostrando (conta a tentativa)
-      await NotificationService.recordPromptShown();
-      _showPremiumNotificationDialog(context);
-    }
+    if (!should) return;
+
+    // Registra que estamos mostrando (conta a tentativa)
+    await NotificationService.recordPromptShown();
+    if (!mounted) return;
+
+    _showPremiumNotificationDialog(context);
   }
 
   void _showPremiumNotificationDialog(BuildContext context) {
@@ -107,7 +109,7 @@ class _WorldCupPageState extends State<WorldCupPage> {
                   Navigator.pop(dialogContext);
                   final granted = await NotificationService.requestPermission();
                   // requestPermission já chama markAsGranted() internamente
-                  if (granted && mounted) {
+                  if (granted && context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
