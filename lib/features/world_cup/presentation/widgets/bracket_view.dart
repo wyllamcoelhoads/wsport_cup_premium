@@ -18,73 +18,67 @@ class BracketView extends StatefulWidget {
 
 class _BracketViewState extends State<BracketView> {
   late TransformationController _transformationController;
-  bool _isInteractive = false;
 
-  // Variáveis de layout todas centralizadas dentro do State
+  // Índice da fase atualmente visível (para highlight do botão ativo)
+  int _activePhaseIndex = 0;
+
+  // Variáveis de layout centralizadas
   final double cardWidth = 160.0;
-  final double cardHeight = 60.0; // Trazido para dentro da classe
+  final double cardHeight = 60.0;
   final double connectorWidth = 50.0;
-  final double r16Gap = 140.0; // Aumentado para os cards da R32 não sobreporem
+  final double r16Gap = 140.0;
 
   @override
   void initState() {
     super.initState();
     _transformationController = TransformationController();
-  }
 
-  void _toggleInteractivity() {
-    setState(() {
-      _isInteractive = !_isInteractive;
+    // ─── CORREÇÃO PRINCIPAL ───────────────────────────────────────────────────
+    // Agenda a navegação para o primeiro frame após o widget ser montado.
+    // Sem isso, o controller fica em (0,0) e a tela aparece preta porque
+    // o conteúdo está centralizado dentro de um container de 2000px.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _scrollToPhase(0);
     });
-
-    if (!_isInteractive) {
-      // BÔNUS: Em vez de usar Matrix4.identity() que desalinha a tela,
-      // forçamos o alinhamento de volta para a primeira coluna (32-avos)
-      // preservando a posição vertical que o usuário estava!
-      _scrollToPhase(0);
-    }
-
-    if (widget.onLockScroll != null) {
-      widget.onLockScroll!(_isInteractive);
-    }
   }
 
-  // Função para navegar até a fase desejada
-  // Função para navegar até a fase desejada com alinhamento perfeito
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  // ─── NAVEGAÇÃO HORIZONTAL (SOMENTE VIA BOTÕES) ────────────────────────────
   void _scrollToPhase(int phaseIndex) {
-    // 1. Pega a largura do ecrã do telemóvel
+    if (!mounted) return;
+
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // 2. Matemática do layout:
-    // O Container tem 2000 de largura.
-    // O conteúdo total (cards + conectores) tem 1000.
-    // Como está centralizado, o conteúdo começa na coordenada X = 500.
+    // O container tem 2000px de largura e o conteúdo fica centralizado.
+    // startX = 600 é o ponto onde o primeiro card começa (margem do center).
     const double startX = 600;
 
-    // 3. Acha o centro exato da coluna clicada
     final double columnCenterX =
         startX + (phaseIndex * (cardWidth + connectorWidth)) + (cardWidth / 2);
 
-    // 4. Calcula o movimento para alinhar o centro da coluna com o centro do ecrã
     final double xOffset = (screenWidth / 2) - columnCenterX;
 
-    // 5. Preserva a posição vertical atual (para a tela não saltar para cima do nada)
+    // Preserva a posição vertical atual para não pular para o topo
     final currentY = _transformationController.value.getTranslation().y;
 
     setState(() {
+      _activePhaseIndex = phaseIndex;
       _transformationController.value = Matrix4.translationValues(
         xOffset,
         currentY,
         0,
-      ); // Aplica o deslocamento horizontal e mantém o vertical
+      );
     });
   }
 
   int _getMatchNumber(String id) {
     final parts = id.split('_');
-    if (parts.length > 1) {
-      return int.tryParse(parts.last) ?? 0;
-    }
+    if (parts.length > 1) return int.tryParse(parts.last) ?? 0;
     return 0;
   }
 
@@ -128,58 +122,41 @@ class _BracketViewState extends State<BracketView> {
 
     return Stack(
       children: [
-        // Visualizador Interativo
-        GestureDetector(
-          onDoubleTap: _toggleInteractivity,
-          behavior: HitTestBehavior.opaque,
-          child: InteractiveViewer(
-            transformationController: _transformationController,
-            constrained: false,
-            panEnabled: true,
-            scaleEnabled: _isInteractive,
-            panAxis: _isInteractive ? PanAxis.free : PanAxis.vertical,
-            minScale: 0.5,
-            maxScale: 2.0,
-
-            // Margens para garantir que o utilizador consiga arrastar um pouco além dos limites
-            boundaryMargin: const EdgeInsets.symmetric(
-              horizontal: 1000,
-              vertical:
-                  400, // Reduzido para evitar que a tela se perca no vazio
-            ),
-
-            child: Container(
-              width: 2000,
-
-              // 1. REMOVEMOS A ALTURA FIXA (height)! O Flutter vai calcular a altura perfeita automaticamente.
-
-              // 2. O RESPIRO EXATO:
-              // top: 160 -> Empurra o chaveamento só o suficiente para começar logo abaixo da barra de botões.
-              // bottom: 100 -> Dá um espacinho no final para a última chave não ficar colada à borda do ecrã.
-              padding: const EdgeInsets.only(top: 160, bottom: 100),
-
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                // O Flutter já centraliza verticalmente os elementos da Row de forma automática!
-                children: [
-                  _buildRoundColumn("32-AVOS", r32, r16Gap / 2),
-                  _buildConnectors(r32.length, r16Gap / 2),
-                  _buildRoundColumn("OITAVAS", r16, r16Gap),
-                  _buildConnectors(r16.length, r16Gap),
-                  _buildRoundColumn("QUARTAS", qf, r16Gap * 2),
-                  _buildConnectors(qf.length, r16Gap * 2),
-                  _buildRoundColumn("SEMIFINAL", sf, r16Gap * 4),
-                  _buildConnectors(sf.length, r16Gap * 4),
-                  _buildRoundColumn("FINAL", finals, 0, isFinal: true),
-                ],
-              ),
+        // ─── CHAVEAMENTO (scroll apenas VERTICAL, horizontal via botões) ──────
+        InteractiveViewer(
+          transformationController: _transformationController,
+          constrained: false,
+          // ► PAN HORIZONTAL DESABILITADO — apenas vertical para ver todos os jogos
+          panAxis: PanAxis.vertical,
+          panEnabled: true, //
+          scaleEnabled: false, // zoom desabilitado para simplicidade
+          boundaryMargin: const EdgeInsets.symmetric(
+            horizontal: 2000,
+            vertical: 1400, //
+          ),
+          child: Container(
+            width: 2000,
+            padding: const EdgeInsets.only(top: 100, bottom: 400),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildRoundColumn("32-AVOS", r32, r16Gap / 2),
+                _buildConnectors(r32.length, r16Gap / 2),
+                _buildRoundColumn("OITAVAS", r16, r16Gap),
+                _buildConnectors(r16.length, r16Gap),
+                _buildRoundColumn("QUARTAS", qf, r16Gap * 2),
+                _buildConnectors(qf.length, r16Gap * 2),
+                _buildRoundColumn("SEMIFINAL", sf, r16Gap * 4),
+                _buildConnectors(sf.length, r16Gap * 4),
+                _buildRoundColumn("FINAL", finals, 0, isFinal: true),
+              ],
             ),
           ),
         ),
 
-        // Barra de Navegação
+        // ─── BARRA DE NAVEGAÇÃO POR FASE ─────────────────────────────────────
         Positioned(
-          top: 80,
+          top: 16,
           left: 0,
           right: 0,
           child: Center(
@@ -199,39 +176,37 @@ class _BracketViewState extends State<BracketView> {
           ),
         ),
 
-        // Badge de Instrução
+        // ─── DICA DE SCROLL VERTICAL ─────────────────────────────────────────
         Positioned(
-          top: 20,
-          left: 20,
-          right: 20,
+          top: 60,
+          left: 0,
+          right: 0,
           child: Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: _isInteractive ? AppColors.primaryGold : Colors.black87,
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: AppColors.primaryGold),
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.primaryGold.withValues(alpha: 0.4),
+                ),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    _isInteractive ? Icons.zoom_out_map : Icons.touch_app,
-                    color: _isInteractive
-                        ? Colors.black
-                        : AppColors.primaryGold,
-                    size: 20,
+                    Icons.swipe_vertical,
+                    color: AppColors.primaryGold,
+                    size: 16,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 6),
                   Text(
-                    _isInteractive
-                        ? "EXPLORAÇÃO ATIVA"
-                        : "DUPLO CLIQUE PARA MOVER",
+                    "ROLE PARA VER TODOS OS JOGOS",
                     style: TextStyle(
-                      color: _isInteractive ? Colors.black : Colors.white,
-                      fontSize: 12,
+                      color: Colors.white70,
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ],
@@ -243,26 +218,48 @@ class _BracketViewState extends State<BracketView> {
     );
   }
 
-  // Widgets auxiliares AGORA DENTRO DA CLASSE _BracketViewState
+  // ─── BOTÃO DE NAVEGAÇÃO ───────────────────────────────────────────────────
   Widget _navButton(String label, int index) {
+    final bool isActive = _activePhaseIndex == index;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: ActionChip(
-        backgroundColor: Colors.black87,
-        side: const BorderSide(color: AppColors.primaryGold, width: 0.5),
-        label: Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.primaryGold,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
+      child: GestureDetector(
+        onTap: () => _scrollToPhase(index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: isActive ? AppColors.primaryGold : Colors.black87,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.primaryGold,
+              width: isActive ? 0 : 0.8,
+            ),
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: AppColors.primaryGold.withValues(alpha: 0.4),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : [],
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isActive ? Colors.black : AppColors.primaryGold,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
-        onPressed: () => _scrollToPhase(index),
       ),
     );
   }
 
+  // ─── COLUNA DE UMA RODADA ────────────────────────────────────────────────
   Widget _buildRoundColumn(
     String title,
     List<MatchEntity> matches,
@@ -282,39 +279,32 @@ class _BracketViewState extends State<BracketView> {
         ),
         const SizedBox(height: 20),
         ...matches.map(
-          (match) {
-            return Container(
-              height: isFinal ? null : gap,
-              alignment: Alignment.center,
-              child: _BracketMatchCard(
-                match: match,
-                isFinal: isFinal,
-                width: cardWidth,
-                height: cardHeight,
-              ),
-            );
-          },
-        ), // Mapeia cada partida para um card, com espaçamento definido pelo gap removi o .toList()
+          (match) => Container(
+            height: isFinal ? null : gap,
+            alignment: Alignment.center,
+            child: _BracketMatchCard(
+              match: match,
+              isFinal: isFinal,
+              width: cardWidth,
+              height: cardHeight,
+            ),
+          ),
+        ),
       ],
     );
   }
 
+  // ─── CONECTORES ──────────────────────────────────────────────────────────
   Widget _buildConnectors(int count, double gap) {
     if (count == 0) return SizedBox(width: connectorWidth);
-
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // 1. O TÍTULO FANTASMA:
-        // Tem o mesmo tamanho da fonte (16) para ocupar o mesmo espaço no topo e empurrar as linhas para baixo.
         const Text(
           " ",
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(
-          height: 20,
-        ), // O mesmo espaçamento que existe embaixo dos títulos
-        // 2. AS LINHAS:
+        const SizedBox(height: 20),
         SizedBox(
           width: connectorWidth,
           height: count * gap,
@@ -325,9 +315,9 @@ class _BracketViewState extends State<BracketView> {
       ],
     );
   }
-} // FIM DA CLASSE _BracketViewState
+}
 
-// --- Classes Independentes (Stateless e Painter) ---
+// ─── CARD DE JOGO ─────────────────────────────────────────────────────────────
 
 class _BracketMatchCard extends StatelessWidget {
   final MatchEntity match;
@@ -416,13 +406,13 @@ class _BracketMatchCard extends StatelessWidget {
   }
 
   void _showPredictionDialog(BuildContext context, MatchEntity match) {
-    final homeController = TextEditingController();
-    final awayController = TextEditingController();
+    final homeController = TextEditingController(
+      text: (match.userHomePrediction ?? 0).toString(),
+    );
+    final awayController = TextEditingController(
+      text: (match.userAwayPrediction ?? 0).toString(),
+    );
 
-    homeController.text = (match.userHomePrediction ?? 0).toString();
-    awayController.text = (match.userAwayPrediction ?? 0).toString();
-
-    // 1. Variável de erro
     String? errorMessage;
 
     showDialog(
@@ -433,8 +423,7 @@ class _BracketMatchCard extends StatelessWidget {
             int current = int.tryParse(controller.text) ?? 0;
             setModalState(() {
               controller.text = (current + value).toString();
-              errorMessage =
-                  null; // Limpa o erro quando o usuário muda o placar
+              errorMessage = null;
             });
           }
 
@@ -456,7 +445,7 @@ class _BracketMatchCard extends StatelessWidget {
                     onTap: () => setModalState(() {
                       homeController.text = "0";
                       awayController.text = "0";
-                      errorMessage = null; // Limpa o erro ao resetar
+                      errorMessage = null;
                     }),
                     child: const Icon(
                       Icons.cleaning_services,
@@ -475,9 +464,7 @@ class _BracketMatchCard extends StatelessWidget {
                   children: [
                     _buildFlagIcon(match.homeFlag),
                     const SizedBox(width: 8),
-                    _miniScoreInput(
-                      homeController,
-                    ), // Usando o nome correto daqui
+                    _miniScoreInput(homeController),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 10),
                       child: Text(
@@ -488,9 +475,7 @@ class _BracketMatchCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    _miniScoreInput(
-                      awayController,
-                    ), // Usando o nome correto daqui
+                    _miniScoreInput(awayController),
                     const SizedBox(width: 8),
                     _buildFlagIcon(match.awayFlag),
                   ],
@@ -505,7 +490,6 @@ class _BracketMatchCard extends StatelessWidget {
                   children: [1, 2, 3, 4]
                       .map(
                         (v) => _buildIncBtn(
-                          // Usando o nome correto daqui
                           "+ $v",
                           () => incrementScore(homeController, v),
                         ),
@@ -522,17 +506,12 @@ class _BracketMatchCard extends StatelessWidget {
                   children: [1, 2, 3, 4]
                       .map(
                         (v) => _buildIncBtn(
-                          // Usando o nome correto daqui
                           "+ $v",
                           () => incrementScore(awayController, v),
                         ),
                       )
                       .toList(),
                 ),
-
-                // ==========================================
-                // CAIXA DE MENSAGEM DE ERRO
-                // ==========================================
                 if (errorMessage != null) ...[
                   const SizedBox(height: 16),
                   Container(
@@ -566,8 +545,6 @@ class _BracketMatchCard extends StatelessWidget {
                     ),
                   ),
                 ],
-
-                // ==========================================
               ],
             ),
             actions: [
@@ -584,13 +561,12 @@ class _BracketMatchCard extends StatelessWidget {
                   final a = int.tryParse(awayController.text);
 
                   if (h != null && a != null) {
-                    // REGRA FIFA: Checa se é mata-mata e está empatado
                     if (match.isKnockout && h == a) {
                       setModalState(() {
                         errorMessage =
                             "Mata-mata não aceita empate! Simule um vencedor (considere a prorrogação).";
                       });
-                      return; // Trava o fechamento do modal
+                      return;
                     }
 
                     context.read<WorldCupBloc>().add(
@@ -648,24 +624,24 @@ class _BracketMatchCard extends StatelessWidget {
     ),
   );
 
-  Widget _miniScoreInput(TextEditingController controller) {
-    return SizedBox(
-      width: 50,
-      child: TextField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        textAlign: TextAlign.center,
-        style: const TextStyle(color: Colors.white, fontSize: 20),
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.black,
-          contentPadding: const EdgeInsets.symmetric(vertical: 8),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        ),
+  Widget _miniScoreInput(TextEditingController controller) => SizedBox(
+    width: 50,
+    child: TextField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      textAlign: TextAlign.center,
+      style: const TextStyle(color: Colors.white, fontSize: 20),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.black,
+        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
-    );
-  }
+    ),
+  );
 }
+
+// ─── PINTOR DE CONECTORES ─────────────────────────────────────────────────────
 
 class BracketLinePainter extends CustomPainter {
   final int itemCount;
