@@ -140,7 +140,7 @@ class _BracketViewState extends State<BracketView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildRoundColumn("32-AVOS", r32, r16Gap / 2),
+                _buildRoundColumn("16-AVOS", r32, r16Gap / 2),
                 _buildConnectors(r32.length, r16Gap / 2),
                 _buildRoundColumn("OITAVAS", r16, r16Gap),
                 _buildConnectors(r16.length, r16Gap),
@@ -165,7 +165,7 @@ class _BracketViewState extends State<BracketView> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _navButton("32-AVOS", 0),
+                  _navButton("16-AVOS", 0),
                   _navButton("OITAVAS", 1),
                   _navButton("QUARTAS", 2),
                   _navButton("SEMI", 3),
