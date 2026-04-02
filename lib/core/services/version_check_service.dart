@@ -32,6 +32,7 @@ class VersionCheckService {
       );
     } catch (e) {
       // Se der erro (ex: sem internet), a gente deixa o app seguir sem mostrar o banner
+      print("Erro no Remote Config: $e");
       return true;
     }
   }
@@ -41,10 +42,17 @@ class VersionCheckService {
     List<int> currentParts = current.split('.').map(int.parse).toList();
     List<int> minParts = min.split('.').map(int.parse).toList();
 
-    for (int i = 0; i < currentParts.length; i++) {
-      int minPart = i < minParts.length ? minParts[i] : 0;
-      if (currentParts[i] > minPart) return true;
-      if (currentParts[i] < minPart) return false;
+    // Pega o tamanho da maior lista para garantir que todas as casas decimais sejam checadas
+    int maxLength = currentParts.length > minParts.length
+        ? currentParts.length
+        : minParts.length;
+
+    for (int i = 0; i < maxLength; i++) {
+      int c = i < currentParts.length ? currentParts[i] : 0;
+      int m = i < minParts.length ? minParts[i] : 0;
+
+      if (c > m) return true;
+      if (c < m) return false;
     }
     return true;
   }
