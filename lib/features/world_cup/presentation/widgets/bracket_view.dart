@@ -8,7 +8,7 @@ import '../bloc/world_cup_event.dart';
 
 class BracketView extends StatefulWidget {
   final List<MatchEntity> matches;
-  final Function(bool)? onLockScroll;
+  final Function(bool)? onLockScroll; // mantido por compatibilidade de API
 
   const BracketView({super.key, required this.matches, this.onLockScroll});
 
@@ -17,26 +17,28 @@ class BracketView extends StatefulWidget {
 }
 
 class _BracketViewState extends State<BracketView> {
-  late TransformationController _transformationController;
-
-  // Índice da fase atualmente visível (para highlight do botão ativo)
   int _activePhaseIndex = 0;
+  double _currentXOffset = 0.0;
 
-  // Variáveis de layout centralizadas
+  // Controller próprio (primary: false) → não compete com o NestedScrollView
+  final ScrollController _scrollController = ScrollController();
+
+  // ── Dimensões ────────────────────────────────────────────────────────────
   final double cardWidth = 160.0;
   final double cardHeight = 60.0;
   final double connectorWidth = 50.0;
   final double r16Gap = 140.0;
 
+  // Container 2000px, conteúdo (5×160 + 4×50) = 1000px → startX = 500
+  static const double _containerWidth = 2000.0;
+  static const double _startX = 500.0;
+
+  // Overhead por coluna: header (~20dp) + SizedBox(20) + padding top/bottom (96dp) = 136dp
+  static const double _columnOverhead = 180.0;
+
   @override
   void initState() {
     super.initState();
-    _transformationController = TransformationController();
-
-    // ─── CORREÇÃO PRINCIPAL ───────────────────────────────────────────────────
-    // Agenda a navegação para o primeiro frame após o widget ser montado.
-    // Sem isso, o controller fica em (0,0) e a tela aparece preta porque
-    // o conteúdo está centralizado dentro de um container de 2000px.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _scrollToPhase(0);
     });
@@ -44,35 +46,26 @@ class _BracketViewState extends State<BracketView> {
 
   @override
   void dispose() {
-    _transformationController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  // ─── NAVEGAÇÃO HORIZONTAL (SOMENTE VIA BOTÕES) ────────────────────────────
+  // ── Navega para a fase clicada ────────────────────────────────────────────
   void _scrollToPhase(int phaseIndex) {
     if (!mounted) return;
-
     final screenWidth = MediaQuery.of(context).size.width;
-
-    // O container tem 2000px de largura e o conteúdo fica centralizado.
-    // startX = 600 é o ponto onde o primeiro card começa (margem do center).
-    const double startX = 600;
-
     final double columnCenterX =
-        startX + (phaseIndex * (cardWidth + connectorWidth)) + (cardWidth / 2);
-
+        _startX + (phaseIndex * (cardWidth + connectorWidth)) + (cardWidth / 2);
     final double xOffset = (screenWidth / 2) - columnCenterX;
 
-    // Preserva a posição vertical atual para não pular para o topo
-    final currentY = _transformationController.value.getTranslation().y;
+    // Volta ao topo ao trocar de fase
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
 
     setState(() {
       _activePhaseIndex = phaseIndex;
-      _transformationController.value = Matrix4.translationValues(
-        xOffset,
-        currentY,
-        0,
-      );
+      _currentXOffset = xOffset;
     });
   }
 
@@ -120,105 +113,160 @@ class _BracketViewState extends State<BracketView> {
         .where((m) => m.group == 'FINAL' || m.id.startsWith('final_'))
         .toList();
 
-    return Stack(
+    // ── Altura do conteúdo (todas as fases têm a mesma altura) ───────────
+    // R32: 16 jogos × (r16Gap/2=70dp) = 1120dp
+    // R16: 8 × 140 = 1120dp, QF: 4×280 = 1120dp, SF: 2×560 = 1120dp
+    // A coluna mais alta define a altura do Row → sempre ~1120dp + overhead
+    final int r32Count = r32.isEmpty ? 16 : r32.length;
+    final double bracketHeight = (r32Count * (r16Gap / 2)) + _columnOverhead;
+
+    return Column(
       children: [
-        // ─── CHAVEAMENTO (scroll apenas VERTICAL, horizontal via botões) ──────
-        InteractiveViewer(
-          transformationController: _transformationController,
-          constrained: false,
-          // ► PAN HORIZONTAL DESABILITADO — apenas vertical para ver todos os jogos
-          panAxis: PanAxis.vertical,
-          panEnabled: true, //
-          scaleEnabled: false, // zoom desabilitado para simplicidade
-          boundaryMargin: const EdgeInsets.symmetric(
-            horizontal: 2000,
-            vertical: 1400, //
-          ),
-          child: Container(
-            width: 2000,
-            padding: const EdgeInsets.only(top: 100, bottom: 400),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildRoundColumn("16-AVOS", r32, r16Gap / 2),
-                _buildConnectors(r32.length, r16Gap / 2),
-                _buildRoundColumn("OITAVAS", r16, r16Gap),
-                _buildConnectors(r16.length, r16Gap),
-                _buildRoundColumn("QUARTAS", qf, r16Gap * 2),
-                _buildConnectors(qf.length, r16Gap * 2),
-                _buildRoundColumn("SEMIFINAL", sf, r16Gap * 4),
-                _buildConnectors(sf.length, r16Gap * 4),
-                _buildRoundColumn("FINAL", finals, 0, isFinal: true),
-              ],
-            ),
-          ),
-        ),
+        // ── Barra de fases (sempre visível, fora do scroll) ───────────────
+        _buildNavBar(),
 
-        // ─── BARRA DE NAVEGAÇÃO POR FASE ─────────────────────────────────────
-        Positioned(
-          top: 16,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _navButton("16-AVOS", 0),
-                  _navButton("OITAVAS", 1),
-                  _navButton("QUARTAS", 2),
-                  _navButton("SEMI", 3),
-                  _navButton("FINAL", 4),
-                ],
-              ),
-            ),
-          ),
-        ),
+        // ── Dica de scroll (sempre visível) ──────────────────────────────
+        _buildScrollHint(),
 
-        // ─── DICA DE SCROLL VERTICAL ─────────────────────────────────────────
-        Positioned(
-          top: 60,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black87,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppColors.primaryGold.withValues(alpha: 0.4),
-                ),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.swipe_vertical,
-                    color: AppColors.primaryGold,
-                    size: 16,
+        // ── Chaveamento ───────────────────────────────────────────────────
+        // PROBLEMA ANTERIOR: InteractiveViewer e NestedScrollView competiam
+        // pelos mesmos gestos verticais. O NestedScrollView "vencia" e travava
+        // o scroll do chaveamento após colapsar a AppBar.
+        //
+        // SOLUÇÃO: SingleChildScrollView(primary: false) com ScrollController
+        // próprio. Assim ele gerencia o scroll verticalmente de forma 100%
+        // independente, sem interferir no NestedScrollView.
+        //
+        // Para o posicionamento horizontal das fases, usamos Transform.translate
+        // (operação apenas de pintura, não afeta o layout) combinado com
+        // OverflowBox (que libera o filho para 2000px de largura dentro de um
+        // SizedBox menor) e ClipRect (que corta o overflow horizontal).
+        //
+        // O SizedBox com height=bracketHeight é ESSENCIAL: define o scroll
+        // extent correto. Sem ele o SingleChildScrollView não sabe a altura
+        // total e fica bloqueado, incapaz de rolar até os últimos jogos.
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double viewportWidth = constraints.maxWidth;
+
+              return ClipRect(
+                child: SingleChildScrollView(
+                  primary: false,
+                  controller: _scrollController,
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
                   ),
-                  SizedBox(width: 6),
-                  Text(
-                    "ROLE PARA VER TODOS OS JOGOS",
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+                  child: SizedBox(
+                    width: viewportWidth,
+                    height: bracketHeight,
+                    child: OverflowBox(
+                      alignment: Alignment.topLeft,
+                      maxWidth: _containerWidth,
+                      minHeight: bracketHeight,
+                      maxHeight: bracketHeight,
+                      child: Transform.translate(
+                        offset: Offset(_currentXOffset, 0),
+                        child: SizedBox(
+                          width: _containerWidth,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 16, bottom: 80),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildRoundColumn("16-AVOS", r32, r16Gap / 2),
+                                _buildConnectors(r32.length, r16Gap / 2),
+                                _buildRoundColumn("OITAVAS", r16, r16Gap),
+                                _buildConnectors(r16.length, r16Gap),
+                                _buildRoundColumn("QUARTAS", qf, r16Gap * 2),
+                                _buildConnectors(qf.length, r16Gap * 2),
+                                _buildRoundColumn("SEMIFINAL", sf, r16Gap * 4),
+                                _buildConnectors(sf.length, r16Gap * 4),
+                                _buildRoundColumn(
+                                  "FINAL",
+                                  finals,
+                                  r16Gap * 8,
+                                  isFinal: true,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ),
       ],
     );
   }
 
-  // ─── BOTÃO DE NAVEGAÇÃO ───────────────────────────────────────────────────
+  // ── Barra de navegação de fases ───────────────────────────────────────────
+  Widget _buildNavBar() {
+    return Container(
+      color: AppColors.background,
+      padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _navButton("16-AVOS", 0),
+            _navButton("OITAVAS", 1),
+            _navButton("QUARTAS", 2),
+            _navButton("SEMI", 3),
+            _navButton("FINAL", 4),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Dica de scroll vertical ───────────────────────────────────────────────
+  Widget _buildScrollHint() {
+    return Container(
+      color: AppColors.background,
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.black87,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.primaryGold.withValues(alpha: 0.4),
+            ),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.swipe_vertical,
+                color: AppColors.primaryGold,
+                size: 16,
+              ),
+              SizedBox(width: 6),
+              Text(
+                "ROLE PARA VER TODOS OS JOGOS",
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Botão de fase ─────────────────────────────────────────────────────────
   Widget _navButton(String label, int index) {
     final bool isActive = _activePhaseIndex == index;
     return Padding(
@@ -259,7 +307,7 @@ class _BracketViewState extends State<BracketView> {
     );
   }
 
-  // ─── COLUNA DE UMA RODADA ────────────────────────────────────────────────
+  // ── Coluna de uma rodada ──────────────────────────────────────────────────
   Widget _buildRoundColumn(
     String title,
     List<MatchEntity> matches,
@@ -267,7 +315,8 @@ class _BracketViewState extends State<BracketView> {
     bool isFinal = false,
   }) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           title,
@@ -279,14 +328,15 @@ class _BracketViewState extends State<BracketView> {
         ),
         const SizedBox(height: 20),
         ...matches.map(
-          (match) => Container(
-            height: isFinal ? null : gap,
-            alignment: Alignment.center,
-            child: _BracketMatchCard(
-              match: match,
-              isFinal: isFinal,
-              width: cardWidth,
-              height: cardHeight,
+          (match) => SizedBox(
+            height: gap,
+            child: Center(
+              child: _BracketMatchCard(
+                match: match,
+                isFinal: isFinal,
+                width: cardWidth,
+                height: cardHeight,
+              ),
             ),
           ),
         ),
@@ -294,17 +344,14 @@ class _BracketViewState extends State<BracketView> {
     );
   }
 
-  // ─── CONECTORES ──────────────────────────────────────────────────────────
+  // ── Conectores entre colunas ──────────────────────────────────────────────
   Widget _buildConnectors(int count, double gap) {
     if (count == 0) return SizedBox(width: connectorWidth);
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        const Text(
-          " ",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 20),
+        // Espaço que alinha os conectores com os cards (header + SizedBox)
+        const SizedBox(height: 36),
         SizedBox(
           width: connectorWidth,
           height: count * gap,
@@ -559,7 +606,6 @@ class _BracketMatchCard extends StatelessWidget {
                 onPressed: () {
                   final h = int.tryParse(homeController.text);
                   final a = int.tryParse(awayController.text);
-
                   if (h != null && a != null) {
                     if (match.isKnockout && h == a) {
                       setModalState(() {
@@ -568,7 +614,6 @@ class _BracketMatchCard extends StatelessWidget {
                       });
                       return;
                     }
-
                     context.read<WorldCupBloc>().add(
                       SavePredictionEvent(
                         matchId: match.id,
