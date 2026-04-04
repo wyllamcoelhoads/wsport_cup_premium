@@ -14,6 +14,7 @@ import 'package:wsports_cup_premium/injection_container.dart';
 import 'package:wsports_cup_premium/injection_container.dart' as di;
 import './core/services/ad_service.dart';
 import 'core/constants/app_theme.dart';
+import 'core/services/notification_service.dart';
 
 /// Controla a visibilidade do banner de atualização em toda a árvore de widgets.
 final ValueNotifier<bool> showUpdateBannerNotifier = ValueNotifier<bool>(false);
@@ -24,6 +25,9 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await di.init();
+
+  // 2. Inicializa o serviço de notificação (handlers de clique)
+  await NotificationService.initialize();
 
   // AdMob em background para não travar a inicialização
   unawaited(
@@ -62,6 +66,8 @@ class MyApp extends StatelessWidget {
         title: 'Copa do Mundo 2026',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
+        // 3. Adicione o navigatorKey para o SnackBar in-foreground funcionar
+        navigatorKey: NotificationService.navigatorKey,
         builder: (context, child) {
           if (child == null) return const SizedBox.shrink();
           return UpdateBanner(child: child);

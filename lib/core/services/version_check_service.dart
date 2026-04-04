@@ -9,7 +9,7 @@ class VersionCheckService {
   // ─── Intervalo de fetch ───────────────────────────────────────────────────
   // Em TESTES:    Duration.zero       → busca sempre (cota: ~5/hora no Firebase)
   // Em PRODUÇÃO:  Duration(hours: 4)  → evita uso excessivo de cota
-  static const Duration _fetchInterval = Duration(hours: 4);
+  static const Duration _fetchInterval = Duration(seconds: 0);
 
   final FirebaseRemoteConfig _remoteConfig = FirebaseRemoteConfig.instance;
 

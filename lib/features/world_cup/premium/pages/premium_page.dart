@@ -51,7 +51,7 @@ class _PremiumPageState extends State<PremiumPage> {
   Future<void> _loadAppVersion() async {
     try {
       final info = await PackageInfo.fromPlatform();
-      if (mounted) setState(() => _appVersion = 'Versão ${info.version}');
+      if (mounted) setState(() => _appVersion = 'v${info.version}-alpha');
     } catch (_) {
       // Versão não é crítica — silencia o erro
     }
