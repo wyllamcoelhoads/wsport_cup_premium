@@ -5,6 +5,7 @@ import 'package:wsports_cup_premium/core/widgets/network_aware_tab.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../domain/entities/match_entity.dart';
 import '../../domain/logic/repescagem_data.dart';
+import '../widgets/stadium_web_browser.dart';
 
 // ============================================================
 // DATA MODELS
@@ -19,6 +20,7 @@ class _HostCity {
   final int games;
   final String description;
   final bool isHighlight;
+  final String? officialUrl;
 
   const _HostCity({
     required this.city,
@@ -29,6 +31,7 @@ class _HostCity {
     required this.games,
     required this.description,
     this.isHighlight = false,
+    this.officialUrl,
   });
 }
 
@@ -47,6 +50,7 @@ const List<_HostCity> _hostCities = [
     description:
         '🏆 SEDE DA FINAL! O maior estádio da competição, em East Rutherford. Recebeu o Super Bowl e grandes shows internacionais.',
     isHighlight: true,
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Los Angeles',
@@ -57,6 +61,7 @@ const List<_HostCity> _hostCities = [
     games: 7,
     description:
         'Capital mundial do entretenimento. O SoFi é uma das arenas mais modernas e tecnológicas do planeta, inaugurada em 2020.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Dallas / Fort Worth',
@@ -67,6 +72,7 @@ const List<_HostCity> _hostCities = [
     games: 7,
     description:
         'O lendário "Jerry World", lar do Dallas Cowboys. Um dos estádios mais famosos do mundo, sede de grandes espetáculos.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'San Francisco / Bay Area',
@@ -77,6 +83,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Em Santa Clara, com vista para as montanhas. Lar do San Francisco 49ers e próximo ao Vale do Silício.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Seattle',
@@ -87,6 +94,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Na cidade de Seattle, com vista para as montanhas e o Puget Sound. Famoso pela torcida ensandecida dos Seahawks.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Boston',
@@ -97,6 +105,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Em Foxborough, próximo a Boston. Lar do New England Patriots, um dos times de maior tradição do futebol americano.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Miami',
@@ -107,6 +116,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Cidade do sol da Flórida! Lar do Miami Dolphins, com clima tropical e a maior comunidade latina dos EUA.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Atlanta',
@@ -117,6 +127,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Estádio com teto retrátil petal único no mundo. Sede da Copa de 1994. Considerado o mais avançado arquitetonicamente.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Kansas City',
@@ -127,6 +138,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Um dos estádios mais barulhentos do planeta! Lar do Kansas City Chiefs, campeões do Super Bowl.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Houston',
@@ -137,6 +149,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'A maior cidade do Texas. O NRG tem teto retrátil e foi sede de grandes eventos esportivos internacionais.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Philadelphia',
@@ -147,6 +160,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'A cidade da independência americana e do Rocky! Lar do Philadelphia Eagles com uma das torcidas mais apaixonadas.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Toronto',
@@ -157,6 +171,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'A maior cidade canadense e um dos maiores centros multiculturais do mundo. Lar do Toronto FC, o mais popular futebol canadense.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Vancouver',
@@ -167,6 +182,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Uma das cidades mais belas do mundo, entre montanhas e oceano. BC Place tem teto inflável retrátil único no mundo.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Cidade do México',
@@ -178,6 +194,7 @@ const List<_HostCity> _hostCities = [
     description:
         '🔥 O LENDÁRIO AZTECA! Único estádio a sediar 3 Copas do Mundo (1970, 1986 e 2026). A 2.240m de altitude, em 1986 ocorreram aqui a "Mão de Deus" e o gol do século de Maradona!',
     isHighlight: true,
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Zapopan / Guadalajara',
@@ -188,6 +205,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Na "Perla de Occidente", segunda maior cidade do México. Lar do Chivas, o clube com mais apaixonados do país.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
   _HostCity(
     city: 'Monterrey',
@@ -198,6 +216,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'A industrial cidade do norte do México. O BBVA Stadium é eleito um dos mais modernos e bonitos da América Latina.',
+    officialUrl: 'https://www.metlifestadium.com/',
   ),
 ];
 
@@ -444,7 +463,7 @@ class _SedesTab extends StatelessWidget {
       itemCount: _hostCities.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) return _buildHeader();
-        return _buildCityCard(_hostCities[index - 1]);
+        return _buildCityCard(_hostCities[index - 1], context);
       },
     );
   }
@@ -518,136 +537,171 @@ class _SedesTab extends StatelessWidget {
     );
   }
 
-  Widget _buildCityCard(_HostCity city) {
+  Widget _buildCityCard(_HostCity city, BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.cardSurface,
-        borderRadius: BorderRadius.circular(16),
-        border: city.isHighlight
-            ? Border.all(color: AppColors.primaryGold, width: 1.5)
-            : Border.all(color: Colors.white10),
-      ),
-      child: Column(
-        children: [
-          // Header row
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: city.isHighlight
-                  ? AppColors.primaryGold.withValues(alpha: 0.12)
-                  : Colors.transparent,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
-            ),
-            child: Row(
-              children: [
-                ClipOval(
-                  child: CachedNetworkImage(
-                    imageUrl: 'https://flagcdn.com/w80/${city.flagCode}.png',
-                    width: 40,
-                    height: 40,
-                    fit: BoxFit.cover,
-                    errorWidget: (_, _, _) => Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white12,
-                      ),
-                      child: const Icon(
-                        Icons.flag,
-                        color: Colors.white54,
-                        size: 20,
-                      ),
-                    ),
+      child: Material(
+        // 🟢 Necessário para o efeito de clique (ripple)
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            // 🟢 Lógica de navegação
+            if (city.officialUrl != null && city.officialUrl!.isNotEmpty) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  // fullscreenDialog: true faz a tela subir de baixo para cima (estilo modal nativo)
+                  fullscreenDialog: true,
+                  builder: (context) => StadiumWebBrowser(
+                    url: city.officialUrl!,
+                    title: city.stadium,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              );
+            } else {
+              // Opcional: Mostrar um SnackBar avisando que não tem link
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Página oficial indisponível no momento.'),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: AppColors.cardSurface,
+              borderRadius: BorderRadius.circular(16),
+              border: city.isHighlight
+                  ? Border.all(color: AppColors.primaryGold, width: 1.5)
+                  : Border.all(color: Colors.white10),
+            ),
+            child: Column(
+              children: [
+                // Header row
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: city.isHighlight
+                        ? AppColors.primaryGold.withValues(alpha: 0.12)
+                        : Colors.transparent,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                  ),
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              city.city,
-                              style: TextStyle(
-                                color: city.isHighlight
-                                    ? AppColors.primaryGold
-                                    : Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl:
+                              'https://flagcdn.com/w80/${city.flagCode}.png',
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, _, _) => Container(
+                            width: 40,
+                            height: 40,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white12,
+                            ),
+                            child: const Icon(
+                              Icons.flag,
+                              color: Colors.white54,
+                              size: 20,
                             ),
                           ),
-                          if (city.isHighlight)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryGold,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                '★ DESTAQUE',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    city.city,
+                                    style: TextStyle(
+                                      color: city.isHighlight
+                                          ? AppColors.primaryGold
+                                          : Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
+                                if (city.isHighlight)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryGold,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Text(
+                                      '★ DESTAQUE',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            Text(
+                              city.country,
+                              style: const TextStyle(
+                                color: Colors.white54,
+                                fontSize: 12,
                               ),
                             ),
-                        ],
-                      ),
-                      Text(
-                        city.country,
-                        style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 12,
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          // Info chips
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-            child: Row(
-              children: [
-                _chip(Icons.stadium_outlined, city.stadium, flex: 3),
-                const SizedBox(width: 6),
-                _chip(Icons.people_outline, city.capacity, flex: 2),
-                const SizedBox(width: 6),
-                _chip(
-                  Icons.sports_soccer_outlined,
-                  '${city.games} jogos',
-                  flex: 2,
+                // Info chips
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                  child: Row(
+                    children: [
+                      _chip(Icons.stadium_outlined, city.stadium, flex: 3),
+                      const SizedBox(width: 6),
+                      _chip(Icons.people_outline, city.capacity, flex: 2),
+                      const SizedBox(width: 6),
+                      _chip(
+                        Icons.sports_soccer_outlined,
+                        '${city.games} jogos',
+                        flex: 2,
+                      ),
+                    ],
+                  ),
+                ),
+                // Description
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  child: Text(
+                    city.description,
+                    style: const TextStyle(
+                      color: Colors.white60,
+                      fontSize: 12,
+                      height: 1.5,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          // Description
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            child: Text(
-              city.description,
-              style: const TextStyle(
-                color: Colors.white60,
-                fontSize: 12,
-                height: 1.5,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
