@@ -46,11 +46,8 @@ class _StadiumWebBrowserState extends State<StadiumWebBrowser> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        // Ícone de fechar elegante
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: AppColors.primaryGold),
-          onPressed: () => Navigator.pop(context),
-        ),
+        // Remove a seta padrão de voltar que o Flutter adicionaria na esquerda
+        automaticallyImplyLeading: false,
         title: Column(
           children: [
             Text(
@@ -68,6 +65,13 @@ class _StadiumWebBrowserState extends State<StadiumWebBrowser> {
           ],
         ),
         centerTitle: true,
+        // O botão agora fica em 'actions', alinhando à direita
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close, color: AppColors.primaryGold),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
       ),
       body: Column(
         children: [
