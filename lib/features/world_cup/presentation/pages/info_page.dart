@@ -6,6 +6,8 @@ import '../../../../core/constants/app_theme.dart';
 import '../../domain/entities/match_entity.dart';
 import '../../domain/logic/repescagem_data.dart';
 import '../widgets/stadium_web_browser.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:url_launcher/url_launcher.dart';
 
 // ============================================================
 // DATA MODELS
@@ -61,7 +63,7 @@ const List<_HostCity> _hostCities = [
     games: 7,
     description:
         'Capital mundial do entretenimento. O SoFi é uma das arenas mais modernas e tecnológicas do planeta, inaugurada em 2020.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://www.sofistadium.com/',
   ),
   _HostCity(
     city: 'Dallas / Fort Worth',
@@ -72,7 +74,7 @@ const List<_HostCity> _hostCities = [
     games: 7,
     description:
         'O lendário "Jerry World", lar do Dallas Cowboys. Um dos estádios mais famosos do mundo, sede de grandes espetáculos.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://attstadium.com/',
   ),
   _HostCity(
     city: 'San Francisco / Bay Area',
@@ -83,7 +85,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Em Santa Clara, com vista para as montanhas. Lar do San Francisco 49ers e próximo ao Vale do Silício.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://levisstadium.com/',
   ),
   _HostCity(
     city: 'Seattle',
@@ -94,7 +96,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Na cidade de Seattle, com vista para as montanhas e o Puget Sound. Famoso pela torcida ensandecida dos Seahawks.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://www.lumenfield.com/',
   ),
   _HostCity(
     city: 'Boston',
@@ -105,7 +107,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Em Foxborough, próximo a Boston. Lar do New England Patriots, um dos times de maior tradição do futebol americano.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://www.gillettestadium.com/',
   ),
   _HostCity(
     city: 'Miami',
@@ -116,7 +118,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Cidade do sol da Flórida! Lar do Miami Dolphins, com clima tropical e a maior comunidade latina dos EUA.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://www.hardrockstadium.com/',
   ),
   _HostCity(
     city: 'Atlanta',
@@ -127,7 +129,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Estádio com teto retrátil petal único no mundo. Sede da Copa de 1994. Considerado o mais avançado arquitetonicamente.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://www.mercedesbenzstadium.com/',
   ),
   _HostCity(
     city: 'Kansas City',
@@ -138,7 +140,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Um dos estádios mais barulhentos do planeta! Lar do Kansas City Chiefs, campeões do Super Bowl.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://www.gehafieldatarrowhead.com/',
   ),
   _HostCity(
     city: 'Houston',
@@ -149,7 +151,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'A maior cidade do Texas. O NRG tem teto retrátil e foi sede de grandes eventos esportivos internacionais.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://www.nrgpark.com/nrg-stadium/',
   ),
   _HostCity(
     city: 'Philadelphia',
@@ -160,7 +162,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'A cidade da independência americana e do Rocky! Lar do Philadelphia Eagles com uma das torcidas mais apaixonadas.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://www.lincolnfinancialfield.com/',
   ),
   _HostCity(
     city: 'Toronto',
@@ -171,7 +173,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'A maior cidade canadense e um dos maiores centros multiculturais do mundo. Lar do Toronto FC, o mais popular futebol canadense.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://www.bmofield.com/',
   ),
   _HostCity(
     city: 'Vancouver',
@@ -182,7 +184,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Uma das cidades mais belas do mundo, entre montanhas e oceano. BC Place tem teto inflável retrátil único no mundo.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://www.bcplace.com/',
   ),
   _HostCity(
     city: 'Cidade do México',
@@ -194,7 +196,7 @@ const List<_HostCity> _hostCities = [
     description:
         '🔥 O LENDÁRIO AZTECA! Único estádio a sediar 3 Copas do Mundo (1970, 1986 e 2026). A 2.240m de altitude, em 1986 ocorreram aqui a "Mão de Deus" e o gol do século de Maradona!',
     isHighlight: true,
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://www.estadiobanorte.com.mx/',
   ),
   _HostCity(
     city: 'Zapopan / Guadalajara',
@@ -205,7 +207,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'Na "Perla de Occidente", segunda maior cidade do México. Lar do Chivas, o clube com mais apaixonados do país.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://estadioakron.mx/',
   ),
   _HostCity(
     city: 'Monterrey',
@@ -216,7 +218,7 @@ const List<_HostCity> _hostCities = [
     games: 6,
     description:
         'A industrial cidade do norte do México. O BBVA Stadium é eleito um dos mais modernos e bonitos da América Latina.',
-    officialUrl: 'https://www.metlifestadium.com/',
+    officialUrl: 'https://estadio-bbva.mx/',
   ),
 ];
 
@@ -545,22 +547,42 @@ class _SedesTab extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            // 🟢 Lógica de navegação
+          onTap: () async {
+            // Lógica de navegação híbrida (Web vs Mobile)
             if (city.officialUrl != null && city.officialUrl!.isNotEmpty) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  // fullscreenDialog: true faz a tela subir de baixo para cima (estilo modal nativo)
-                  fullscreenDialog: true,
-                  builder: (context) => StadiumWebBrowser(
-                    url: city.officialUrl!,
-                    title: city.stadium,
+              if (kIsWeb) {
+                // 🌐 MODO WEB: Abre num novo separador do browser
+                final Uri url = Uri.parse(city.officialUrl!);
+                if (!await launchUrl(
+                  url,
+                  mode: LaunchMode.externalApplication,
+                )) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Não foi possível abrir a página oficial.',
+                        ),
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    );
+                  }
+                }
+              } else {
+                // 📱 MODO MOBILE: Abre o seu WebView interno (quando tiver o emulador)
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    fullscreenDialog: true,
+                    builder: (context) => StadiumWebBrowser(
+                      url: city.officialUrl!,
+                      title: city.stadium,
+                    ),
                   ),
-                ),
-              );
+                );
+              }
             } else {
-              // Opcional: Mostrar um SnackBar avisando que não tem link
+              // Mostrar um SnackBar avisando que não tem link
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Página oficial indisponível no momento.'),
