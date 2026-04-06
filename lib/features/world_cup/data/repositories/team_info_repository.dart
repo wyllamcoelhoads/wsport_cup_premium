@@ -14,15 +14,18 @@ class TeamInfoRepository {
 
   // ─── Busca uma seleção pelo ID do documento ───────────────────────────────
   Future<TeamInfoEntity?> getTeamById(String teamId) async {
-    try {
-      final doc = await _firestore.collection(_collection).doc(teamId).get();
-      if (!doc.exists || doc.data() == null) return null;
-      return TeamInfoEntity.fromMap(doc.id, doc.data()!);
-    } catch (e) {
-      // ignore: avoid_print
-      print('TeamInfoRepository.getTeamById error: $e');
-      return null;
+    // 1. Vai buscar o documento ao Firebase
+    final doc = await _firestore.collection(_collection).doc(teamId).get();
+
+    // 2. Verifica se o documento realmente existe lá
+    if (!doc.exists || doc.data() == null) {
+      throw Exception(
+        "O documento ID '$teamId' não foi encontrado na coleção '$_collection'. Verifique o nome no Firebase!",
+      );
     }
+
+    // 3. Tenta converter os dados. Se houver erro de tipo (String no lugar de número), vai estourar aqui!
+    return TeamInfoEntity.fromMap(doc.id, doc.data()!);
   }
 
   // ─── Busca todas as seleções ──────────────────────────────────────────────
