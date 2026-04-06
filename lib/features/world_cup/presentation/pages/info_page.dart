@@ -8,6 +8,7 @@ import '../../domain/logic/repescagem_data.dart';
 import '../widgets/stadium_web_browser.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
+import '../pages/team_detail_page.dart';
 
 // ============================================================
 // DATA MODELS
@@ -952,7 +953,7 @@ class _SelecaoTab extends StatelessWidget {
                 }
               }
 
-              return _buildTeamTile(team);
+              return _buildTeamTile(team, context);
             },
           ),
         ],
@@ -966,65 +967,100 @@ class _SelecaoTab extends StatelessWidget {
     return 'Repescagem';
   }
 
-  Widget _buildTeamTile(Map<String, dynamic> team) {
+  Widget _buildTeamTile(Map<String, dynamic> team, BuildContext context) {
     final flagValue = team['flag'] as String;
-    // Detecta se é URL completa ou código de país
     final isUrl = flagValue.startsWith('http');
     final flagUrl = isUrl
-        ? flagValue.replaceAll('/w320/', '/w40/') // usa tamanho menor
+        ? flagValue.replaceAll('/w320/', '/w40/')
         : 'https://flagcdn.com/w40/$flagValue.png';
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Row(
-        children: [
-          ClipOval(
-            child: CachedNetworkImage(
-              imageUrl: flagUrl,
-              width: 26,
-              height: 26,
-              fit: BoxFit.cover,
-              errorWidget: (_, _, _) => Container(
+    // Resolve o ID do documento Firestore a partir do flagCode
+    final teamId = isUrl ? _extractFlagCode(flagValue) : flagValue;
+
+    return GestureDetector(
+      onTap: () {
+        // Não navega para placeholders de repescagem
+        final isPlaceholder =
+            team['name'].toString().contains('Repescagem') ||
+            team['name'].toString().contains('Rep. Intercont');
+        if (isPlaceholder) return;
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => TeamDetailPage(
+              teamId: teamId,
+              teamName: team['name'] as String,
+              flagCode: isUrl ? _extractFlagCode(flagValue) : flagValue,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Row(
+          children: [
+            ClipOval(
+              child: CachedNetworkImage(
+                imageUrl: flagUrl,
                 width: 26,
                 height: 26,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white12,
+                fit: BoxFit.cover,
+                errorWidget: (_, _, _) => Container(
+                  width: 26,
+                  height: 26,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white12,
+                  ),
+                  child: const Icon(
+                    Icons.flag,
+                    size: 13,
+                    color: Colors.white38,
+                  ),
                 ),
-                child: const Icon(Icons.flag, size: 13, color: Colors.white38),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  team['name'],
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    team['name'],
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  team['conf'],
-                  style: const TextStyle(color: Colors.white38, fontSize: 9),
-                ),
-              ],
+                  Text(
+                    team['conf'],
+                    style: const TextStyle(color: Colors.white38, fontSize: 9),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            // Seta indicando que é clicável
+            const Icon(Icons.chevron_right, color: Colors.white24, size: 14),
+          ],
+        ),
       ),
     );
+  }
+
+  // Helper para extrair o código de bandeira de uma URL
+  String _extractFlagCode(String url) {
+    final regex = RegExp(r'/([a-z]{2,}(?:-[a-z]+)?)\.(?:png|svg|jpg)');
+    final match = regex.firstMatch(url.toLowerCase());
+    return match?.group(1) ?? 'un';
   }
 }
 
