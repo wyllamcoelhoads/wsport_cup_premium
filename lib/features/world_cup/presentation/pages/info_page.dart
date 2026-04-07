@@ -967,6 +967,43 @@ class _SelecaoTab extends StatelessWidget {
     return 'Repescagem';
   }
 
+  // ─── HELPER: detecta se é um slot de repescagem ───────────────
+  bool _isRepescagemSlot(Map<String, dynamic> team) {
+    final name = (team['name'] as String).toLowerCase();
+    final flag = (team['flag'] as String).toLowerCase();
+
+    // Flag de placeholder
+    if (flag == 'eu' || flag == 'un') return true;
+
+    // Nomes de placeholder ainda não resolvidos
+    const repKeywords = [
+      'repescagem',
+      'rep. intercont',
+      'vencedor rep',
+      'playoff',
+      'intercont',
+    ];
+    return repKeywords.any((kw) => name.contains(kw));
+  }
+
+  // ─── HELPER: extrai flag code de URL ──────────────────────────
+  String _extractFlagCode(String url) {
+    final regex = RegExp(r'/([a-z]{2,}(?:-[a-z]+)?)\.(?:png|svg|jpg)');
+    final match = regex.firstMatch(url.toLowerCase());
+    return match?.group(1) ?? 'un';
+  }
+
+  // ─── HELPER: bottom sheet elegante de repescagem ──────────────
+  void _showRepescagemSheet(BuildContext context, Map<String, dynamic> team) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _RepescagemSheet(teamName: team['name'] as String),
+    );
+  }
+
+  // ─── WIDGET SUBSTITUÍDO: _buildTeamTile ───────────────────────
   Widget _buildTeamTile(Map<String, dynamic> team, BuildContext context) {
     final flagValue = team['flag'] as String;
     final isUrl = flagValue.startsWith('http');
@@ -974,58 +1011,79 @@ class _SelecaoTab extends StatelessWidget {
         ? flagValue.replaceAll('/w320/', '/w40/')
         : 'https://flagcdn.com/w40/$flagValue.png';
 
-    // Resolve o ID do documento Firestore a partir do flagCode
+    final isPlaceholder = _isRepescagemSlot(team);
     final teamId = isUrl ? _extractFlagCode(flagValue) : flagValue;
 
     return GestureDetector(
       onTap: () {
-        // Não navega para placeholders de repescagem
-        final isPlaceholder =
-            team['name'].toString().contains('Repescagem') ||
-            team['name'].toString().contains('Rep. Intercont');
-        if (isPlaceholder) return;
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => TeamDetailPage(
-              teamId: teamId,
-              teamName: team['name'] as String,
-              flagCode: isUrl ? _extractFlagCode(flagValue) : flagValue,
+        if (isPlaceholder) {
+          // Mostra bottom sheet elegante em vez de navegar
+          _showRepescagemSheet(context, team);
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => TeamDetailPage(
+                teamId: teamId,
+                teamName: team['name'] as String,
+                flagCode: isUrl ? _extractFlagCode(flagValue) : flagValue,
+              ),
             ),
-          ),
-        );
+          );
+        }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.04),
+          color: isPlaceholder
+              ? Colors.white.withValues(alpha: 0.02)
+              : Colors.white.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white10),
+          border: Border.all(
+            color: isPlaceholder
+                ? Colors.white.withValues(alpha: 0.06)
+                : Colors.white10,
+          ),
         ),
         child: Row(
           children: [
-            ClipOval(
-              child: CachedNetworkImage(
-                imageUrl: flagUrl,
-                width: 26,
-                height: 26,
-                fit: BoxFit.cover,
-                errorWidget: (_, _, _) => Container(
-                  width: 26,
-                  height: 26,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white12,
+            // Bandeira ou ícone de interrogação para placeholder
+            isPlaceholder
+                ? Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.06),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: const Icon(
+                      Icons.hourglass_top_rounded,
+                      size: 13,
+                      color: Colors.white24,
+                    ),
+                  )
+                : ClipOval(
+                    child: CachedNetworkImage(
+                      imageUrl: flagUrl,
+                      width: 26,
+                      height: 26,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) => Container(
+                        width: 26,
+                        height: 26,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white12,
+                        ),
+                        child: const Icon(
+                          Icons.flag,
+                          size: 13,
+                          color: Colors.white38,
+                        ),
+                      ),
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.flag,
-                    size: 13,
-                    color: Colors.white38,
-                  ),
-                ),
-              ),
-            ),
             const SizedBox(width: 8),
             Expanded(
               child: Column(
@@ -1034,33 +1092,212 @@ class _SelecaoTab extends StatelessWidget {
                 children: [
                   Text(
                     team['name'],
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: isPlaceholder ? Colors.white24 : Colors.white,
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
+                      fontStyle: isPlaceholder
+                          ? FontStyle.italic
+                          : FontStyle.normal,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     team['conf'],
-                    style: const TextStyle(color: Colors.white38, fontSize: 9),
+                    style: const TextStyle(color: Colors.white24, fontSize: 9),
                   ),
                 ],
               ),
             ),
-            // Seta indicando que é clicável
-            const Icon(Icons.chevron_right, color: Colors.white24, size: 14),
+            // Ícone diferente para placeholder vs seleção confirmada
+            Icon(
+              isPlaceholder ? Icons.lock_clock_outlined : Icons.chevron_right,
+              color: Colors.white12,
+              size: 14,
+            ),
           ],
         ),
       ),
     );
   }
+}
 
-  // Helper para extrair o código de bandeira de uma URL
-  String _extractFlagCode(String url) {
-    final regex = RegExp(r'/([a-z]{2,}(?:-[a-z]+)?)\.(?:png|svg|jpg)');
-    final match = regex.firstMatch(url.toLowerCase());
-    return match?.group(1) ?? 'un';
+class _RepescagemSheet extends StatelessWidget {
+  final String teamName;
+
+  const _RepescagemSheet({required this.teamName});
+
+  // Monta uma mensagem contextual baseada no nome do slot
+  String get _contextMessage {
+    final lower = teamName.toLowerCase();
+    if (lower.contains('intercont')) {
+      return 'Esta vaga será definida pelo Playoff Intercontinental da FIFA.';
+    }
+    if (lower.contains('uefa')) {
+      return 'Esta vaga será definida pela Repescagem UEFA, disputada entre seleções europeias.';
+    }
+    if (lower.contains('rep c') || lower.contains('rep d')) {
+      return 'Esta vaga ainda está em disputa na fase de repescagem.';
+    }
+    return 'Esta vaga ainda não foi definida pela respectiva confederação.';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white12,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 28),
+
+          // Ícone animado de ampulheta
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.amber.withValues(alpha: 0.08),
+              border: Border.all(
+                color: Colors.amber.withValues(alpha: 0.25),
+                width: 1.5,
+              ),
+            ),
+            child: const Icon(
+              Icons.hourglass_top_rounded,
+              color: Colors.amber,
+              size: 34,
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // Título
+          Text(
+            teamName,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+
+          // Badge "Vaga em disputa"
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.amber.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+            ),
+            child: const Text(
+              '⏳  VAGA EM DISPUTA',
+              style: TextStyle(
+                color: Colors.amber,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Mensagem contextual
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Text(
+              _contextMessage,
+              style: const TextStyle(
+                color: Colors.white60,
+                fontSize: 13,
+                height: 1.6,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Dica de ação
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.15)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.info_outline,
+                    color: Colors.lightBlueAccent,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'As informações desta seleção ficarão disponíveis assim que a vaga for definida, Defina uma seleção na tela de grupos para ver detalhes e curiosidades sobre ela.',
+                      style: TextStyle(
+                        color: Colors.white38,
+                        fontSize: 11,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 28),
+
+          // Botão fechar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withValues(alpha: 0.08),
+                  foregroundColor: Colors.white70,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text(
+                  'Entendido',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
   }
 }
 

@@ -14,7 +14,6 @@ import 'package:wsports_cup_premium/injection_container.dart' as di;
 import './core/services/ad_service.dart';
 import 'core/constants/app_theme.dart';
 import 'core/services/notification_service.dart';
-import 'core/utils/team_seeder.dart';
 
 /// Controla a visibilidade do banner de atualização em toda a árvore de widgets.
 final ValueNotifier<bool> showUpdateBannerNotifier = ValueNotifier<bool>(false);
@@ -34,7 +33,7 @@ void main() async {
     AdService.initialize().catchError((e) => debugPrint('Erro AdMob: $e')),
   );
   // === PASSO 1: DESCOMENTE ESTA LINHA ABAIXO PARA INSERIR todas as selecoes para pagina de informacoes sobre as selecoes===
-  await popularTodasAsSelecoes(); ////////////////////////////EENVIAR DADOS PARA O BANCO FIREBASE (RODAR APENAS UMA VEZ, DEPOIS COMENTAR NOVAMENTE)
+  //await popularTodasAsSelecoes(); ////////////////////////////EENVIAR DADOS PARA O BANCO FIREBASE (RODAR APENAS UMA VEZ, DEPOIS COMENTAR NOVAMENTE)
   // === PASSO 2: DESCOMENTE ESTA LINHA ABAIXO PARA INSERIR os jogos dos grupos ===
   //await popularGruposFirebase(); ////////////////////////////EENVIAR DADOS PARA O BANCO FIREBASE (RODAR APENAS UMA VEZ, DEPOIS COMENTAR NOVAMENTE)
 
