@@ -535,7 +535,8 @@ class _TeamDetailPageState extends State<TeamDetailPage> {
     return Column(
       children: [
         Container(
-          height: 160,
+          height:
+              200, // altura fixa para manter consistência visual, mesmo que a imagem falhe
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
@@ -544,16 +545,21 @@ class _TeamDetailPageState extends State<TeamDetailPage> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: imageUrl != null
-                ? CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    fit: BoxFit.contain,
-                    placeholder: (_, _) => const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primaryGold,
-                        strokeWidth: 1.5,
+                ? Padding(
+                    // ✅ Adicione padding interno para a imagem não encostar nas bordas
+                    padding: const EdgeInsets.all(2),
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.contain,
+                      placeholder: (_, _) => const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primaryGold,
+                          strokeWidth:
+                              1.5, // Reduzi o strokeWidth para combinar melhor com o espaço disponível
+                        ),
                       ),
+                      errorWidget: (_, _, _) => _uniformPlaceholder(color),
                     ),
-                    errorWidget: (_, _, _) => _uniformPlaceholder(color),
                   )
                 : _uniformPlaceholder(color),
           ),
