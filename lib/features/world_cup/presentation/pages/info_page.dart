@@ -1069,7 +1069,7 @@ class _SelecaoTab extends StatelessWidget {
                       width: 26,
                       height: 26,
                       fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) => Container(
+                      errorWidget: (_, _, _) => Container(
                         width: 26,
                         height: 26,
                         decoration: const BoxDecoration(
