@@ -100,16 +100,29 @@ class _PremiumPageState extends State<PremiumPage> {
   Future<void> _loadProduct() async {
     if (mounted) setState(() => _isLoading = true);
 
+    // ✅ TIMEOUT DE SEGURANÇA GARANTIDO: NUNCA FICA CARREGANDO MAIS QUE 20 SEGUNDOS
+    final timeout = Timer(const Duration(seconds: 20), () {
+      if (mounted && _isLoading) {
+        _setError('Tempo de conexão esgotado. Verifique sua internet.');
+      }
+    });
+
     try {
-      final bool available = await InAppPurchase.instance.isAvailable();
+      final bool available = await InAppPurchase.instance.isAvailable().timeout(
+        const Duration(seconds: 8),
+        onTimeout: () => false,
+      );
+
       if (!available) {
         _setError('A loja não está disponível no momento. Tente mais tarde.');
         return;
       }
 
-      final response = await InAppPurchase.instance.queryProductDetails({
-        _productId,
-      });
+      final response = await InAppPurchase.instance
+          .queryProductDetails({_productId})
+          .timeout(
+            const Duration(seconds: 12),
+          ); // timeout específico para a consulta de produtos
 
       if (!mounted) return;
 
@@ -136,15 +149,26 @@ class _PremiumPageState extends State<PremiumPage> {
       });
     } catch (e) {
       _setError('Erro inesperado ao carregar a loja. Tente novamente.');
+    } finally {
+      // ✅ GARANTIA ABSOLUTA: DESLIGA O LOADING MESMO SE TUDO DER ERRADO
+      timeout.cancel();
+      if (mounted && _isLoading) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   void _setError(String message) {
-    if (!mounted) return;
-    setState(() {
-      _errorMessage = message;
-      _isLoading = false;
-    });
+    // ✅ Garantia ABSOLUTA: NUNCA fica travado em loading
+    // Reseta TODOS os estados de loading independentemente de qualquer coisa
+    _isLoading = false;
+    _isPurchasing = false;
+    _isRestoring = false;
+    _errorMessage = message;
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   // ─── Listener de compras ────────────────────────────────────────────────────
@@ -289,15 +313,12 @@ class _PremiumPageState extends State<PremiumPage> {
       _errorMessage = null;
     });
 
-    // Timeout de segurança: Se o Google Play não responder em 60 segundos,
-    // nós destravamos a tela do usuário para ele não ficar preso.
-    Future.delayed(const Duration(seconds: 60), () {
-      if (mounted && _isPurchasing) {
-        setState(() {
-          _isPurchasing = false;
-          _errorMessage =
-              'O processo está demorando muito. Verifique sua internet e tente novamente.';
-        });
+    // ✅ TIMEOUT DE SEGURANÇA: NUNCA FICA CARREGANDO MAIS QUE 30 SEGUNDOS
+    final purchaseTimeout = Timer(const Duration(seconds: 30), () {
+      if (_isPurchasing) {
+        _setError(
+          'O processo está demorando muito. Verifique sua internet e tente novamente.',
+        );
       }
     });
 
