@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -13,6 +15,9 @@ class BannerAdWidget extends StatefulWidget {
 class _BannerAdWidgetState extends State<BannerAdWidget> {
   BannerAd? _bannerAd;
   bool _isLoaded = false;
+  Timer? _retryTimer;
+  int _retryAttempts = 0;
+  static const int _maxRetryAttempts = 5;
 
   @override
   void initState() {
@@ -26,12 +31,28 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
-        onAdLoaded: (_) => setState(() => _isLoaded = true),
+        onAdLoaded: (_) {
+          setState(() {
+            _isLoaded = true;
+            _retryAttempts = 0;
+          });
+        },
 
         onAdFailedToLoad: (ad, error) {
-          //print('Banner falhou: ${error.message}');
           ad.dispose();
           setState(() => _isLoaded = false);
+
+          // Backoff exponencial para retentativas
+          if (_retryAttempts < _maxRetryAttempts) {
+            final delay = Duration(seconds: 2 << _retryAttempts);
+            _retryAttempts++;
+
+            _retryTimer = Timer(delay, () {
+              if (mounted && !AdService.isPremium) {
+                _loadBanner();
+              }
+            });
+          }
         },
       ),
     )..load();
@@ -40,6 +61,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   @override
   void dispose() {
     _bannerAd?.dispose();
+    _retryTimer?.cancel();
     super.dispose();
   }
 

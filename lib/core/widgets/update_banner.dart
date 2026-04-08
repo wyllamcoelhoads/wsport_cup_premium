@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-// Você pode importar a variável global do seu main.dart, ou passá-la por parâmetro
-import '../../main.dart';
+// Import da variável global de notificação do banner
+import '../utils/update_banner_notifier.dart';
 
 class UpdateBanner extends StatelessWidget {
   final Widget child; // O restante do seu aplicativo
