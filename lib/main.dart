@@ -14,7 +14,7 @@ import 'package:wsports_cup_premium/injection_container.dart' as di;
 import './core/services/ad_service.dart';
 import 'core/constants/app_theme.dart';
 import 'core/services/notification_service.dart';
-import 'core/utils/team_seeder.dart';
+//import 'core/utils/team_seeder.dart';
 
 /// Controla a visibilidade do banner de atualização em toda a árvore de widgets.
 final ValueNotifier<bool> showUpdateBannerNotifier = ValueNotifier<bool>(false);
