@@ -171,88 +171,110 @@ class _PremiumPageState extends State<PremiumPage> {
       // Ignora produtos que não são os nossos
       if (purchase.productID != _productId) continue;
 
-      switch (purchase.status) {
-        case PurchaseStatus.purchased:
-        case PurchaseStatus.restored:
-          // Sempre completa a transação antes de qualquer ação de UI
-          if (purchase.pendingCompletePurchase) {
-            try {
-              await InAppPurchase.instance.completePurchase(purchase);
-            } catch (_) {
-              // Falha ao completar não invalida a compra — registra premium mesmo assim
+      // Envolvemos todo o processamento em um try/catch para garantir que
+      // a tela nunca fique travada em caso de exceção não prevista.
+      try {
+        switch (purchase.status) {
+          case PurchaseStatus.purchased:
+          case PurchaseStatus.restored:
+            if (purchase.pendingCompletePurchase) {
+              try {
+                await InAppPurchase.instance.completePurchase(purchase);
+              } catch (e) {
+                debugPrint("Erro ao completar compra na loja: $e");
+              }
             }
-          }
 
-          await AdService.setPremium(true);
+            try {
+              await AdService.setPremium(true);
+            } catch (e) {
+              debugPrint("Erro ao salvar status premium localmente: $e");
+            }
 
-          if (mounted) {
-            setState(() {
-              _isPurchasing = false;
-              _alreadyPremium = true;
-            });
+            if (mounted) {
+              setState(() {
+                _isPurchasing = false;
+                _alreadyPremium = true;
+                _errorMessage = null;
+              });
 
-            // Feedback positivo
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text(
-                  'Parabéns! Você agora é Premium! 🏆',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Parabéns! Você agora é Premium! 🏆',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                  backgroundColor: AppColors.primaryGold,
+                  duration: Duration(seconds: 3),
                 ),
-                backgroundColor: AppColors.primaryGold,
-                duration: const Duration(seconds: 3),
-              ),
-            );
-          }
-          break;
+              );
+            }
+            break;
 
-        case PurchaseStatus.error:
-          // Trata ITEM_ALREADY_OWNED (código 7) como compra restaurada
-          // Substituímos a variável não definida pela String '7' correspondente ao erro no Android
-          if (purchase.error?.code == '7') {
-            await AdService.setPremium(true);
+          case PurchaseStatus.error:
+            // Erro 7 = ITEM_ALREADY_OWNED
+            if (purchase.error?.code == '7' ||
+                purchase.error?.code ==
+                    'billing_response_result_item_already_owned') {
+              await AdService.setPremium(true);
+              if (purchase.pendingCompletePurchase) {
+                try {
+                  await InAppPurchase.instance.completePurchase(purchase);
+                } catch (_) {}
+              }
+
+              if (mounted) {
+                setState(() {
+                  _alreadyPremium = true;
+                  _isPurchasing = false;
+                  _errorMessage = null;
+                });
+              }
+              return;
+            }
+
+            // Completa a transação com erro para limpar do cache da Google Play
             if (purchase.pendingCompletePurchase) {
               try {
                 await InAppPurchase.instance.completePurchase(purchase);
               } catch (_) {}
             }
 
-            // Adicionado o bloco { } exigido pelas regras de lint
             if (mounted) {
               setState(() {
-                _alreadyPremium = true;
                 _isPurchasing = false;
+                // Exibe uma mensagem amigável caso haja erro de rede ou pagamento recusado
+                _errorMessage =
+                    'Falha no pagamento. Verifique sua conexão ou forma de pagamento.';
               });
             }
-            return; // não cai no erro genérico
-          }
+            break;
 
-          // Sempre tenta completar para não deixar transação pendente
-          if (purchase.pendingCompletePurchase) {
-            try {
-              await InAppPurchase.instance.completePurchase(purchase);
-            } catch (_) {}
-          }
+          case PurchaseStatus.canceled:
+            if (mounted) {
+              setState(() {
+                _isPurchasing = false;
+                _errorMessage = 'Compra cancelada.';
+              });
+            }
+            break;
 
-          if (mounted) {
-            setState(() {
-              _isPurchasing = false;
-              _errorMessage =
-                  purchase.error?.message ??
-                  'Pagamento não foi concluído. Tente novamente.';
-            });
-          }
-          break;
-
-        case PurchaseStatus.canceled:
-          if (mounted) setState(() => _isPurchasing = false);
-          break;
-
-        case PurchaseStatus.pending:
-          if (mounted) setState(() => _isPurchasing = true);
-          break;
+          case PurchaseStatus.pending:
+            if (mounted) setState(() => _isPurchasing = true);
+            break;
+        }
+      } catch (e) {
+        // Se QUALQUER coisa der errado durante o processamento, paramos o loading
+        if (mounted) {
+          setState(() {
+            _isPurchasing = false;
+            _errorMessage =
+                'Ocorreu um erro no processamento. Tente novamente.';
+          });
+        }
       }
     }
   }
@@ -267,6 +289,18 @@ class _PremiumPageState extends State<PremiumPage> {
       _errorMessage = null;
     });
 
+    // Timeout de segurança: Se o Google Play não responder em 60 segundos,
+    // nós destravamos a tela do usuário para ele não ficar preso.
+    Future.delayed(const Duration(seconds: 60), () {
+      if (mounted && _isPurchasing) {
+        setState(() {
+          _isPurchasing = false;
+          _errorMessage =
+              'O processo está demorando muito. Verifique sua internet e tente novamente.';
+        });
+      }
+    });
+
     try {
       final PurchaseParam param = PurchaseParam(productDetails: _product!);
       final bool started = await InAppPurchase.instance.buyNonConsumable(
@@ -274,20 +308,19 @@ class _PremiumPageState extends State<PremiumPage> {
       );
 
       if (!started && mounted) {
-        // A loja não iniciou a compra (ex: usuário já comprou e não restaurou)
         setState(() {
           _isPurchasing = false;
           _errorMessage =
-              'Não foi possível iniciar a compra. '
-              'Se já comprou, use "Restaurar".';
+              'Não foi possível iniciar a compra. Tente o botão "Restaurar".';
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isPurchasing = false;
+          // Mostra mensagem clara se a conexão cair bem na hora do clique
           _errorMessage =
-              'Erro ao processar o pagamento. Verifique sua conexão.';
+              'Erro ao se conectar com a loja. Verifique sua internet.';
         });
       }
     }
