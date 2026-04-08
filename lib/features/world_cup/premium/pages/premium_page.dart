@@ -344,6 +344,9 @@ class _PremiumPageState extends State<PremiumPage> {
               'Erro ao se conectar com a loja. Verifique sua internet.';
         });
       }
+    } finally {
+      // ✅ GARANTIA ABSOLUTA: Cancela o timeout em QUALQUER caso (sucesso, erro, exceção)
+      purchaseTimeout.cancel();
     }
   }
 

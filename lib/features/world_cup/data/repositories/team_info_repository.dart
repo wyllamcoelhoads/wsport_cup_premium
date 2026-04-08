@@ -36,7 +36,7 @@ class TeamInfoRepository {
           .map((doc) => TeamInfoEntity.fromMap(doc.id, doc.data()))
           .toList();
     } catch (e) {
-      print('TeamInfoRepository.getAllTeams error: $e');
+      //print('TeamInfoRepository.getAllTeams error: $e');
       return [];
     }
   }
