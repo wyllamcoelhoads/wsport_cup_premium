@@ -704,27 +704,6 @@ class _SedesTabState extends State<_SedesTab> {
     );
   }
 
-  Widget _statBadge(String emoji, String count, String label) {
-    return Column(
-      children: [
-        Text(emoji, style: const TextStyle(fontSize: 22)),
-        const SizedBox(height: 2),
-        Text(
-          count,
-          style: const TextStyle(
-            color: AppColors.primaryGold,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: const TextStyle(color: Colors.white38, fontSize: 10),
-        ),
-      ],
-    );
-  }
-
   Widget _buildCityCard(_HostCity city, BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1604,7 +1583,7 @@ class _Copa2026Tab extends StatelessWidget {
                   onTap: onGoToCalendar != null
                       ? () {
                           Navigator.pop(context); // fecha InfoPage
-                          onGoToCalendar!(); // aciona o calendário no pai
+                          onGoToCalendar(); // aciona o calendário no pai
                         }
                       : null,
                 ),
