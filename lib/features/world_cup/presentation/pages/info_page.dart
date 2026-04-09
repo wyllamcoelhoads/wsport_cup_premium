@@ -9,6 +9,7 @@ import '../widgets/stadium_web_browser.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
 import '../pages/team_detail_page.dart';
+import '../pages/ball_detail_page.dart';
 
 // ============================================================
 // DATA MODELS
@@ -461,17 +462,36 @@ class _InfoPageState extends State<InfoPage>
 // TAB 1: SEDES
 // ============================================================
 
-class _SedesTab extends StatelessWidget {
+class _SedesTab extends StatefulWidget {
   const _SedesTab();
 
   @override
+  State<_SedesTab> createState() => _SedesTabState();
+}
+
+class _SedesTabState extends State<_SedesTab> {
+  String? _activeFilter; // null = sem filtro, 'us' | 'ca' | 'mx'
+
+  List<_HostCity> get _filteredCities {
+    if (_activeFilter == null) return _hostCities;
+    return _hostCities.where((c) => c.flagCode == _activeFilter).toList();
+  }
+
+  void _toggleFilter(String flagCode) {
+    setState(() {
+      _activeFilter = _activeFilter == flagCode ? null : flagCode;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final cities = _filteredCities;
     return ListView.builder(
       padding: const EdgeInsets.all(12),
-      itemCount: _hostCities.length + 1,
+      itemCount: cities.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) return _buildHeader();
-        return _buildCityCard(_hostCities[index - 1], context);
+        return _buildCityCard(cities[index - 1], context);
       },
     );
   }
@@ -509,17 +529,177 @@ class _SedesTab extends StatelessWidget {
             style: TextStyle(color: Colors.white54, fontSize: 11),
           ),
           const SizedBox(height: 16),
+
+          // ── Botões de filtro ─────────────────────────────────
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _statBadge('🇺🇸', '11', 'cidades EUA'),
-              Container(width: 1, height: 40, color: Colors.white12),
-              _statBadge('🇨🇦', '2', 'cidades Canadá'),
-              Container(width: 1, height: 40, color: Colors.white12),
-              _statBadge('🇲🇽', '3', 'cidades México'),
+              _filterButton(
+                emoji: '🇺🇸',
+                count: '11',
+                label: 'EUA',
+                flagCode: 'us',
+                activeColor: const Color(0xFF3A7BD5),
+              ),
+              const SizedBox(width: 10),
+              _filterButton(
+                emoji: '🇨🇦',
+                count: '2',
+                label: 'Canadá',
+                flagCode: 'ca',
+                activeColor: const Color(0xFFF08080),
+              ),
+              const SizedBox(width: 10),
+              _filterButton(
+                emoji: '🇲🇽',
+                count: '3',
+                label: 'México',
+                flagCode: 'mx',
+                activeColor: const Color(0xFF2E7D32),
+              ),
             ],
           ),
+
+          // ── Dica de filtro ativo ─────────────────────────────
+          if (_activeFilter != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.primaryGold.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.primaryGold.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.filter_alt,
+                    color: AppColors.primaryGold,
+                    size: 13,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Toque no botão novamente para remover o filtro',
+                    style: TextStyle(
+                      color: AppColors.primaryGold.withValues(alpha: 0.8),
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _filterButton({
+    required String emoji,
+    required String count,
+    required String label,
+    required String flagCode,
+    required Color activeColor,
+  }) {
+    final bool isActive = _activeFilter == flagCode;
+    final bool hasFilter = _activeFilter != null;
+    final bool isDimmed = hasFilter && !isActive;
+
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _toggleFilter(flagCode),
+          borderRadius: BorderRadius.circular(14),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeInOut,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+            decoration: BoxDecoration(
+              color: isActive
+                  ? activeColor.withValues(alpha: 0.22)
+                  : isDimmed
+                  ? Colors.white.withValues(alpha: 0.02)
+                  : AppColors.primaryGold.withValues(alpha: 0.07),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isActive
+                    ? activeColor
+                    : isDimmed
+                    ? Colors.white12
+                    : AppColors.primaryGold.withValues(alpha: 0.4),
+                width: isActive ? 2 : 1,
+              ),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: activeColor.withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                  : [],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedScale(
+                  scale: isActive ? 1.15 : 1.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Text(
+                    emoji,
+                    style: TextStyle(
+                      fontSize: 22,
+                      color: isDimmed ? Colors.white38 : null,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  style: TextStyle(
+                    color: isActive
+                        ? activeColor
+                        : isDimmed
+                        ? Colors.white24
+                        : AppColors.primaryGold,
+                    fontSize: isActive ? 22 : 20,
+                    fontWeight: FontWeight.bold,
+                    height: 1,
+                  ),
+                  child: Text(count),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isActive
+                        ? activeColor.withValues(alpha: 0.9)
+                        : isDimmed
+                        ? Colors.white24
+                        : Colors.white38,
+                    fontSize: 10,
+                    fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                    letterSpacing: isActive ? 0.5 : 0,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Indicador de filtro ativo
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  height: 3,
+                  width: isActive ? 24 : 0,
+                  decoration: BoxDecoration(
+                    color: activeColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1334,7 +1514,7 @@ class _Copa2026Tab extends StatelessWidget {
         _buildSectionCard(
           title: '⚽  BOLA OFICIAL',
           icon: Icons.sports_soccer,
-          child: _buildBallContent(),
+          child: _buildBallContent(context),
         ),
         const SizedBox(height: 14),
         _buildSectionCard(
@@ -1633,52 +1813,70 @@ class _Copa2026Tab extends StatelessWidget {
     );
   }
 
-  Widget _buildBallContent() {
+  Widget _buildBallContent(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.blue.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+        // ── Card clicável da bola ─────────────────────────────
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const BallDetailPage()),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Adidas — Bola Oficial FIFA 2026',
-                style: TextStyle(
-                  color: Colors.lightBlueAccent,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Adidas — Bola Oficial FIFA 2026',
+                        style: TextStyle(
+                          color: Colors.lightBlueAccent,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: Colors.lightBlueAccent.withValues(alpha: 0.6),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'A Adidas é fornecedora oficial de bolas da Copa do Mundo desde 1970. Para 2026, a empresa desenvolverá uma bola com tecnologia de ponta e design inspirado nos três países anfitriões.',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  height: 1.5,
+                const SizedBox(height: 10),
+                const Text(
+                  'A Adidas é fornecedora oficial de bolas da Copa do Mundo desde 1970. Para 2026, a empresa desenvolverá uma bola com tecnologia de ponta e design inspirado nos três países anfitriões.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _infoChip('🏭 Adidas', Colors.blue),
-                  _infoChip('⚡ Alta Tecnologia', Colors.blue),
-                  _infoChip('📅 Desde 1970', Colors.blue),
-                ],
-              ),
-            ],
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _infoChip('🏭 Adidas', Colors.blue),
+                    _infoChip('⚡ Alta Tecnologia', Colors.blue),
+                    _infoChip('📅 Desde 1970', Colors.blue),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
+        // ── Histórico de bolas (FORA do GestureDetector) ─────
         const SizedBox(height: 12),
-        // Previous balls timeline
         const Text(
           'Bolas das Copas recentes:',
           style: TextStyle(
@@ -1688,11 +1886,11 @@ class _Copa2026Tab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
+        _ballRow('2026 USA/CAN/MEX', 'Trionda Pro ⭐'),
         _ballRow('2022 Qatar', 'Al Rihla'),
         _ballRow('2018 Russia', 'Telstar 18'),
         _ballRow('2014 Brasil', 'Brazuca'),
         _ballRow('2010 África do Sul', 'Jabulani'),
-        _ballRow('2026 USA/CAN/MEX', 'A ser revelada ⚽'),
       ],
     );
   }
