@@ -454,7 +454,7 @@ Status: ✅ ALCANÇADO
 
 ---
 
-## 📝 Assinatura
+## � Assinatura
 
 **Implementação:** GitHub Copilot  
 **Data:** 09 de Abril de 2026  

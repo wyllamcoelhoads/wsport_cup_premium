@@ -12,17 +12,19 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
   final GetMatchesUseCase getMatchesUseCase;
   final WorldCupRepository repository;
 
+  /// ✅ CORREÇÃO: Função movida para fora do construtor (corrige memory leak)
+  /// Verifica conectividade com internet
+  static Future<bool> hasInternet() async {
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } on SocketException catch (_) {
+      return false;
+    }
+  }
+
   WorldCupBloc({required this.getMatchesUseCase, required this.repository})
     : super(const WorldCupState()) {
-    Future<bool> hasInternet() async {
-      try {
-        final result = await InternetAddress.lookup('google.com');
-        return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-      } on SocketException catch (_) {
-        return false;
-      }
-    }
-
     // ==========================================================
     // 1. CARREGAR JOGOS
     // ==========================================================
