@@ -248,7 +248,7 @@ const List<Map<String, dynamic>> _groups = [
   {
     'group': 'GRUPO C',
     'teams': [
-      {'name': 'Brasil 🇧🇷', 'flag': 'br', 'conf': 'CONMEBOL'},
+      {'name': 'Brasil', 'flag': 'br', 'conf': 'CONMEBOL'},
       {'name': 'Marrocos', 'flag': 'ma', 'conf': 'CAF'},
       {'name': 'Haiti', 'flag': 'ht', 'conf': 'CONCACAF'},
       {'name': 'Escócia', 'flag': 'gb-sct', 'conf': 'UEFA'},
@@ -392,14 +392,11 @@ class _InfoPageState extends State<InfoPage>
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new,
-            color: AppColors.primaryGold,
-            size: 20,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
+        // 📄 ALTERAÇÃO: Seta de volta removida
+        // 💡 Como COPA 2026 é a aba inicial, não há rota anterior para voltar
+        // Isto evita o erro "Rota não encontrada" ao clicar
+        // Se usuario quiser voltar, pode usar os gestos do Android/iOS
+        leading: null,
         title: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -430,10 +427,13 @@ class _InfoPageState extends State<InfoPage>
             fontWeight: FontWeight.bold,
             letterSpacing: 0.8,
           ),
+          // 📄 ALTERAÇÃO: Reordenação das abas para melhor UX
+          // ✨ COPA 2026 agora é a primeira aba (index 0)
+          // 💡 Estratégia: Colocar CTA principal em destaque
           tabs: const [
+            Tab(icon: Icon(Icons.sports_soccer, size: 16), text: 'COPA 2026'),
             Tab(icon: Icon(Icons.location_city, size: 16), text: 'SEDES'),
             Tab(icon: Icon(Icons.emoji_flags, size: 16), text: 'SELEÇÕES'),
-            Tab(icon: Icon(Icons.sports_soccer, size: 16), text: 'COPA 2026'),
             Tab(icon: Icon(Icons.play_circle_fill, size: 16), text: 'VÍDEOS'),
           ],
         ),
@@ -443,14 +443,26 @@ class _InfoPageState extends State<InfoPage>
         physics: _tabController.index == 3
             ? const NeverScrollableScrollPhysics()
             : const BouncingScrollPhysics(),
+        // 📄 ALTERAÇÃO: Ordem dos children refatorada para nova ordem das abas
+        // ✨ Índices:
+        //   0 (COPA 2026)  → _Copa2026Tab
+        //   1 (SEDES)      → _SedesTab
+        //   2 (SELEÇÕES)   → _SelecaoTab
+        //   3 (VÍDEOS)     → _VideosTab
         children: [
-          const _SedesTab(),
-          NetworkAwareTab(child: _SelecaoTab(matches: widget.matches)),
-
+          // 🎯 PRIMEIRO: COPA 2026 (Call-to-Action principal)
           _Copa2026Tab(
             onSwitchTab: (index) => _tabController.animateTo(index),
-            onGoToCalendar: widget.onGoToCalendar, // 👈 novo
+            onGoToCalendar: widget.onGoToCalendar,
           ),
+
+          // 📍 SEGUNDO: SEDES (Informações sobre estádios)
+          const _SedesTab(),
+
+          // 🇧🇷 TERCEIRO: SELEÇÕES (Informações sobre times)
+          NetworkAwareTab(child: _SelecaoTab(matches: widget.matches)),
+
+          // 🎥 QUARTO: VÍDEOS (Conteúdo multimídia)
           NetworkAwareTab(
             child: _VideosTab(initialFilter: widget.initialVideoFilter),
           ),
@@ -1575,12 +1587,14 @@ class _Copa2026Tab extends StatelessWidget {
           Row(
             children: [
               // ── Botão SELEÇÕES ──────────────────────────────
+              // 📄 ALTERAÇÃO: Index atualizado para nova ordem das abas
+              // Antes: índice 1 | Depois: índice 2 (SELEÇÕES mudou de posição)
               Expanded(
                 child: _heroStatButton(
                   value: '48',
                   label: 'Seleções',
                   icon: Icons.emoji_flags_rounded,
-                  onTap: () => onSwitchTab(1),
+                  onTap: () => onSwitchTab(2),
                 ),
               ),
               const SizedBox(width: 10),
@@ -1600,12 +1614,14 @@ class _Copa2026Tab extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               // ── Botão PAÍSES / CIDADES ──────────────────────
+              // 📄 ALTERAÇÃO: Index atualizado para nova ordem das abas
+              // Antes: índice 0 | Depois: índice 1 (SEDES mudou de posição)
               Expanded(
                 child: _heroStatButton(
                   value: '3/16',
                   label: 'Países/Cidades',
                   icon: Icons.location_city,
-                  onTap: () => onSwitchTab(0),
+                  onTap: () => onSwitchTab(1),
                 ),
               ),
             ],
@@ -2365,7 +2381,8 @@ class _VideosTabState extends State<_VideosTab> {
     },
     'estrelas': {
       'label': '🌟 Estrelas',
-      'query': 'Mbappé Vinicius Messi Haaland Copa 2026',
+      'query':
+          'Mbappé ViniJr Vinicius Cristiano Ronaldo Messi Haaland Copa 2026',
     },
     'sedes': {
       'label': '🏟️ Estádios',
