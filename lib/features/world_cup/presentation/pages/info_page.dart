@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:wsports_cup_premium/core/widgets/network_aware_tab.dart';
+// 📄 ALTERAÇÃO 4: Import do sistema de rotas nomeadas
+import '../../../../core/routes/app_routes.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../domain/entities/match_entity.dart';
 import '../../domain/logic/repescagem_data.dart';
@@ -1482,8 +1484,16 @@ class _Copa2026Tab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // 📄 Card Hero com informações gerais da Copa
         _buildHeroCard(context, onSwitchTab, onGoToCalendar),
         const SizedBox(height: 16),
+
+        // 📄 NOVO: Card de Call-to-Action para criar simulação
+        // 💡 Este é o ponto de entrada para a funcionalidade principal do app
+        _buildSimulationCTACard(context),
+        const SizedBox(height: 16),
+
+        // 📄 Card de mascote da Copa
         _buildSectionCard(
           title: '🦁  MASCOTE OFICIAL',
           icon: Icons.pets,
@@ -1687,6 +1697,117 @@ class _Copa2026Tab extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// 🎮 NOVO MÉTODO: Card de Call-to-Action para criar simulação
+  ///
+  /// 📌 Este widget é o ponto de entrada PRINCIPAL da funcionalidade core do app.
+  /// 💡 Objetivo: Direcionar o usuário naturalmente da tela de informações
+  ///    para a tela de simulação de placares (WorldCupPage).
+  ///
+  /// 🎨 Design:
+  /// - Gradiente verde para destacar visualmente (ação importante)
+  /// - Ícone de bola + bolinhas decorativas
+  /// - Texto claro e motivador
+  /// - Botão com ação de navegação
+  Widget _buildSimulationCTACard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        // 🎨 Gradiente verde que chama atenção (cor de ação/CTA)
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.green.shade700.withValues(alpha: 0.85),
+            Colors.green.shade900.withValues(alpha: 0.90),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.green.shade400.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
+        // 📦 Sombra para elevar o card
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // 🎮 Ícone principal - Bola de futebol
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.sports_soccer,
+              size: 48,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 📝 Título principal
+          const Text(
+            '🎮 CRIAR SIMULAÇÃO',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // 📝 Subtítulo/descrição
+          const Text(
+            'Faça seus palpites dos placares\ne teste sua sorte na Copa!',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: Colors.white70, height: 1.5),
+          ),
+          const SizedBox(height: 16),
+
+          // 🎯 Botão de ação (navegação para WorldCupPage)
+          ElevatedButton.icon(
+            onPressed: () {
+              // 📄 ALTERAÇÃO 4: Usando rota nomeada em vez de Navigator.push()
+              // 💡 Vantagens de usar rotas nomeadas:
+              //    - Centralizado em app_routes.dart
+              //    - Sem duplicação de código
+              //    - Fácil de manutenção e refatoração
+              //    - Suporta deep linking
+              Navigator.pushNamed(context, AppRoutes.worldCup);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.green.shade900,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 4,
+            ),
+            icon: const Icon(Icons.arrow_forward, size: 20),
+            label: const Text(
+              'COMEÇAR AGORA',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

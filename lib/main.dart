@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:wsports_cup_premium/features/world_cup/presentation/pages/world_cup_page.dart';
+// 📄 ALTERAÇÃO: Import de InfoPage como HOME principal
+import 'package:wsports_cup_premium/features/world_cup/presentation/pages/info_page.dart';
+// 📄 ALTERAÇÃO 4: Import do sistema de rotas nomeadas
+import 'package:wsports_cup_premium/core/routes/app_routes.dart';
 import 'core/services/version_check_service.dart';
 import 'core/widgets/update_banner.dart';
 import 'firebase_options.dart';
@@ -81,8 +85,61 @@ class MyApp extends StatelessWidget {
           if (child == null) return const SizedBox.shrink();
           return UpdateBanner(child: child);
         },
-        home: const WorldCupPage(),
+        // 📄 ALTERAÇÃO 4: Sistema de rotas nomeadas para escalabilidade
+        // 💡 Usando onGenerateRoute para maior flexibilidade e controle
+        //
+        // Vantagens desta abordagem:
+        // ✅ Todas as rotas centralizadas em um único lugar (app_routes.dart)
+        // ✅ Fácil adicionar novos argumentos ou middleware
+        // ✅ Sem duplicação de Navigator.push() espalhado no código
+        // ✅ Suporta deep linking (URLs profundas)
+        // ✅ Transições customizáveis por rota
+        initialRoute: AppRoutes.infoPage,
+        onGenerateRoute: _generateRoute,
       ),
     );
+  }
+
+  /// 🔄 Gerador de rotas nomeadas
+  ///
+  /// Este método é chamado quando o app tenta navegar para uma rota.
+  /// Centraliza toda a lógica de navegação e pode ser expandido para:
+  /// - Passar argumentos entre telas
+  /// - Definir transações customizadas por rota
+  /// - Adicionar middleware/guards de autenticação
+  /// - Debug de navegação
+  ///
+  /// 📌 Uso:
+  /// ```dart
+  /// Navigator.pushNamed(context, AppRoutes.worldCup);
+  /// Navigator.pushNamed(context, AppRoutes.teamDetail,
+  ///   arguments: {'teamId': 'brasil'});
+  /// ```
+  static Route<dynamic>? _generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      // 🏠 Rota da tela principal (Hub de Informações)
+      case AppRoutes.infoPage:
+        return MaterialPageRoute(
+          builder: (_) => const InfoPage(),
+          settings: settings,
+        );
+
+      // 🎮 Rota da tela de simulação de placares
+      case AppRoutes.worldCup:
+        return MaterialPageRoute(
+          builder: (_) => const WorldCupPage(),
+          settings: settings,
+        );
+
+      // ❌ Rota não encontrada
+      default:
+        return MaterialPageRoute(
+          builder: (_) => Scaffold(
+            appBar: AppBar(title: const Text('Erro')),
+            body: const Center(child: Text('Rota não encontrada')),
+          ),
+          settings: settings,
+        );
+    }
   }
 }
