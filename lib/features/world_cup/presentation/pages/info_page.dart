@@ -392,11 +392,13 @@ class _InfoPageState extends State<InfoPage>
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
+        automaticallyImplyLeading:
+            false, // 📄 ALTERAÇÃO: Remove a seta de volta padrão
+
         // 📄 ALTERAÇÃO: Seta de volta removida
         // 💡 Como COPA 2026 é a aba inicial, não há rota anterior para voltar
         // Isto evita o erro "Rota não encontrada" ao clicar
         // Se usuario quiser voltar, pode usar os gestos do Android/iOS
-        leading: null,
         title: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
