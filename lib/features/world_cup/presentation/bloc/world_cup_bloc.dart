@@ -75,6 +75,7 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
         }
       }
     });
+
     // ==========================================================
     // 2. SALVAR PALPITE
     // ==========================================================
@@ -82,10 +83,18 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
       // Limpa qualquer mensagem antiga antes de processar o novo salvamento
       emit(state.copyWith(successMessage: null));
 
+      // ATENÇÃO: Mantive assim por enquanto para não "quebrar" seu código.
+      // O próximo passo será atualizar esse LocalStorageService para salvar os cartões na memória do celular.
       await LocalStorageService.savePrediction(
         event.matchId,
         event.homeScore,
         event.awayScore,
+        homeYellows: event.homeYellows,
+        homeDoubleYellows: event.homeDoubleYellows,
+        homeReds: event.homeReds,
+        awayYellows: event.awayYellows,
+        awayDoubleYellows: event.awayDoubleYellows,
+        awayReds: event.awayReds,
       );
 
       final currentMatches = state.matches;
@@ -94,6 +103,13 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
           return match.copyWith(
             userHomePrediction: event.homeScore,
             userAwayPrediction: event.awayScore,
+            // ── LIGANDO OS FIOS DOS CARTÕES AQUI ──
+            userHomeYellows: event.homeYellows,
+            userHomeDoubleYellows: event.homeDoubleYellows,
+            userHomeReds: event.homeReds,
+            userAwayYellows: event.awayYellows,
+            userAwayDoubleYellows: event.awayDoubleYellows,
+            userAwayReds: event.awayReds,
           );
         }
         return match;
@@ -137,21 +153,28 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
             ? event.newTeamFlag
             : match.awayFlag;
 
+        bool hasSwapped =
+            match.homeTeam == event.oldTeamName ||
+            match.awayTeam == event.oldTeamName;
+
         return match.copyWith(
           homeTeam: hName,
           homeFlag: hFlag,
           awayTeam: aName,
           awayFlag: aFlag,
-          userHomePrediction:
-              (match.homeTeam == event.oldTeamName ||
-                  match.awayTeam == event.oldTeamName)
+          userHomePrediction: hasSwapped ? null : match.userHomePrediction,
+          userAwayPrediction: hasSwapped ? null : match.userAwayPrediction,
+          // SE O TIME FOR TROCADO, APAGAMOS OS CARTÕES TAMBÉM
+          userHomeYellows: hasSwapped ? null : match.userHomeYellows,
+          userHomeDoubleYellows: hasSwapped
               ? null
-              : match.userHomePrediction,
-          userAwayPrediction:
-              (match.homeTeam == event.oldTeamName ||
-                  match.awayTeam == event.oldTeamName)
+              : match.userHomeDoubleYellows,
+          userHomeReds: hasSwapped ? null : match.userHomeReds,
+          userAwayYellows: hasSwapped ? null : match.userAwayYellows,
+          userAwayDoubleYellows: hasSwapped
               ? null
-              : match.userAwayPrediction,
+              : match.userAwayDoubleYellows,
+          userAwayReds: hasSwapped ? null : match.userAwayReds,
         );
       }).toList();
 
@@ -168,14 +191,11 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
     // ==========================================================
     // 4. RESETAR TODOS OS PALPITES
     // ==========================================================
-    // ==========================================================
-    // 4. RESETAR TODOS OS PALPITES
-    // ==========================================================
     on<ResetAllPredictionsEvent>((event, emit) async {
       // 1. Limpa tudo do armazenamento local do celular
       await LocalStorageService.clearAllPredictions();
 
-      // 2. Chama o nosso novo método que zera os palpites de forma segura
+      // 2. Chama o nosso novo método que zera os palpites (e agora cartões) de forma segura
       final clearedMatches = state.matches.map((match) {
         return match.clearPredictions();
       }).toList();
@@ -196,12 +216,12 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
       emit(state.copyWith(successMessage: null));
     });
 
+    // ==========================================================
+    // 5. GERAR PLACARES ALEATÓRIOS
+    // ==========================================================
     on<GenerateRandomScoresEvent>((event, emit) async {
       emit(state.copyWith(successMessage: null));
 
-      // quem cuida do anuncio é apenas o UI
-      //final watched = await AdService.showRewarded();
-      //if (!watched) return;
       final random = Random();
 
       final updatedList = state.matches.map((match) {
@@ -219,9 +239,17 @@ class WorldCupBloc extends Bloc<WorldCupEvent, WorldCupState> {
           }
         }
 
+        // Deixei para zerar os cartões na geração aleatória,
+        // senão a tabela ia virar um caos de expulsões rs
         return match.copyWith(
           userHomePrediction: home,
           userAwayPrediction: away,
+          userHomeYellows: 0,
+          userHomeDoubleYellows: 0,
+          userHomeReds: 0,
+          userAwayYellows: 0,
+          userAwayDoubleYellows: 0,
+          userAwayReds: 0,
         );
       }).toList();
 

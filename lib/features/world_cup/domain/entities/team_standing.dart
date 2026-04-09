@@ -8,6 +8,8 @@ class TeamStanding {
   int lost;
   int goalsFor;
   int goalsAgainst;
+  int
+  fairPlayPoints; // NOVO CAMPO: Pontos de Fair Play (ex: -1 por amarelo, -3 por vermelho)
 
   TeamStanding({
     required this.teamName,
@@ -19,6 +21,7 @@ class TeamStanding {
     this.lost = 0,
     this.goalsFor = 0,
     this.goalsAgainst = 0,
+    this.fairPlayPoints = 0,
   });
 
   // Getter inteligente para o Saldo de Gols

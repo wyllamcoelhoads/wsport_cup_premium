@@ -1462,6 +1462,7 @@ class _PremiumMatchCard extends StatelessWidget {
   }
 
   // ── Modal de Palpite ───────────────────────────────────────
+  // ── Modal de Palpite ───────────────────────────────────────
   void _showPredictionDialog(BuildContext context, MatchEntity match) {
     final homeController = TextEditingController(
       text: match.userHomePrediction?.toString() ?? "0",
@@ -1469,6 +1470,18 @@ class _PremiumMatchCard extends StatelessWidget {
     final awayController = TextEditingController(
       text: match.userAwayPrediction?.toString() ?? "0",
     );
+
+    // Variáveis de estado para os cartões (Fair Play)
+    bool showCards = false;
+
+    // TODO: Quando você atualizar a MatchEntity, mude o '0' para 'match.homeYellows ?? 0', etc.
+    int homeYellows = 0;
+    int homeDoubleYellows = 0;
+    int homeReds = 0;
+
+    int awayYellows = 0;
+    int awayDoubleYellows = 0;
+    int awayReds = 0;
 
     String? errorMessage;
 
@@ -1482,6 +1495,129 @@ class _PremiumMatchCard extends StatelessWidget {
               controller.text = (current + value).toString();
               errorMessage = null;
             });
+          }
+
+          // Função auxiliar para construir os contadores de cartões
+          Widget buildCardCounter(
+            int value,
+            VoidCallback onRemove,
+            VoidCallback onAdd,
+          ) {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.remove_circle_outline,
+                    color: Colors.white54,
+                    size: 22,
+                  ),
+                  onPressed: value > 0 ? onRemove : null,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                SizedBox(
+                  width: 20,
+                  child: Text(
+                    '$value',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.add_circle_outline,
+                    color: AppColors.primaryGold,
+                    size: 22,
+                  ),
+                  onPressed: onAdd,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            );
+          }
+
+          // Função auxiliar para construir uma linha de cartões
+          Widget buildCardRow(
+            String tooltip,
+            Color cardColor,
+            bool isDualCard,
+            int homeVal,
+            VoidCallback onHomeRem,
+            VoidCallback onHomeAdd,
+            int awayVal,
+            VoidCallback onAwayRem,
+            VoidCallback onAwayAdd,
+          ) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  buildCardCounter(homeVal, onHomeRem, onHomeAdd),
+                  Tooltip(
+                    message: tooltip,
+                    triggerMode: TooltipTriggerMode.tap,
+                    showDuration: const Duration(seconds: 3),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGold,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    textStyle: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                    child: Container(
+                      width: 16,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(3),
+                        border: isDualCard
+                            ? Border.all(color: Colors.red, width: 2)
+                            : null,
+                      ),
+                    ),
+                  ),
+                  buildCardCounter(awayVal, onAwayRem, onAwayAdd),
+                ],
+              ),
+            );
+          }
+
+          // ── NOVA FUNÇÃO AUXILIAR: Desenha a Legenda ──
+          Widget buildLegendItem(Color color, bool hasBorder, String text) {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 10,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(2),
+                    border: hasBorder
+                        ? Border.all(color: Colors.red, width: 1.5)
+                        : null,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  text,
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            );
           }
 
           return AlertDialog(
@@ -1508,6 +1644,12 @@ class _PremiumMatchCard extends StatelessWidget {
                       setModalState(() {
                         homeController.text = "0";
                         awayController.text = "0";
+                        homeYellows = 0;
+                        homeDoubleYellows = 0;
+                        homeReds = 0;
+                        awayYellows = 0;
+                        awayDoubleYellows = 0;
+                        awayReds = 0;
                         errorMessage = null;
                       });
                     },
@@ -1515,106 +1657,218 @@ class _PremiumMatchCard extends StatelessWidget {
                 ),
               ],
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildFlagIcon(match.homeFlag),
-                    const SizedBox(width: 10),
-                    _ScoreInput(controller: homeController),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Text(
-                        "X",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    _ScoreInput(controller: awayController),
-                    const SizedBox(width: 10),
-                    _buildFlagIcon(match.awayFlag),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  match.homeTeam.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Wrap(
-                  spacing: 4,
-                  children: [1, 2, 3, 4]
-                      .map(
-                        (val) => _buildIncrementButton(
-                          "+ $val",
-                          () => incrementScore(homeController, val),
-                        ),
-                      )
-                      .toList(),
-                ),
-                const SizedBox(height: 15),
-                Text(
-                  match.awayTeam.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Wrap(
-                  spacing: 4,
-                  children: [1, 2, 3, 4]
-                      .map(
-                        (val) => _buildIncrementButton(
-                          "+ $val",
-                          () => incrementScore(awayController, val),
-                        ),
-                      )
-                      .toList(),
-                ),
-                if (errorMessage != null) ...[
-                  const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.redAccent.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.warning_amber_rounded,
-                          color: Colors.redAccent,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            errorMessage!,
-                            style: const TextStyle(
-                              color: Colors.redAccent,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
+            // ADICIONADO: SingleChildScrollView para evitar quebra de tela ao expandir os cartões
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildFlagIcon(match.homeFlag),
+                      const SizedBox(width: 10),
+                      _ScoreInput(controller: homeController),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Text(
+                          "X",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ],
+                      ),
+                      _ScoreInput(controller: awayController),
+                      const SizedBox(width: 10),
+                      _buildFlagIcon(match.awayFlag),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    match.homeTeam.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 4,
+                    children: [1, 2, 3, 4]
+                        .map(
+                          (val) => _buildIncrementButton(
+                            "+ $val",
+                            () => incrementScore(homeController, val),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: 15),
+                  Text(
+                    match.awayTeam.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 4,
+                    children: [1, 2, 3, 4]
+                        .map(
+                          (val) => _buildIncrementButton(
+                            "+ $val",
+                            () => incrementScore(awayController, val),
+                          ),
+                        )
+                        .toList(),
+                  ),
+
+                  // ── NOVA SESSÃO: FAIR PLAY ──
+                  const SizedBox(height: 15),
+                  const Divider(color: Colors.white10),
+                  InkWell(
+                    onTap: () {
+                      setModalState(() {
+                        showCards = !showCards;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            showCards ? Icons.expand_less : Icons.expand_more,
+                            color: AppColors.primaryGold,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            "Estatísticas de Cartões",
+                            style: TextStyle(
+                              color: AppColors.primaryGold,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Mostra os contadores se estiver expandido
+                  if (showCards) ...[
+                    const SizedBox(height: 10),
+                    buildCardRow(
+                      "Amarelos (-1 pt)",
+                      Colors.yellow,
+                      false,
+                      homeYellows,
+                      () => setModalState(() => homeYellows--),
+                      () => setModalState(() => homeYellows++),
+                      awayYellows,
+                      () => setModalState(() => awayYellows--),
+                      () => setModalState(() => awayYellows++),
+                    ),
+                    buildCardRow(
+                      "2º Amarelo/Vermelho Indireto (-3 pts)",
+                      Colors.yellow,
+                      true, // true para borda vermelha
+                      homeDoubleYellows,
+                      () => setModalState(() => homeDoubleYellows--),
+                      () => setModalState(() => homeDoubleYellows++),
+                      awayDoubleYellows,
+                      () => setModalState(() => awayDoubleYellows--),
+                      () => setModalState(() => awayDoubleYellows++),
+                    ),
+                    buildCardRow(
+                      "Vermelho Direto (-4 pts)",
+                      Colors.red,
+                      false,
+                      homeReds,
+                      () => setModalState(() => homeReds--),
+                      () => setModalState(() => homeReds++),
+                      awayReds,
+                      () => setModalState(() => awayReds--),
+                      () => setModalState(() => awayReds++),
+                    ),
+
+                    // ── AQUI ENTRA A LEGENDA VISUAL ──
+                    const SizedBox(height: 15),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12, // Espaço horizontal entre os itens
+                        runSpacing: 8, // Espaço vertical se quebrar a linha
+                        children: [
+                          buildLegendItem(
+                            Colors.yellow,
+                            false,
+                            "Amarelo (-1 pt)",
+                          ),
+                          buildLegendItem(
+                            Colors.yellow,
+                            true,
+                            "2º Amarelo (-3 pts)",
+                          ),
+                          buildLegendItem(
+                            Colors.red,
+                            false,
+                            "Vermelho Direto (-4 pts)",
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                  ],
+
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.redAccent.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.redAccent,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              errorMessage!,
+                              style: const TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
             actions: [
               TextButton(
@@ -1639,11 +1893,21 @@ class _PremiumMatchCard extends StatelessWidget {
                       });
                       return;
                     }
+
+                    // ── ATENÇÃO AQUI ──
+                    // Você precisará atualizar o seu SavePredictionEvent para receber os cartões
                     context.read<WorldCupBloc>().add(
                       SavePredictionEvent(
                         matchId: match.id,
                         homeScore: h,
                         awayScore: a,
+                        // desconmentar isso após atualizar o evento no seu BLoC
+                        homeYellows: homeYellows,
+                        homeDoubleYellows: homeDoubleYellows,
+                        homeReds: homeReds,
+                        awayYellows: awayYellows,
+                        awayDoubleYellows: awayDoubleYellows,
+                        awayReds: awayReds,
                       ),
                     );
                     Navigator.pop(context);

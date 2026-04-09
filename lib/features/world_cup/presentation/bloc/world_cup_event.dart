@@ -4,7 +4,7 @@ abstract class WorldCupEvent extends Equatable {
   const WorldCupEvent();
 
   @override
-  // AQUI ESTAVA O ERRO: O Pai agora ganha a interrogação (?) e aceita nulos
+  // O Pai ganha a interrogação (?) e aceita nulos
   List<Object?> get props => [];
 }
 
@@ -17,15 +17,40 @@ class SavePredictionEvent extends WorldCupEvent {
   final int? homeScore; // Pode ser nulo (Vassoura)
   final int? awayScore; // Pode ser nulo (Vassoura)
 
+  // -- NOVAS VARIÁVEIS DE FAIR PLAY --
+  final int? homeYellows;
+  final int? homeDoubleYellows;
+  final int? homeReds;
+
+  final int? awayYellows;
+  final int? awayDoubleYellows;
+  final int? awayReds;
+
   const SavePredictionEvent({
     required this.matchId,
     this.homeScore,
     this.awayScore,
+    this.homeYellows,
+    this.homeDoubleYellows,
+    this.homeReds,
+    this.awayYellows,
+    this.awayDoubleYellows,
+    this.awayReds,
   });
 
   @override
-  // O Filho ganha a interrogação (?)
-  List<Object?> get props => [matchId, homeScore, awayScore];
+  // O Filho ganha a interrogação (?) e lista todas as propriedades
+  List<Object?> get props => [
+    matchId,
+    homeScore,
+    awayScore,
+    homeYellows,
+    homeDoubleYellows,
+    homeReds,
+    awayYellows,
+    awayDoubleYellows,
+    awayReds,
+  ];
 }
 
 // Evento 3: Troca de times
