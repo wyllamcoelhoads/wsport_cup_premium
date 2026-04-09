@@ -342,12 +342,14 @@ class InfoPage extends StatefulWidget {
   final int initialTabIndex;
   final String initialVideoFilter;
   final List<MatchEntity> matches;
+  final VoidCallback? onGoToCalendar; // 👈 novo
 
   const InfoPage({
     super.key,
     this.initialTabIndex = 0,
     this.initialVideoFilter = 'geral',
     this.matches = const [],
+    this.onGoToCalendar, // 👈 novo
   });
 
   @override
@@ -442,7 +444,10 @@ class _InfoPageState extends State<InfoPage>
           const _SedesTab(),
           NetworkAwareTab(child: _SelecaoTab(matches: widget.matches)),
 
-          const _Copa2026Tab(),
+          _Copa2026Tab(
+            onSwitchTab: (index) => _tabController.animateTo(index),
+            onGoToCalendar: widget.onGoToCalendar, // 👈 novo
+          ),
           NetworkAwareTab(
             child: _VideosTab(initialFilter: widget.initialVideoFilter),
           ),
@@ -1306,14 +1311,19 @@ class _RepescagemSheet extends StatelessWidget {
 // ============================================================
 
 class _Copa2026Tab extends StatelessWidget {
-  const _Copa2026Tab();
+  final void Function(int index) onSwitchTab;
+  final VoidCallback? onGoToCalendar; // 👈 novo
+  const _Copa2026Tab({
+    required this.onSwitchTab,
+    this.onGoToCalendar, // 👈 novo
+  });
 
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _buildHeroCard(),
+        _buildHeroCard(context, onSwitchTab, onGoToCalendar),
         const SizedBox(height: 16),
         _buildSectionCard(
           title: '🦁  MASCOTE OFICIAL',
@@ -1349,7 +1359,11 @@ class _Copa2026Tab extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroCard() {
+  Widget _buildHeroCard(
+    BuildContext context,
+    void Function(int) onSwitchTab,
+    VoidCallback? onGoToCalendar,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -1390,15 +1404,41 @@ class _Copa2026Tab extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _heroStat('48', 'Seleções'),
-              _verticalDivider(),
-              _heroStat('104', 'Jogos'),
-              _verticalDivider(),
-              _heroStat('3', 'Países'),
-              _verticalDivider(),
-              _heroStat('16', 'Cidades'),
+              // ── Botão SELEÇÕES ──────────────────────────────
+              Expanded(
+                child: _heroStatButton(
+                  value: '48',
+                  label: 'Seleções',
+                  icon: Icons.emoji_flags_rounded,
+                  onTap: () => onSwitchTab(1),
+                ),
+              ),
+              const SizedBox(width: 10),
+              // ── Botão JOGOS (sem navegação) ─────────────────
+              Expanded(
+                child: _heroStatButton(
+                  value: '104',
+                  label: 'Jogos',
+                  icon: Icons.sports_soccer,
+                  onTap: onGoToCalendar != null
+                      ? () {
+                          Navigator.pop(context); // fecha InfoPage
+                          onGoToCalendar!(); // aciona o calendário no pai
+                        }
+                      : null,
+                ),
+              ),
+              const SizedBox(width: 10),
+              // ── Botão PAÍSES / CIDADES ──────────────────────
+              Expanded(
+                child: _heroStatButton(
+                  value: '3/16',
+                  label: 'Países/Cidades',
+                  icon: Icons.location_city,
+                  onTap: () => onSwitchTab(0),
+                ),
+              ),
             ],
           ),
         ],
@@ -1406,27 +1446,91 @@ class _Copa2026Tab extends StatelessWidget {
     );
   }
 
-  Widget _heroStat(String value, String label) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: AppColors.primaryGold,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
+  /// Botão de estatística com visual destacado
+  Widget _heroStatButton({
+    required String value,
+    required String label,
+    required IconData icon,
+    required VoidCallback? onTap,
+  }) {
+    final bool tappable = onTap != null;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+          decoration: BoxDecoration(
+            color: tappable
+                ? AppColors.primaryGold.withValues(alpha: 0.10)
+                : Colors.white.withValues(alpha: 0.04),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: tappable
+                  ? AppColors.primaryGold.withValues(alpha: 0.55)
+                  : Colors.white12,
+              width: tappable ? 1.5 : 1,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: tappable ? AppColors.primaryGold : Colors.white38,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                value,
+                style: TextStyle(
+                  color: tappable ? AppColors.primaryGold : Colors.white70,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: tappable
+                      ? AppColors.primaryGold.withValues(alpha: 0.75)
+                      : Colors.white38,
+                  fontSize: 10,
+                  fontWeight: tappable ? FontWeight.w600 : FontWeight.normal,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (tappable) ...[
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Ver',
+                      style: TextStyle(
+                        color: AppColors.primaryGold.withValues(alpha: 0.7),
+                        fontSize: 9,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 8,
+                      color: AppColors.primaryGold.withValues(alpha: 0.7),
+                    ),
+                  ],
+                ),
+              ],
+            ],
           ),
         ),
-        Text(
-          label,
-          style: const TextStyle(color: Colors.white54, fontSize: 11),
-        ),
-      ],
+      ),
     );
   }
-
-  Widget _verticalDivider() =>
-      Container(width: 1, height: 40, color: Colors.white12);
 
   Widget _buildSectionCard({
     required String title,

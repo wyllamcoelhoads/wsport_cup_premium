@@ -266,40 +266,53 @@ class _WorldCupPageState extends State<WorldCupPage> {
           length: 4,
           child: Scaffold(
             backgroundColor: AppColors.background,
-            floatingActionButton: ExpandableFab(
-              key: _fabKey,
-              distance: 80.0,
-              children: [
-                ActionButton(
-                  onPressed: () {
-                    _fabKey.currentState?.close();
-                    _resetAllPredictions(context);
-                  },
-                  icon: FaIcon(FontAwesomeIcons.trashCan, size: 20),
-                ),
-                ActionButton(
-                  onPressed: () {
-                    _fabKey.currentState?.close();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => PremiumPage()),
-                    );
-                  },
-                  icon: FaIcon(FontAwesomeIcons.star, size: 20),
-                ),
-                ActionButton(
-                  onPressed: () {
-                    _fabKey.currentState?.close();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => InfoPage(matches: state.matches),
-                      ),
-                    );
-                  },
-                  icon: FaIcon(FontAwesomeIcons.personThroughWindow, size: 20),
-                ),
-              ],
+            floatingActionButton: Builder(
+              builder: (innerContext) => ExpandableFab(
+                key: _fabKey,
+                distance: 80.0,
+                children: [
+                  ActionButton(
+                    onPressed: () {
+                      _fabKey.currentState?.close();
+                      _resetAllPredictions(innerContext);
+                    },
+                    icon: FaIcon(FontAwesomeIcons.trashCan, size: 20),
+                  ),
+                  ActionButton(
+                    onPressed: () {
+                      _fabKey.currentState?.close();
+                      Navigator.push(
+                        innerContext,
+                        MaterialPageRoute(builder: (_) => PremiumPage()),
+                      );
+                    },
+                    icon: FaIcon(FontAwesomeIcons.star, size: 20),
+                  ),
+                  ActionButton(
+                    onPressed: () {
+                      _fabKey.currentState?.close();
+                      final tabController = DefaultTabController.of(
+                        innerContext,
+                      ); // ✅ contexto correto
+                      Navigator.push(
+                        innerContext,
+                        MaterialPageRoute(
+                          builder: (_) => InfoPage(
+                            matches: state.matches,
+                            onGoToCalendar: () {
+                              tabController.animateTo(0);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    icon: FaIcon(
+                      FontAwesomeIcons.personThroughWindow,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
             ), // CORREÇÃO: O FAB agora é apenas o botão, sem receber o estado ou bloc
             body: Column(
               children: [
