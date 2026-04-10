@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:wsports_cup_premium/core/services/ad_service.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/notification_prompt_service.dart';
 import '../../../../core/widgets/banner_ad_widget.dart';
 import '../../domain/entities/match_entity.dart';
 import '../../domain/logic/bracket_calculator.dart';
@@ -41,117 +42,15 @@ class _WorldCupPageState extends State<WorldCupPage> {
       await Future.delayed(const Duration(seconds: 3));
 
       // 3. Verifica se deve mostrar
-      await _checkAndShowNotificationPrompt();
+      await NotificationPromptService.checkAndShow(context);
     });
   }
 
-  Future<void> _checkAndShowNotificationPrompt() async {
-    final should = await NotificationService.shouldShowPrompt();
-    if (!should) return;
-
-    // Registra que estamos mostrando (conta a tentativa)
-    await NotificationService.recordPromptShown();
-    if (!mounted) return;
-
-    _showPremiumNotificationDialog(context);
-  }
-
-  void _showPremiumNotificationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false, // Obriga a interagir
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.cardSurface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.primaryGold, width: 1.5),
-        ),
-        title: const Column(
-          children: [
-            Icon(
-              Icons.notifications_active,
-              color: AppColors.primaryGold,
-              size: 50,
-            ),
-            SizedBox(height: 15),
-            Text(
-              'Não perca nenhum lance!',
-              style: TextStyle(
-                color: AppColors.primaryGold,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        content: const Text(
-          'Quer ser avisado quando os jogos começarem?\n',
-          style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.5),
-          textAlign: TextAlign.center,
-        ),
-        actionsAlignment: MainAxisAlignment.center,
-        actionsPadding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
-        actions: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGold,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                // Botão "SIM"
-                onPressed: () async {
-                  Navigator.pop(dialogContext);
-                  final granted = await NotificationService.requestPermission();
-                  // requestPermission já chama markAsGranted() internamente
-                  if (granted && context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Notificações ativadas com sucesso! 🏆',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        backgroundColor: AppColors.primaryGold,
-                      ),
-                    );
-                  }
-                },
-                child: const Text(
-                  'SIM, QUERO RECEBER AVISOS',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextButton(
-                // Botão "AGORA NÃO"
-                onPressed: () {
-                  // Não marca nada — o contador de aberturas cuida do próximo momento
-                  if (mounted) Navigator.pop(dialogContext);
-                },
-                child: const Text(
-                  'AGORA NÃO',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+  // 📄 Listener para detectar mudanças de aba e desabilitar swipe na TABELA
+  void _onTabChanged() {
+    // Esta função será chamada quando o índice da aba muda
+    // Força rebuild para recalcular a physics da TabBarView
+    setState(() {});
   }
 
   String? _getChampionCode(List<MatchEntity> matches) {
@@ -501,27 +400,45 @@ class _WorldCupPageState extends State<WorldCupPage> {
                               style: TextStyle(color: Colors.white54),
                             ),
                           )
-                        : TabBarView(
-                            // Trava o scroll lateral se _canScrollTabs for falso
-                            physics: _canScrollTabs
-                                ? const BouncingScrollPhysics()
-                                : const NeverScrollableScrollPhysics(),
-                            children: [
-                              _CalendarTab(matches: state.matches),
-                              _MatchesTab(matches: state.matches),
-                              _StandingsTab(matches: state.matches),
-                              BracketView(
-                                matches: BracketCalculator.populate(
-                                  state.matches,
-                                ),
-                                // Quando o Mata-mata trava para mover, avisamos a página pai
-                                onLockScroll: (isLocked) {
-                                  setState(() {
-                                    _canScrollTabs = !isLocked;
-                                  });
-                                },
-                              ),
-                            ],
+                        : Builder(
+                            builder: (context) {
+                              final tabController = DefaultTabController.of(
+                                context,
+                              );
+
+                              // 📄 Adiciona listener para detectar mudanças de aba
+                              // Desabilita swipe quando em TABELA (index 2)
+                              tabController.removeListener(_onTabChanged);
+                              tabController.addListener(_onTabChanged);
+
+                              // 📄 Detecta se está na aba TABELA (index 2) e desabilita swipe
+                              final isStandingsTab = tabController.index == 2;
+
+                              return TabBarView(
+                                // Trava o scroll lateral se:
+                                // 1. _canScrollTabs for falso (Mata-mata locked)
+                                // 2. Está na aba TABELA (Standings tab)
+                                physics: (_canScrollTabs && !isStandingsTab)
+                                    ? const BouncingScrollPhysics()
+                                    : const NeverScrollableScrollPhysics(),
+                                children: [
+                                  _CalendarTab(matches: state.matches),
+                                  _MatchesTab(matches: state.matches),
+                                  _StandingsTab(matches: state.matches),
+                                  BracketView(
+                                    matches: BracketCalculator.populate(
+                                      state.matches,
+                                    ),
+                                    // Quando o Mata-mata trava para mover, avisamos a página pai
+                                    onLockScroll: (isLocked) {
+                                      setState(() {
+                                        _canScrollTabs = !isLocked;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                   ),
                 ),
@@ -638,13 +555,26 @@ class _MatchesTab extends StatelessWidget {
   }
 }
 
-class _StandingsTab extends StatelessWidget {
+class _StandingsTab extends StatefulWidget {
   final List<MatchEntity> matches;
   const _StandingsTab({required this.matches});
 
   @override
+  State<_StandingsTab> createState() => _StandingsTabState();
+}
+
+class _StandingsTabState extends State<_StandingsTab> {
+  final ScrollController _horizontalScrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _horizontalScrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final groupMatches = matches
+    final groupMatches = widget.matches
         .where((m) => m.group.startsWith('GRUPO'))
         .toList();
 
@@ -672,156 +602,235 @@ class _StandingsTab extends StatelessWidget {
                     ],
                   ),
                   borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    // CABEÇALHO COM TOOLTIPS
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Row(
-                        children: [
-                          const SizedBox(
-                            width: 20,
-                            child: Text(
-                              "#",
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ),
-                          const Expanded(
-                            child: Text(
-                              "SELEÇÃO",
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ),
-                          _TooltipHeader("P", "Pontos"),
-                          _TooltipHeader("J", "Jogos"),
-                          _TooltipHeader("V", "Vitórias"),
-                          _TooltipHeader("E", "Empates"),
-                          _TooltipHeader("D", "Derrotas"),
-                          _TooltipHeader("GP", "Gols Pró"),
-                          _TooltipHeader("GC", "Gols Contra"),
-                          _TooltipHeader("SG", "Saldo de Gols"),
-                        ],
-                      ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-                    const Divider(height: 1, color: Colors.white10),
-
-                    // LINHAS DOS TIMES
-                    ...teams.asMap().entries.map((entry) {
-                      final pos = entry.key + 1;
-                      final team = entry.value;
-
-                      return Stack(
-                        alignment: Alignment.centerLeft,
+                  ],
+                ),
+                child: SingleChildScrollView(
+                  controller: _horizontalScrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: Column(
+                    children: [
+                      // CABEÇALHO COM TOOLTIPS
+                      Row(
                         children: [
+                          // Coluna fixa: posição e seleção
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 12,
+                            width: 140,
+                            padding: const EdgeInsets.all(12.0),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                              ),
                             ),
                             child: Row(
                               children: [
-                                SizedBox(
-                                  width: 20,
+                                const SizedBox(
+                                  width: 25,
                                   child: Text(
-                                    "$pos",
-                                    style: const TextStyle(
-                                      color: Colors.white54,
+                                    "#",
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      ClipOval(
-                                        child: CachedNetworkImage(
-                                          imageUrl: team.flag,
-                                          width: 20,
-                                          height: 20,
-                                          fit: BoxFit.cover,
-                                          errorWidget: (_, _, _) => const Icon(
-                                            Icons.circle,
-                                            size: 20,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          team.teamName,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                const SizedBox(width: 8),
+                                const Expanded(
+                                  child: Text(
+                                    "SELEÇÃO",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                _StatCell(
-                                  "${team.points}",
-                                  color: AppColors.primaryGold,
-                                  bold: true,
-                                ),
-                                _StatCell("${team.played}"),
-                                _StatCell(
-                                  "${team.won}",
-                                  color: AppColors.successGreen,
-                                ),
-                                _StatCell(
-                                  "${team.drawn}",
-                                  color: Colors.white54,
-                                ),
-                                _StatCell(
-                                  "${team.lost}",
-                                  color: Colors.redAccent,
-                                ),
-                                _StatCell("${team.goalsFor}"),
-                                _StatCell("${team.goalsAgainst}"),
-                                _StatCell(
-                                  "${team.goalDifference}",
-                                  color: team.goalDifference > 0
-                                      ? AppColors.successGreen
-                                      : team.goalDifference < 0
-                                      ? Colors.redAccent
-                                      : Colors.white70,
                                 ),
                               ],
                             ),
                           ),
-                          if (pos <= 2)
-                            Positioned(
-                              left: 0,
-                              top: 0,
-                              bottom: 0,
-                              child: Center(
-                                child: Container(
-                                  width: 3.5,
-                                  height: 20,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.successGreen,
-                                    borderRadius: const BorderRadius.horizontal(
-                                      right: Radius.circular(2),
+                          // Colunas scrolláveis
+                          Row(
+                            children: [
+                              _TooltipHeader("P", "Pontos"),
+                              _TooltipHeader("J", "Jogos"),
+                              _TooltipHeader("V", "Vitórias"),
+                              _TooltipHeader("E", "Empates"),
+                              _TooltipHeader("D", "Derrotas"),
+                              _TooltipHeader("GP", "Gols Pró"),
+                              _TooltipHeader("GC", "Gols Contra"),
+                              _TooltipHeader("SG", "Saldo"),
+                              _TooltipHeader("🟨", "Amarelo"),
+                              _TooltipHeader("🟨🟨", "Duplo"),
+                              _TooltipHeader("🟥", "Vermelho"),
+                              _TooltipHeader("FC", "Fair Play"),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 1, color: Colors.white10),
+
+                      // LINHAS DOS TIMES
+                      ...teams.asMap().entries.map((entry) {
+                        final pos = entry.key + 1;
+                        final team = entry.value;
+                        final isQualified = pos <= 2;
+
+                        return Column(
+                          children: [
+                            Stack(
+                              children: [
+                                Row(
+                                  children: [
+                                    // Coluna fixa: posição e seleção
+                                    Container(
+                                      width: 140,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                        horizontal: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.2,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 25,
+                                            child: Text(
+                                              "$pos",
+                                              style: const TextStyle(
+                                                color: Colors.white70,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          ClipOval(
+                                            child: CachedNetworkImage(
+                                              imageUrl: team.flag,
+                                              width: 20,
+                                              height: 20,
+                                              fit: BoxFit.cover,
+                                              errorWidget: (_, _, _) =>
+                                                  const Icon(
+                                                    Icons.circle,
+                                                    size: 20,
+                                                    color: Colors.white,
+                                                  ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              team.teamName,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // Colunas scrolláveis
+                                    Row(
+                                      children: [
+                                        _StatCell(
+                                          "${team.points}",
+                                          color: AppColors.primaryGold,
+                                          bold: true,
+                                        ),
+                                        _StatCell("${team.played}"),
+                                        _StatCell(
+                                          "${team.won}",
+                                          color: AppColors.successGreen,
+                                        ),
+                                        _StatCell(
+                                          "${team.drawn}",
+                                          color: Colors.white54,
+                                        ),
+                                        _StatCell(
+                                          "${team.lost}",
+                                          color: Colors.redAccent,
+                                        ),
+                                        _StatCell("${team.goalsFor}"),
+                                        _StatCell("${team.goalsAgainst}"),
+                                        _StatCell(
+                                          "${team.goalDifference}",
+                                          color: team.goalDifference > 0
+                                              ? AppColors.successGreen
+                                              : team.goalDifference < 0
+                                              ? Colors.redAccent
+                                              : Colors.white70,
+                                        ),
+                                        _CardCell(
+                                          value: team.totalYellows,
+                                          cardColor: Colors.amber,
+                                          isDualCard: false,
+                                        ),
+                                        _CardCell(
+                                          value: team.totalDoubleYellows,
+                                          cardColor: Colors.amber,
+                                          isDualCard: true,
+                                        ),
+                                        _CardCell(
+                                          value: team.totalReds,
+                                          cardColor: Colors.red,
+                                          isDualCard: false,
+                                        ),
+                                        _StatCell(
+                                          "${team.fairPlayPoints}",
+                                          color: team.fairPlayPoints >= 0
+                                              ? AppColors.successGreen
+                                              : Colors.redAccent,
+                                          bold: true,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                // Indicador de classificado (barra verde)
+                                if (isQualified)
+                                  Positioned(
+                                    left: 0,
+                                    top: 0,
+                                    bottom: 0,
+                                    child: Container(
+                                      width: 4,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.successGreen,
+                                        borderRadius:
+                                            const BorderRadius.horizontal(
+                                              right: Radius.circular(2),
+                                            ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
+                              ],
                             ),
-                        ],
-                      );
-                    }),
-                  ],
+                            if (pos < teams.length)
+                              const Divider(height: 1, color: Colors.white10),
+                          ],
+                        );
+                      }),
+                    ],
+                  ),
                 ),
               ),
             ),
+            const SizedBox(height: 16),
           ],
         );
       },
@@ -886,6 +895,62 @@ class _StatCell extends StatelessWidget {
             fontSize: 11,
           ),
         ),
+      ),
+    );
+  }
+}
+
+// 📄 NOVO: Widget de célula para exibir cartões
+class _CardCell extends StatelessWidget {
+  final int value;
+  final Color cardColor;
+  final bool isDualCard;
+
+  const _CardCell({
+    required this.value,
+    required this.cardColor,
+    required this.isDualCard,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 30,
+      child: Center(
+        child: value == 0
+            ? const Text(
+                '-',
+                style: TextStyle(
+                  color: Colors.white24,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(2),
+                      border: isDualCard
+                          ? Border.all(color: Colors.red, width: 1.5)
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    '$value',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -1475,13 +1540,13 @@ class _PremiumMatchCard extends StatelessWidget {
     bool showCards = false;
 
     // TODO: Quando você atualizar a MatchEntity, mude o '0' para 'match.homeYellows ?? 0', etc.
-    int homeYellows = 0;
-    int homeDoubleYellows = 0;
-    int homeReds = 0;
+    int homeYellows = match.userHomeYellows ?? 0;
+    int homeDoubleYellows = match.userHomeDoubleYellows ?? 0;
+    int homeReds = match.userHomeReds ?? 0;
 
-    int awayYellows = 0;
-    int awayDoubleYellows = 0;
-    int awayReds = 0;
+    int awayYellows = match.userAwayYellows ?? 0;
+    int awayDoubleYellows = match.userAwayDoubleYellows ?? 0;
+    int awayReds = match.userAwayReds ?? 0;
 
     String? errorMessage;
 

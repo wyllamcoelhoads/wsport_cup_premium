@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../entities/match_entity.dart';
 import '../entities/team_standing.dart';
 
@@ -67,6 +69,15 @@ class StandingsCalculator {
 
       home.fairPlayPoints += homeFairPlay;
       away.fairPlayPoints += awayFairPlay;
+
+      // 📄 NOVO: Contar cartões por time
+      home.totalYellows += (match.userHomeYellows ?? 0);
+      home.totalDoubleYellows += (match.userHomeDoubleYellows ?? 0);
+      home.totalReds += (match.userHomeReds ?? 0);
+
+      away.totalYellows += (match.userAwayYellows ?? 0);
+      away.totalDoubleYellows += (match.userAwayDoubleYellows ?? 0);
+      away.totalReds += (match.userAwayReds ?? 0);
     }
 
     final Map<String, List<TeamStanding>> finalStandings = {};
@@ -75,33 +86,47 @@ class StandingsCalculator {
       final List<TeamStanding> teamList = teamsMap.values.toList();
 
       teamList.sort((a, b) {
-        // Critério 1: Total de Pontos
-        if (b.points != a.points) return b.points.compareTo(a.points);
+        // Critério 1: Total de Pontos (maior primeiro)
+        if (a.points != b.points) {
+          return b.points.compareTo(a.points);
+        }
 
-        // Critério 2: Saldo de Gols
-        if (b.goalDifference != a.goalDifference) {
+        // Critério 2: Saldo de Gols (maior primeiro)
+        if (a.goalDifference != b.goalDifference) {
           return b.goalDifference.compareTo(a.goalDifference);
         }
 
-        // Critério 3: Gols Marcados
-        if (b.goalsFor != a.goalsFor) {
+        // Critério 3: Gols Marcados (maior primeiro)
+        if (a.goalsFor != b.goalsFor) {
           return b.goalsFor.compareTo(a.goalsFor);
         }
 
-        // Critério 4: Confronto Direto (Simplicado neste escopo)
-
-        // Critério 5: Fair Play (Novo)
-        // Como os valores são negativos (ex: -1 é melhor que -5),
-        // quem tiver o MAIOR valor ganha o desempate.
-        if (b.fairPlayPoints != a.fairPlayPoints) {
-          return b.fairPlayPoints.compareTo(a.fairPlayPoints);
+        // Critério 4: Fair Play - Cartões VERMELHOS (MENOR primeiro)
+        if (a.totalReds != b.totalReds) {
+          return a.totalReds.compareTo(b.totalReds);
         }
 
-        // Critério Final: "Sorteio"
-        // Para a UI do aplicativo não piscar aleatoriamente a cada rebuild,
-        // usamos o nome da seleção como critério absoluto de estabilidade.
+        // Critério 5: Fair Play - Cartões AMARELOS (MENOR primeiro)
+        if (a.totalYellows != b.totalYellows) {
+          return a.totalYellows.compareTo(b.totalYellows);
+        }
+
+        // Critério 6: Fair Play - Duplos AMARELOS (MENOR primeiro)
+        if (a.totalDoubleYellows != b.totalDoubleYellows) {
+          return a.totalDoubleYellows.compareTo(b.totalDoubleYellows);
+        }
+
+        // Critério Final: Ordem alfabética (estabilidade)
         return a.teamName.compareTo(b.teamName);
       });
+
+      // 🔍 DEBUG: Verificar cartões
+      for (final team in teamList) {
+        debugPrint(
+          '[$groupName] ${team.teamName}: P=${team.points} SG=${team.goalDifference} '
+          'V=${team.totalReds} 🟨=${team.totalYellows} 🟨🟨=${team.totalDoubleYellows}',
+        );
+      }
 
       finalStandings[groupName] = teamList;
     });

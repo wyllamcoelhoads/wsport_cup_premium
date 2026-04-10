@@ -5,6 +5,8 @@ import 'package:wsports_cup_premium/core/widgets/network_aware_tab.dart';
 // 📄 ALTERAÇÃO 4: Import do sistema de rotas nomeadas
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/constants/app_theme.dart';
+import '../../../../core/services/notification_prompt_service.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../domain/entities/match_entity.dart';
 import '../../domain/logic/repescagem_data.dart';
 import '../widgets/stadium_web_browser.dart';
@@ -377,6 +379,15 @@ class _InfoPageState extends State<InfoPage>
         setState(() {});
       }
     });
+
+    // 📄 Verifica e exibe notificação de permissão
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await NotificationService.incrementLaunchCount();
+      await Future.delayed(const Duration(seconds: 3));
+      if (mounted) {
+        await NotificationPromptService.checkAndShow(context);
+      }
+    });
   }
 
   @override
@@ -394,7 +405,6 @@ class _InfoPageState extends State<InfoPage>
         elevation: 0,
         automaticallyImplyLeading:
             false, // 📄 ALTERAÇÃO: Remove a seta de volta padrão
-
         // 📄 ALTERAÇÃO: Seta de volta removida
         // 💡 Como COPA 2026 é a aba inicial, não há rota anterior para voltar
         // Isto evita o erro "Rota não encontrada" ao clicar
