@@ -16,7 +16,7 @@ import '../bloc/world_cup_bloc.dart';
 import '../bloc/world_cup_event.dart';
 import '../bloc/world_cup_state.dart';
 import '../widgets/bracket_view.dart';
-import '../widgets/expandable_fab.dart';
+import '../widgets/premium_badge_app_bar.dart';
 import 'info_page.dart';
 
 class WorldCupPage extends StatefulWidget {
@@ -29,7 +29,6 @@ class WorldCupPage extends StatefulWidget {
 class _WorldCupPageState extends State<WorldCupPage> {
   // Variável para controlar se as abas podem deslizar lateralmente
   bool _canScrollTabs = true;
-  final _fabKey = GlobalKey<ExpandableFabState>();
 
   @override
   void initState() {
@@ -127,6 +126,22 @@ class _WorldCupPageState extends State<WorldCupPage> {
     );
   }
 
+  void _openInfoPage(BuildContext context) {
+    final state = context.read<WorldCupBloc>().state;
+    final tabController = DefaultTabController.of(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InfoPage(
+          matches: state.matches,
+          onGoToCalendar: () {
+            tabController.animateTo(0);
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<WorldCupBloc, WorldCupState>(
@@ -165,52 +180,38 @@ class _WorldCupPageState extends State<WorldCupPage> {
           length: 4,
           child: Scaffold(
             backgroundColor: AppColors.background,
+            appBar: PremiumBadgeAppBar(
+              title: 'Simulador Copa 2026',
+              showBackButton: false,
+              actions: [
+                IconButton(
+                  icon: const FaIcon(
+                    FontAwesomeIcons.personThroughWindow,
+                    color: AppColors.primaryGold,
+                    size: 18,
+                  ),
+                  onPressed: () => _openInfoPage(context),
+                  tooltip: 'Informações',
+                ),
+              ],
+            ),
             floatingActionButton: Builder(
-              builder: (innerContext) => ExpandableFab(
-                key: _fabKey,
-                distance: 80.0,
-                children: [
-                  ActionButton(
-                    onPressed: () {
-                      _fabKey.currentState?.close();
-                      _resetAllPredictions(innerContext);
-                    },
-                    icon: FaIcon(FontAwesomeIcons.trashCan, size: 20),
+              builder: (innerContext) => FloatingActionButton.extended(
+                backgroundColor: AppColors.primaryGold,
+                onPressed: () => _resetAllPredictions(innerContext),
+                icon: const FaIcon(
+                  FontAwesomeIcons.trashCan,
+                  size: 18,
+                  color: Colors.black,
+                ),
+                label: const Text(
+                  'RESETAR',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
                   ),
-                  ActionButton(
-                    onPressed: () {
-                      _fabKey.currentState?.close();
-                      Navigator.push(
-                        innerContext,
-                        MaterialPageRoute(builder: (_) => PremiumPage()),
-                      );
-                    },
-                    icon: FaIcon(FontAwesomeIcons.star, size: 20),
-                  ),
-                  ActionButton(
-                    onPressed: () {
-                      _fabKey.currentState?.close();
-                      final tabController = DefaultTabController.of(
-                        innerContext,
-                      ); // ✅ contexto correto
-                      Navigator.push(
-                        innerContext,
-                        MaterialPageRoute(
-                          builder: (_) => InfoPage(
-                            matches: state.matches,
-                            onGoToCalendar: () {
-                              tabController.animateTo(0);
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    icon: FaIcon(
-                      FontAwesomeIcons.personThroughWindow,
-                      size: 20,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ), // CORREÇÃO: O FAB agora é apenas o botão, sem receber o estado ou bloc
             body: Column(

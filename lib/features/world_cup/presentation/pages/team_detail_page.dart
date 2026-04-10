@@ -6,6 +6,7 @@ import '../../../../core/constants/app_theme.dart';
 
 import '../../domain/entities/team_info_entity.dart';
 import '../../data/repositories/team_info_repository.dart';
+import '../widgets/premium_badge_sliver_app_bar.dart';
 
 class TeamDetailPage extends StatefulWidget {
   /// ID do documento no Firestore (ex: 'br', 'ar', 'de')
@@ -219,10 +220,11 @@ class _TeamDetailPageState extends State<TeamDetailPage> {
 
   // ─── SLIVER APP BAR ───────────────────────────────────────────────────────
   Widget _buildSliverAppBar(TeamInfoEntity t) {
-    return SliverAppBar(
+    return PremiumBadgeSliverAppBar(
       expandedHeight: 240,
       pinned: true,
       backgroundColor: AppColors.background,
+      title: t.name,
       leading: IconButton(
         icon: const Icon(
           Icons.arrow_back_ios_new,
@@ -252,17 +254,6 @@ class _TeamDetailPageState extends State<TeamDetailPage> {
                 // Brasão
                 _buildCoatOfArms(t),
                 const SizedBox(height: 14),
-                // Nome
-                Text(
-                  t.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
-                  ),
-                ),
-                const SizedBox(height: 4),
                 // Apelido + Confederação
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

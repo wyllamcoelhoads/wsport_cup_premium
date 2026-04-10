@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_theme.dart';
+import '../widgets/premium_badge_sliver_app_bar.dart';
 
 class BallDetailPage extends StatefulWidget {
   const BallDetailPage({super.key});
@@ -56,10 +57,11 @@ class _BallDetailPageState extends State<BallDetailPage> {
 
   // ─── SLIVER APP BAR ───────────────────────────────────────────────────────
   Widget _buildSliverAppBar() {
-    return SliverAppBar(
+    return PremiumBadgeSliverAppBar(
       expandedHeight: 340,
       pinned: true,
       backgroundColor: AppColors.background,
+      title: 'Bola Oficial 2026',
       leading: IconButton(
         icon: const Icon(
           Icons.arrow_back_ios_new,

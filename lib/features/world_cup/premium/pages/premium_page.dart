@@ -5,6 +5,8 @@ import 'package:wsports_cup_premium/core/constants/app_theme.dart';
 import 'package:wsports_cup_premium/core/services/ad_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../presentation/widgets/premium_badge_app_bar.dart';
+
 class PremiumPage extends StatefulWidget {
   const PremiumPage({super.key});
 
@@ -390,13 +392,9 @@ class _PremiumPageState extends State<PremiumPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Simulador Copa do Mundo 2026',
-          style: TextStyle(color: AppColors.primaryGold),
-        ),
-        backgroundColor: AppColors.background,
-        iconTheme: const IconThemeData(color: AppColors.primaryGold),
+      appBar: PremiumBadgeAppBar(
+        title: 'Simulador Copa 2026',
+        showBackButton: false,
         actions: [
           // Só exibe "Restaurar" se ainda não é premium
           if (!_alreadyPremium)
@@ -433,89 +431,178 @@ class _PremiumPageState extends State<PremiumPage> {
 
   /// Tela exibida quando o usuário JÁ É Premium.
   Widget _buildAlreadyPremiumView() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Badge de conquista
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primaryGold.withValues(alpha: 0.12),
-                border: Border.all(color: AppColors.primaryGold, width: 2.5),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 20),
+
+          // Card Premium com animação visual
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primaryGold.withValues(alpha: 0.2),
+                  AppColors.successGreen.withValues(alpha: 0.1),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: const Icon(
-                Icons.workspace_premium,
-                size: 60,
-                color: AppColors.primaryGold,
-              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.primaryGold, width: 2),
             ),
-            const SizedBox(height: 28),
-
-            const Text(
-              'Você é Premium! 🏆',
-              style: TextStyle(
-                color: AppColors.primaryGold,
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-
-            const Text(
-              'Aproveite o simulador sem nenhuma interrupção.\nObrigado por apoiar o desenvolvimento!',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 15,
-                height: 1.6,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 36),
-
-            // Benefícios ativos
-            _buildBenefitRow(Icons.block, 'Sem anúncios — para sempre'),
-            _buildBenefitRow(Icons.bolt, 'Experiência mais fluida'),
-            _buildBenefitRow(Icons.favorite, 'Apoiando o desenvolvimento'),
-
-            const SizedBox(height: 48),
-
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGold,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.verified,
+                  size: 60,
+                  color: AppColors.successGreen,
                 ),
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'VOLTAR AO SIMULADOR',
+                const SizedBox(height: 12),
+                const Text(
+                  'Status Premium Ativo',
                   style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
+                    color: AppColors.successGreen,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Você está desfrutando de todos os benefícios exclusivos!',
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 40),
+
+          // Título dos benefícios
+          const Text(
+            'Seus Benefícios Incluem:',
+            style: TextStyle(
+              color: AppColors.primaryGold,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Benefícios ativos com cards
+          _buildBenefitCard(
+            Icons.block_flipped,
+            'Sem Anúncios',
+            'Navegue livremente sem interrupções de anúncios',
+            AppColors.successGreen,
+          ),
+          _buildBenefitCard(
+            Icons.bolt,
+            'Experiência Fluida',
+            'Interface otimizada para máxima performance',
+            Colors.cyan,
+          ),
+          _buildBenefitCard(
+            Icons.favorite,
+            'Apoio ao Desenvolvimento',
+            'Ajude o desenvolvedor a criar mais recursos',
+            Colors.red.shade400,
+          ),
+          _buildBenefitCard(
+            Icons.update,
+            'Atualizações Prioritárias',
+            'Acesso a novas features e melhorias primeiro',
+            Colors.purple[300]!,
+          ),
+
+          const SizedBox(height: 48),
+
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryGold,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'VOLTAR AO SIMULADOR',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
+          ),
 
-            if (_appVersion.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              Text(
-                _appVersion,
-                style: const TextStyle(color: Colors.white24, fontSize: 12),
-              ),
-            ],
+          if (_appVersion.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            Text(
+              _appVersion,
+              style: const TextStyle(color: Colors.white24, fontSize: 12),
+            ),
           ],
-        ),
+        ],
+      ),
+    );
+  }
+
+  /// Widget de card de benefício melhorado para usuários premium
+  Widget _buildBenefitCard(
+    IconData icon,
+    String title,
+    String description,
+    Color color,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: const TextStyle(color: Colors.white54, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

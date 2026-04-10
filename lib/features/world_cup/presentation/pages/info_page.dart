@@ -14,6 +14,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
 import '../pages/team_detail_page.dart';
 import '../pages/ball_detail_page.dart';
+import '../widgets/premium_badge_app_bar.dart';
 
 // ============================================================
 // DATA MODELS
@@ -400,55 +401,27 @@ class _InfoPageState extends State<InfoPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        automaticallyImplyLeading:
-            false, // 📄 ALTERAÇÃO: Remove a seta de volta padrão
-        // 📄 ALTERAÇÃO: Seta de volta removida
-        // 💡 Como COPA 2026 é a aba inicial, não há rota anterior para voltar
-        // Isto evita o erro "Rota não encontrada" ao clicar
-        // Se usuario quiser voltar, pode usar os gestos do Android/iOS
-        title: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '⚽ COPA DO MUNDO',
-              style: TextStyle(
-                color: AppColors.primaryGold,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-                letterSpacing: 1.5,
-              ),
-            ),
-            Text(
-              'FIFA 2026™',
-              style: TextStyle(color: Colors.white54, fontSize: 11),
-            ),
-          ],
+      appBar: PremiumBadgeAppBar(
+        title: '⚽ COPA DO MUNDO 2026',
+        showBackButton: false,
+      ),
+      bottomNavigationBar: TabBar(
+        controller: _tabController,
+        indicatorColor: AppColors.primaryGold,
+        labelColor: AppColors.primaryGold,
+        unselectedLabelColor: Colors.white38,
+        indicatorWeight: 3,
+        labelStyle: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.8,
         ),
-        centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppColors.primaryGold,
-          labelColor: AppColors.primaryGold,
-          unselectedLabelColor: Colors.white38,
-          indicatorWeight: 3,
-          labelStyle: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.8,
-          ),
-          // 📄 ALTERAÇÃO: Reordenação das abas para melhor UX
-          // ✨ COPA 2026 agora é a primeira aba (index 0)
-          // 💡 Estratégia: Colocar CTA principal em destaque
-          tabs: const [
-            Tab(icon: Icon(Icons.sports_soccer, size: 16), text: 'COPA 2026'),
-            Tab(icon: Icon(Icons.location_city, size: 16), text: 'SEDES'),
-            Tab(icon: Icon(Icons.emoji_flags, size: 16), text: 'SELEÇÕES'),
-            Tab(icon: Icon(Icons.play_circle_fill, size: 16), text: 'VÍDEOS'),
-          ],
-        ),
+        tabs: const [
+          Tab(icon: Icon(Icons.sports_soccer, size: 16), text: 'COPA 2026'),
+          Tab(icon: Icon(Icons.location_city, size: 16), text: 'SEDES'),
+          Tab(icon: Icon(Icons.emoji_flags, size: 16), text: 'SELEÇÕES'),
+          Tab(icon: Icon(Icons.play_circle_fill, size: 16), text: 'VÍDEOS'),
+        ],
       ),
       body: TabBarView(
         controller: _tabController,
