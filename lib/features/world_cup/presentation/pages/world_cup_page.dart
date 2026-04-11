@@ -524,12 +524,6 @@ class _StandingsTabState extends State<_StandingsTab> {
                           Container(
                             width: 140,
                             padding: const EdgeInsets.all(12.0),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                              ),
-                            ),
                             child: Row(
                               children: [
                                 const SizedBox(
@@ -597,11 +591,6 @@ class _StandingsTabState extends State<_StandingsTab> {
                                       padding: const EdgeInsets.symmetric(
                                         vertical: 12,
                                         horizontal: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.2,
-                                        ),
                                       ),
                                       child: Row(
                                         children: [
