@@ -77,17 +77,6 @@ class _BracketViewState extends State<BracketView> {
     });
   }
 
-  void _moveToAdjacentPhase(int delta) {
-    final int nextIndex = (_activePhaseIndex + delta).clamp(
-      0,
-      _phaseLabels.length - 1,
-    );
-
-    if (nextIndex != _activePhaseIndex) {
-      _scrollToPhase(nextIndex);
-    }
-  }
-
   int _getMatchNumber(String id) {
     final parts = id.split('_');
     if (parts.length > 1) return int.tryParse(parts.last) ?? 0;
@@ -237,64 +226,14 @@ class _BracketViewState extends State<BracketView> {
         isLandscape ? 6 : 8,
         isLandscape ? 4 : 6,
       ),
-      child: Row(
-        children: [
-          _buildArrowNavButton(
-            icon: Icons.chevron_left,
-            onTap: () => _moveToAdjacentPhase(-1),
-            enabled: _activePhaseIndex > 0,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            _phaseLabels.length,
+            (index) => _navButton(_phaseLabels[index], index),
           ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _phaseLabels.length,
-                  (index) => _navButton(_phaseLabels[index], index),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 6),
-          _buildArrowNavButton(
-            icon: Icons.chevron_right,
-            onTap: () => _moveToAdjacentPhase(1),
-            enabled: _activePhaseIndex < (_phaseLabels.length - 1),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildArrowNavButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    required bool enabled,
-  }) {
-    return GestureDetector(
-      onTap: enabled ? onTap : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        width: 34,
-        height: 34,
-        decoration: BoxDecoration(
-          color: enabled ? Colors.black87 : Colors.black54,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: enabled
-                ? AppColors.primaryGold
-                : AppColors.primaryGold.withValues(alpha: 0.35),
-            width: 1,
-          ),
-        ),
-        child: Icon(
-          icon,
-          size: 20,
-          color: enabled
-              ? AppColors.primaryGold
-              : AppColors.primaryGold.withValues(alpha: 0.45),
         ),
       ),
     );
@@ -332,7 +271,7 @@ class _BracketViewState extends State<BracketView> {
               SizedBox(width: 6),
               Text(
                 isLandscape
-                    ? "USE ◀ ▶ PARA MUDAR FASE  •  ROLE PARA VER JOGOS"
+                    ? "ARRASTE AS FASES  •  ROLE PARA VER JOGOS"
                     : "ROLE PARA VER TODOS OS JOGOS",
                 style: TextStyle(
                   color: Colors.white70,
