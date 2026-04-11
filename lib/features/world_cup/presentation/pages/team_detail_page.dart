@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/constants/app_theme.dart';
+import '../../../../core/widgets/banner_ad_widget.dart';
 
 import '../../domain/entities/team_info_entity.dart';
 import '../../data/repositories/team_info_repository.dart';
@@ -214,6 +215,7 @@ class _TeamDetailPageState extends State<TeamDetailPage> {
             ]),
           ),
         ),
+        const SliverToBoxAdapter(child: BannerAdWidget()),
       ],
     );
   }

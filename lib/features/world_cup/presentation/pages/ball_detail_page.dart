@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_theme.dart';
+import '../../../../core/widgets/banner_ad_widget.dart';
 import '../widgets/premium_badge_sliver_app_bar.dart';
 
 class BallDetailPage extends StatefulWidget {
@@ -50,6 +51,7 @@ class _BallDetailPageState extends State<BallDetailPage> {
               ]),
             ),
           ),
+          const SliverToBoxAdapter(child: BannerAdWidget()),
         ],
       ),
     );

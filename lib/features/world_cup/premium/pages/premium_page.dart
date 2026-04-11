@@ -4,6 +4,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:wsports_cup_premium/core/constants/app_theme.dart';
 import 'package:wsports_cup_premium/core/services/ad_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../../../core/widgets/banner_ad_widget.dart';
 
 import '../../presentation/widgets/premium_badge_app_bar.dart';
 
@@ -805,6 +806,7 @@ class _PremiumPageState extends State<PremiumPage> {
               style: const TextStyle(color: Colors.white24, fontSize: 12),
             ),
           ],
+          const BannerAdWidget(),
         ],
       ),
     );
