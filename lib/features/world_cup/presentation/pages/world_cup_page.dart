@@ -11,7 +11,6 @@ import '../../domain/entities/match_entity.dart';
 import '../../domain/logic/bracket_calculator.dart';
 import '../../domain/logic/standings_calculator.dart';
 import '../../domain/logic/repescagem_data.dart';
-import '../../premium/pages/premium_page.dart';
 import '../bloc/world_cup_bloc.dart';
 import '../bloc/world_cup_event.dart';
 import '../bloc/world_cup_state.dart';
@@ -40,6 +39,8 @@ class _WorldCupPageState extends State<WorldCupPage> {
       // 2. Aguarda 3 segundos para não atrapalhar o carregamento
       await Future.delayed(const Duration(seconds: 3));
 
+      if (!mounted) return;
+
       // 3. Verifica se deve mostrar
       await NotificationPromptService.checkAndShow(context);
     });
@@ -52,33 +53,6 @@ class _WorldCupPageState extends State<WorldCupPage> {
     setState(() {});
   }
 
-  String? _getChampionCode(List<MatchEntity> matches) {
-    try {
-      final finalMatch = matches.firstWhere((m) => m.id == 'final_1');
-      if (finalMatch.userHomePrediction != null &&
-          finalMatch.userAwayPrediction != null) {
-        String winnerFlagUrl = ''; //.
-
-        if (finalMatch.userHomePrediction! > finalMatch.userAwayPrediction!) {
-          winnerFlagUrl = finalMatch.homeFlag;
-        } else if (finalMatch.userAwayPrediction! >
-            finalMatch.userHomePrediction!) {
-          winnerFlagUrl = finalMatch.awayFlag;
-        } else {
-          winnerFlagUrl = finalMatch.homeFlag;
-        }
-
-        if (winnerFlagUrl.isNotEmpty && winnerFlagUrl.contains('/')) {
-          final filename = winnerFlagUrl.split('/').last;
-          return filename.split('.').first;
-        }
-      }
-    } catch (e) {
-      return null;
-    }
-    return null;
-  }
-
   void _resetAllPredictions(BuildContext context) {
     showDialog(
       context: context,
@@ -87,11 +61,11 @@ class _WorldCupPageState extends State<WorldCupPage> {
         backgroundColor: AppColors.cardSurface,
         title: const Text(
           'Resetar todos os palpites?',
-          style: TextStyle(color: AppColors.primaryGold),
+          style: TextStyle(color: AppColors.primaryGold, fontSize: 28),
         ),
         content: const Text(
-          'Isso apagará todos os seus palpites e simulações.',
-          style: TextStyle(color: Colors.white70),
+          '🚨Isso apagará todos os seus palpites e simulações.',
+          style: TextStyle(color: Colors.white70, fontSize: 18),
         ),
         actions: [
           TextButton(
@@ -101,7 +75,7 @@ class _WorldCupPageState extends State<WorldCupPage> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryGold,
+              backgroundColor: AppColors.errorRed,
             ),
             onPressed: () async {
               Navigator.pop(dialogContext);
@@ -114,7 +88,7 @@ class _WorldCupPageState extends State<WorldCupPage> {
               await AdService.showRewarded();
             },
             child: const Text(
-              'RESETAR',
+              '🗑️ RESETAR',
               style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
@@ -125,7 +99,7 @@ class _WorldCupPageState extends State<WorldCupPage> {
       ),
     );
   }
-
+  /*
   void _openInfoPage(BuildContext context) {
     final state = context.read<WorldCupBloc>().state;
     final tabController = DefaultTabController.of(context);
@@ -140,7 +114,7 @@ class _WorldCupPageState extends State<WorldCupPage> {
         ),
       ),
     );
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -171,29 +145,13 @@ class _WorldCupPageState extends State<WorldCupPage> {
         }
       },
       builder: (context, state) {
-        // ... O resto do seu código de construtor (DefaultTabController, Scaffold...) continua IGUAL daqui para baixo ...
-        final String? championCode = _getChampionCode(
-          BracketCalculator.populate(state.matches),
-        );
-
         return DefaultTabController(
           length: 4,
           child: Scaffold(
             backgroundColor: AppColors.background,
             appBar: PremiumBadgeAppBar(
-              title: 'Simulador Copa 2026',
-              showBackButton: false,
-              actions: [
-                IconButton(
-                  icon: const FaIcon(
-                    FontAwesomeIcons.personThroughWindow,
-                    color: AppColors.primaryGold,
-                    size: 18,
-                  ),
-                  onPressed: () => _openInfoPage(context),
-                  tooltip: 'Informações',
-                ),
-              ],
+              title: '🎮 SIMULADOR COPA 2026',
+              showBackButton: true,
             ),
             floatingActionButton: Builder(
               builder: (innerContext) => FloatingActionButton.extended(
@@ -221,69 +179,12 @@ class _WorldCupPageState extends State<WorldCupPage> {
                     headerSliverBuilder: (context, innerBoxIsScrolled) {
                       return [
                         SliverAppBar(
-                          expandedHeight: 200.0,
+                          automaticallyImplyLeading: false,
                           pinned: true,
+                          toolbarHeight: 0,
+                          collapsedHeight: 48,
                           backgroundColor: AppColors.background,
                           elevation: 0,
-                          flexibleSpace: LayoutBuilder(
-                            builder: (context, constraints) {
-                              // Calcula o percentual de expansão (1.0 totalmente aberto, 0.0 fechado)
-                              final double appBarHeight = constraints.maxHeight;
-                              final bool isExpanded =
-                                  appBarHeight >
-                                  150; // Altura arbitrária para detecção
-
-                              return FlexibleSpaceBar(
-                                centerTitle: true,
-                                // Se estiver aberto, usa 90 de padding. Se fechar, usa 50 para caber.
-                                titlePadding: EdgeInsets.only(
-                                  bottom: isExpanded ? 90 : 55,
-                                ),
-                                title: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      // Opcional: Esconder o ícone quando a barra encolher para limpar o visual
-                                      if (isExpanded)
-                                        Icon(
-                                          Icons.sports_soccer,
-                                          size: 28,
-                                          color: championCode != null
-                                              ? Colors.white.withValues(
-                                                  alpha: 0.8,
-                                                )
-                                              : Colors.white.withValues(
-                                                  alpha: 0.1,
-                                                ),
-                                        ),
-                                      if (isExpanded) const SizedBox(height: 4),
-                                      Text(
-                                        championCode != null
-                                            ? "CAMPEÃO 2026"
-                                            : "Simulador Copa do Mundo 2026",
-                                        style: const TextStyle(
-                                          color: AppColors.primaryGold,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                          shadows: [
-                                            Shadow(
-                                              color: Colors.black,
-                                              blurRadius: 10,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                background: Container(
-                                  /* ... seu código de background atual ... */
-                                ),
-                              );
-                            },
-                          ),
                           bottom: const PreferredSize(
                             preferredSize: Size.fromHeight(48),
                             child: Center(
@@ -1059,7 +960,7 @@ class _GroupHeader extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.cardSurface,
         title: const Text(
-          'Gerar Placares Aleatórios?',
+          'GERAR PLACARES ALEATÓRIOS?',
           style: TextStyle(
             color: AppColors.primaryGold,
             fontWeight: FontWeight.bold,
@@ -1067,7 +968,7 @@ class _GroupHeader extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
         content: Text(
-          'Isso vai gerar placares aleatórios para todos os jogos de "$title".\n\nPalpites existentes serão substituídos.',
+          'Isso vai gerar placares aleatórios para todos os jogos no "$title".\n\n🚨Palpites existentes serão substituídos.',
           style: const TextStyle(color: Colors.white70),
           textAlign: TextAlign.center,
         ),

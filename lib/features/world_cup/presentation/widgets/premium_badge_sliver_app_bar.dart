@@ -60,7 +60,7 @@ class PremiumBadgeSliverAppBar extends StatefulWidget {
 }
 
 class _PremiumBadgeSliverAppBarState extends State<PremiumBadgeSliverAppBar> {
-  late bool _isPremium;
+  bool _isPremium = AdService.isPremium;
   Timer? _statusCheckTimer;
 
   @override

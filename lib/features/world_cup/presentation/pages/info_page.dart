@@ -366,6 +366,18 @@ class _InfoPageState extends State<InfoPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  void _goToSimulator() {
+    // Se veio da WorldCupPage, volta para ela preservando o estado
+    if (widget.onGoToCalendar != null && Navigator.canPop(context)) {
+      widget.onGoToCalendar!.call();
+      Navigator.pop(context);
+      return;
+    }
+
+    // Fallback para acesso direto à rota do simulador
+    Navigator.pushNamed(context, AppRoutes.worldCup);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -404,6 +416,11 @@ class _InfoPageState extends State<InfoPage>
       appBar: PremiumBadgeAppBar(
         title: '⚽ COPA DO MUNDO 2026',
         showBackButton: false,
+        leading: IconButton(
+          icon: const Icon(Icons.gamepad_rounded, color: AppColors.primaryGold),
+          tooltip: 'Ir para Simulador Copa 2026',
+          onPressed: _goToSimulator,
+        ),
       ),
       bottomNavigationBar: TabBar(
         controller: _tabController,
@@ -1717,13 +1734,18 @@ class _Copa2026Tab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
+        image: const DecorationImage(
+          image: AssetImage('assets/images/background_card.png'),
+          repeat: ImageRepeat.repeat,
+        ),
         // 🎨 Gradiente verde que chama atenção (cor de ação/CTA)
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
             Colors.green.shade700.withValues(alpha: 0.85),
-            Colors.green.shade900.withValues(alpha: 0.90),
+            Colors.blue.shade900.withValues(alpha: 0.85),
+            Colors.red.shade900.withValues(alpha: 0.85),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
@@ -1750,7 +1772,7 @@ class _Copa2026Tab extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.sports_soccer,
+              Icons.gamepad_rounded,
               size: 48,
               color: Colors.white,
             ),
@@ -1759,7 +1781,7 @@ class _Copa2026Tab extends StatelessWidget {
 
           // 📝 Título principal
           const Text(
-            '🎮 CRIAR SIMULAÇÃO',
+            'CRIAR SIMULAÇÃO',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 20,
@@ -1798,12 +1820,11 @@ class _Copa2026Tab extends StatelessWidget {
               ),
               elevation: 4,
             ),
-            icon: const Icon(Icons.arrow_forward, size: 20),
             label: const Text(
-              'COMEÇAR AGORA',
+              '🎮 COMEÇAR AGORA',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontSize: 16,
                 letterSpacing: 0.8,
               ),
             ),

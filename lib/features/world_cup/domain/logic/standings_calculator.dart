@@ -120,12 +120,14 @@ class StandingsCalculator {
         return a.teamName.compareTo(b.teamName);
       });
 
-      // 🔍 DEBUG: Verificar cartões
-      for (final team in teamList) {
-        debugPrint(
-          '[$groupName] ${team.teamName}: P=${team.points} SG=${team.goalDifference} '
-          'V=${team.totalReds} 🟨=${team.totalYellows} 🟨🟨=${team.totalDoubleYellows}',
-        );
+      // 🔍 DEBUG: Verificar cartões (apenas em modo debug)
+      if (kDebugMode) {
+        for (final team in teamList) {
+          debugPrint(
+            '[$groupName] ${team.teamName}: P=${team.points} SG=${team.goalDifference} '
+            'V=${team.totalReds} 🟨=${team.totalYellows} 🟨🟨=${team.totalDoubleYellows}',
+          );
+        }
       }
 
       finalStandings[groupName] = teamList;

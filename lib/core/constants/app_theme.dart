@@ -9,6 +9,7 @@ class AppColors {
   static const Color textWhite = Color(0xFFEDEDED);
   static const Color textGrey = Color(0xFF9E9E9E);
   static const Color successGreen = Color(0xFF4CAF50);
+  static const Color errorRed = Color(0xFFE96158);
 }
 
 class AppTheme {
@@ -21,7 +22,9 @@ class AppTheme {
       // Configuração de Texto Global
       textTheme: TextTheme(
         displayLarge: GoogleFonts.montserrat(
-            color: AppColors.primaryGold, fontWeight: FontWeight.bold),
+          color: AppColors.primaryGold,
+          fontWeight: FontWeight.bold,
+        ),
         bodyLarge: GoogleFonts.roboto(color: AppColors.textWhite),
         bodyMedium: GoogleFonts.roboto(color: AppColors.textGrey),
       ),
@@ -30,9 +33,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.cardSurface,
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
 
       // Estilo da AppBar
@@ -42,16 +43,17 @@ class AppTheme {
         centerTitle: true,
         iconTheme: IconThemeData(color: AppColors.textWhite),
       ),
-      
+
       // Esquema de cores para componentes padrão
-      colorScheme: ColorScheme.fromSwatch(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.amber, // Fallback
-      ).copyWith(
-        primary: AppColors.primaryGold,
-        secondary: AppColors.primaryGold,
-        surface: AppColors.cardSurface,
-      ),
+      colorScheme:
+          ColorScheme.fromSwatch(
+            brightness: Brightness.dark,
+            primarySwatch: Colors.amber, // Fallback
+          ).copyWith(
+            primary: AppColors.primaryGold,
+            secondary: AppColors.primaryGold,
+            surface: AppColors.cardSurface,
+          ),
     );
   }
 }

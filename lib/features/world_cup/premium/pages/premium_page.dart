@@ -102,8 +102,8 @@ class _PremiumPageState extends State<PremiumPage> {
   Future<void> _loadProduct() async {
     if (mounted) setState(() => _isLoading = true);
 
-    // ✅ TIMEOUT DE SEGURANÇA GARANTIDO: NUNCA FICA CARREGANDO MAIS QUE 20 SEGUNDOS
-    final timeout = Timer(const Duration(seconds: 20), () {
+    // ✅ TIMEOUT DE SEGURANÇA GARANTIDO: NUNCA FICA CARREGANDO MAIS QUE 15 SEGUNDOS
+    final timeout = Timer(const Duration(seconds: 15), () {
       if (mounted && _isLoading) {
         _setError('Tempo de conexão esgotado. Verifique sua internet.');
       }
@@ -393,8 +393,9 @@ class _PremiumPageState extends State<PremiumPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: PremiumBadgeAppBar(
-        title: 'Simulador Copa 2026',
-        showBackButton: false,
+        title: 'Adquira a versão PRO',
+        showBackButton: true,
+        showPremiumBadge: false,
         actions: [
           // Só exibe "Restaurar" se ainda não é premium
           if (!_alreadyPremium)
@@ -402,8 +403,8 @@ class _PremiumPageState extends State<PremiumPage> {
                 ? const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     child: SizedBox(
-                      width: 16,
-                      height: 16,
+                      width: 14,
+                      height: 14,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         color: Colors.white54,
@@ -491,7 +492,7 @@ class _PremiumPageState extends State<PremiumPage> {
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
 
           // Benefícios ativos com cards
           _buildBenefitCard(
@@ -610,37 +611,77 @@ class _PremiumPageState extends State<PremiumPage> {
   /// Tela exibida quando o usuário AINDA NÃO É Premium.
   Widget _buildPurchaseView() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 16),
-          const Icon(
-            Icons.workspace_premium,
-            size: 80,
-            color: AppColors.primaryGold,
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Simulador Copa do Mundo\n2026 Premium',
-            style: TextStyle(
+          const SizedBox(height: 10),
+          // Efeito de brilho atrás do ícone para dar sensação de "Premium"
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.primaryGold.withValues(alpha: 0.1),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryGold.withValues(alpha: 0.2),
+                  blurRadius: 30,
+                  spreadRadius: 10,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.workspace_premium,
+              size: 60,
               color: AppColors.primaryGold,
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 18),
+          const Text(
+            'Desbloqueie a\nExperiência PRO',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           const Text(
-            'Aproveite o simulador sem interrupções!',
+            'Eleve suas simulações ao próximo nível sem distrações.',
             style: TextStyle(color: Colors.white70, fontSize: 16),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
-          _buildBenefitRow(Icons.block, 'Sem anúncios para sempre'),
-          _buildBenefitRow(Icons.bolt, 'Experiência mais fluida'),
-          _buildBenefitRow(Icons.favorite, 'Apoie o desenvolvimento'),
-          const SizedBox(height: 40),
+          const SizedBox(height: 10),
+
+          // ✨ UTILIZANDO OS CARDS DETALHADOS PARA VENDER MELHOR
+          _buildBenefitCard(
+            Icons.block_flipped,
+            'Zero Anúncios',
+            'Simule sem interrupções. Diga adeus aos banners e vídeos chatos para sempre.',
+            AppColors.successGreen,
+          ),
+          _buildBenefitCard(
+            Icons.bolt,
+            'Mais Rápido e Limpo',
+            'Interface otimizada, garantindo navegação fluida e foco total no torneio.',
+            Colors.cyan,
+          ),
+          _buildBenefitCard(
+            Icons.all_inclusive,
+            'Compra Única',
+            'Sem assinaturas mensais! Pague apenas uma vez e seja PRO para sempre.',
+            AppColors.primaryGold,
+          ),
+          _buildBenefitCard(
+            Icons.rocket_launch,
+            'Apoie & Receba Novidades',
+            'Incentive o projeto e tenha acesso prioritário aos novos recursos.',
+            Colors.purple[300]!,
+          ),
+
+          const SizedBox(height: 10),
 
           // Caixa de erro (apenas se houver)
           if (_errorMessage != null) ...[
@@ -672,7 +713,6 @@ class _PremiumPageState extends State<PremiumPage> {
                       ),
                     ),
                   ),
-                  // Botão de retry inline
                   IconButton(
                     constraints: const BoxConstraints(),
                     padding: EdgeInsets.zero,
@@ -688,10 +728,21 @@ class _PremiumPageState extends State<PremiumPage> {
             ),
           ],
 
-          // Botão principal de compra
-          SizedBox(
+          // Botão principal de compra (mais destacado)
+          Container(
             width: double.infinity,
-            height: 56,
+            height: 55, // Ligeiramente mais alto para destacar
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                if (!_isPurchasing && _product != null)
+                  BoxShadow(
+                    color: AppColors.primaryGold.withValues(alpha: 0.4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+              ],
+            ),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryGold,
@@ -701,6 +752,7 @@ class _PremiumPageState extends State<PremiumPage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
+                elevation: 0, // A sombra é tratada pelo Container acima
               ),
               onPressed: (_isPurchasing || _product == null)
                   ? null
@@ -716,44 +768,43 @@ class _PremiumPageState extends State<PremiumPage> {
                     )
                   : Text(
                       _product != null
-                          ? 'Seja Premium por apenas ${_product!.price}'
+                          ? 'Desbloquear por ${_product!.price}'
                           : 'CARREGANDO...',
                       style: const TextStyle(
                         color: Colors.black,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        fontWeight:
+                            FontWeight.w900, // Fonte mais pesada no botão
                       ),
                     ),
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
 
-          const Text(
-            'Pagamento processado pelo Google Play.\nCompra única, sem renovação automática.',
-            style: TextStyle(color: Colors.white38, fontSize: 11),
-            textAlign: TextAlign.center,
+          // Garantias que reduzem a ansiedade de compra
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.shield_outlined,
+                color: Colors.white38,
+                size: 14,
+              ),
+              const SizedBox(width: 6),
+              const Text(
+                'Pagamento seguro via Google Play',
+                style: TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+            ],
           ),
 
           if (_appVersion.isNotEmpty) ...[
-            const SizedBox(height: 24),
+            const SizedBox(height: 30),
             Text(
               _appVersion,
               style: const TextStyle(color: Colors.white24, fontSize: 12),
             ),
           ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBenefitRow(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.primaryGold, size: 20),
-          const SizedBox(width: 12),
-          Text(text, style: const TextStyle(color: Colors.white, fontSize: 15)),
         ],
       ),
     );

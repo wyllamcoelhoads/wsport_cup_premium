@@ -94,7 +94,7 @@ class MyApp extends StatelessWidget {
         // ✅ Sem duplicação de Navigator.push() espalhado no código
         // ✅ Suporta deep linking (URLs profundas)
         // ✅ Transições customizáveis por rota
-        initialRoute: AppRoutes.infoPage,
+        initialRoute: '/',
         onGenerateRoute: _generateRoute,
       ),
     );
@@ -117,6 +117,11 @@ class MyApp extends StatelessWidget {
   /// ```
   static Route<dynamic>? _generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case '/':
+        return MaterialPageRoute(
+          builder: (_) => const InfoPage(),
+          settings: settings,
+        );
       // 🏠 Rota da tela principal (Hub de Informações)
       case AppRoutes.infoPage:
         return MaterialPageRoute(

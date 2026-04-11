@@ -13,6 +13,8 @@ class PremiumBadgeAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String title;
   final Color? titleColor;
   final bool showBackButton;
+  final Widget? leading;
+  final bool showPremiumBadge;
   final List<Widget>? actions;
   final VoidCallback? onBackPressed;
   final double? elevation;
@@ -25,6 +27,8 @@ class PremiumBadgeAppBar extends StatefulWidget implements PreferredSizeWidget {
     required this.title,
     this.titleColor,
     this.showBackButton = false,
+    this.leading,
+    this.showPremiumBadge = true,
     this.actions,
     this.onBackPressed,
     this.elevation = 0,
@@ -40,7 +44,7 @@ class PremiumBadgeAppBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _PremiumBadgeAppBarState extends State<PremiumBadgeAppBar> {
-  late bool _isPremium;
+  bool _isPremium = AdService.isPremium;
   Timer? _statusCheckTimer;
 
   @override
@@ -103,6 +107,8 @@ class _PremiumBadgeAppBarState extends State<PremiumBadgeAppBar> {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      automaticallyImplyLeading:
+          widget.showBackButton && widget.leading == null,
       title: Text(
         widget.title,
         style: TextStyle(
@@ -118,79 +124,80 @@ class _PremiumBadgeAppBarState extends State<PremiumBadgeAppBar> {
               icon: const Icon(Icons.arrow_back, color: AppColors.primaryGold),
               onPressed: widget.onBackPressed ?? () => Navigator.pop(context),
             )
-          : null,
+          : widget.leading,
       actions: [
-        // 🌟 Badge Premium
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Center(
-            child: Tooltip(
-              message: _isPremium
-                  ? 'Você é Premium! 🎉'
-                  : 'Clique para fazer upgrade',
-              child: GestureDetector(
-                onTap: _navigateToPremium,
-                child: Stack(
-                  children: [
-                    // Ícone de estrela
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      child: FaIcon(
-                        FontAwesomeIcons.star,
-                        color: AppColors.primaryGold,
-                        size: 22,
-                      ),
-                    ),
-                    // Badge com status
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1,
+        if (widget.showPremiumBadge)
+          // 🌟 Badge Premium
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Center(
+              child: Tooltip(
+                message: _isPremium
+                    ? 'Você é Premium! 🎉'
+                    : 'Clique para fazer upgrade',
+                child: GestureDetector(
+                  onTap: _navigateToPremium,
+                  child: Stack(
+                    children: [
+                      // Ícone de estrela
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        child: FaIcon(
+                          FontAwesomeIcons.star,
+                          color: AppColors.primaryGold,
+                          size: 22,
                         ),
-                        decoration: BoxDecoration(
-                          color:
-                              _isPremium // ✅ Dinâmico!
-                              ? AppColors.successGreen
-                              : Colors.orange[700],
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: AppColors.background,
-                            width: 1.5,
+                      ),
+                      // Badge com status
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color:
-                                  _isPremium // ✅ Sombra adaptativa
-                                  ? AppColors.successGreen.withValues(
-                                      alpha: 0.4,
-                                    )
-                                  : Colors.orange.withValues(alpha: 0.4),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
+                          decoration: BoxDecoration(
+                            color:
+                                _isPremium // ✅ Dinâmico!
+                                ? AppColors.successGreen
+                                : Colors.orange[700],
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: AppColors.background,
+                              width: 1.5,
                             ),
-                          ],
-                        ),
-                        child: Text(
-                          _isPremium ? 'PRO' : 'FREE', // ✅ Texto dinâmico
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 7,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    _isPremium // ✅ Sombra adaptativa
+                                    ? AppColors.successGreen.withValues(
+                                        alpha: 0.4,
+                                      )
+                                    : Colors.orange.withValues(alpha: 0.4),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            _isPremium ? 'PRO' : 'FREE', // ✅ Texto dinâmico
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 7,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
         // Ações adicionais (se houver)
         ...(widget.actions ?? []),
       ],
