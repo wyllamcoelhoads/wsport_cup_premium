@@ -522,12 +522,12 @@ class _StandingsTabState extends State<_StandingsTab> {
                         children: [
                           // Coluna fixa: posição e seleção
                           Container(
-                            width: 140,
+                            width: 168,
                             padding: const EdgeInsets.all(12.0),
                             child: Row(
                               children: [
                                 const SizedBox(
-                                  width: 25,
+                                  width: 18,
                                   child: Text(
                                     "#",
                                     style: TextStyle(
@@ -537,7 +537,7 @@ class _StandingsTabState extends State<_StandingsTab> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 6),
                                 const Expanded(
                                   child: Text(
                                     "SELEÇÃO",
@@ -587,7 +587,7 @@ class _StandingsTabState extends State<_StandingsTab> {
                                   children: [
                                     // Coluna fixa: posição e seleção
                                     Container(
-                                      width: 140,
+                                      width: 168,
                                       padding: const EdgeInsets.symmetric(
                                         vertical: 12,
                                         horizontal: 12,
@@ -595,7 +595,7 @@ class _StandingsTabState extends State<_StandingsTab> {
                                       child: Row(
                                         children: [
                                           SizedBox(
-                                            width: 25,
+                                            width: 18,
                                             child: Text(
                                               "$pos",
                                               style: const TextStyle(
@@ -605,7 +605,7 @@ class _StandingsTabState extends State<_StandingsTab> {
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(width: 8),
+                                          const SizedBox(width: 6),
                                           ClipOval(
                                             child: CachedNetworkImage(
                                               imageUrl: team.flag,
@@ -620,7 +620,7 @@ class _StandingsTabState extends State<_StandingsTab> {
                                                   ),
                                             ),
                                           ),
-                                          const SizedBox(width: 8),
+                                          const SizedBox(width: 6),
                                           Expanded(
                                             child: Text(
                                               team.teamName,
