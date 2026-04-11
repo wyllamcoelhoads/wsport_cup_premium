@@ -493,235 +493,258 @@ class _StandingsTabState extends State<_StandingsTab> {
         return Column(
           children: [
             _GroupHeader(title: groupName, showEdit: false),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primaryGold.withValues(alpha: 0.2),
-                      Colors.blue.withValues(alpha: 0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Largura total disponível menos o padding horizontal (8 * 2)
+                final availableWidth = constraints.maxWidth - 16;
+                // Largura mínima do conteúdo: coluna fixa (168) + 12 colunas de stats (30 cada)
+                const contentWidth = 168.0 + (30.0 * 12);
+                // Usa a maior entre a largura disponível e o conteúdo mínimo
+                final cardWidth = contentWidth > availableWidth
+                    ? contentWidth
+                    : availableWidth;
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Container(
+                    width: availableWidth,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primaryGold.withValues(alpha: 0.2),
+                          Colors.blue.withValues(alpha: 0.05),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: SingleChildScrollView(
-                  controller: _horizontalScrollController,
-                  scrollDirection: Axis.horizontal,
-                  child: Column(
-                    children: [
-                      // CABEÇALHO COM TOOLTIPS
-                      Row(
-                        children: [
-                          // Coluna fixa: posição e seleção
-                          Container(
-                            width: 168,
-                            padding: const EdgeInsets.all(12.0),
-                            child: Row(
+                    child: SingleChildScrollView(
+                      controller: _horizontalScrollController,
+                      scrollDirection: Axis.horizontal,
+                      child: SizedBox(
+                        width: cardWidth,
+                        child: Column(
+                          children: [
+                            // CABEÇALHO COM TOOLTIPS
+                            Row(
                               children: [
-                                const SizedBox(
-                                  width: 18,
-                                  child: Text(
-                                    "#",
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                // Coluna fixa: posição e seleção
+                                Container(
+                                  width: 168,
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Row(
+                                    children: [
+                                      const SizedBox(
+                                        width: 18,
+                                        child: Text(
+                                          "#",
+                                          style: TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      const Expanded(
+                                        child: Text(
+                                          "SELEÇÃO",
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(width: 6),
-                                const Expanded(
-                                  child: Text(
-                                    "SELEÇÃO",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                // Colunas scrolláveis
+                                Row(
+                                  children: [
+                                    _TooltipHeader("P", "Pontos"),
+                                    _TooltipHeader("J", "Jogos"),
+                                    _TooltipHeader("V", "Vitórias"),
+                                    _TooltipHeader("E", "Empates"),
+                                    _TooltipHeader("D", "Derrotas"),
+                                    _TooltipHeader("GP", "Gols Pró"),
+                                    _TooltipHeader("GC", "Gols Contra"),
+                                    _TooltipHeader("SG", "Saldo"),
+                                    _TooltipHeader("🟨", "Amarelo"),
+                                    _TooltipHeader("🟨🟨", "Duplo"),
+                                    _TooltipHeader("🟥", "Vermelho"),
+                                    _TooltipHeader("FC", "Fair Play"),
+                                  ],
                                 ),
                               ],
                             ),
-                          ),
-                          // Colunas scrolláveis
-                          Row(
-                            children: [
-                              _TooltipHeader("P", "Pontos"),
-                              _TooltipHeader("J", "Jogos"),
-                              _TooltipHeader("V", "Vitórias"),
-                              _TooltipHeader("E", "Empates"),
-                              _TooltipHeader("D", "Derrotas"),
-                              _TooltipHeader("GP", "Gols Pró"),
-                              _TooltipHeader("GC", "Gols Contra"),
-                              _TooltipHeader("SG", "Saldo"),
-                              _TooltipHeader("🟨", "Amarelo"),
-                              _TooltipHeader("🟨🟨", "Duplo"),
-                              _TooltipHeader("🟥", "Vermelho"),
-                              _TooltipHeader("FC", "Fair Play"),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 1, color: Colors.white10),
+                            const Divider(height: 1, color: Colors.white10),
 
-                      // LINHAS DOS TIMES
-                      ...teams.asMap().entries.map((entry) {
-                        final pos = entry.key + 1;
-                        final team = entry.value;
-                        final isQualified = pos <= 2;
+                            // LINHAS DOS TIMES
+                            ...teams.asMap().entries.map((entry) {
+                              final pos = entry.key + 1;
+                              final team = entry.value;
+                              final isQualified = pos <= 2;
 
-                        return Column(
-                          children: [
-                            Stack(
-                              children: [
-                                Row(
-                                  children: [
-                                    // Coluna fixa: posição e seleção
-                                    Container(
-                                      width: 168,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                        horizontal: 12,
-                                      ),
-                                      child: Row(
+                              return Column(
+                                children: [
+                                  Stack(
+                                    children: [
+                                      Row(
                                         children: [
-                                          SizedBox(
-                                            width: 18,
-                                            child: Text(
-                                              "$pos",
-                                              style: const TextStyle(
-                                                color: Colors.white70,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 12,
-                                              ),
+                                          // Coluna fixa: posição e seleção
+                                          Container(
+                                            width: 168,
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                              horizontal: 12,
                                             ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          ClipOval(
-                                            child: CachedNetworkImage(
-                                              imageUrl: team.flag,
-                                              width: 20,
-                                              height: 20,
-                                              fit: BoxFit.cover,
-                                              errorWidget: (_, _, _) =>
-                                                  const Icon(
-                                                    Icons.circle,
-                                                    size: 20,
-                                                    color: Colors.white,
+                                            child: Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: 18,
+                                                  child: Text(
+                                                    "$pos",
+                                                    style: const TextStyle(
+                                                      color: Colors.white70,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
                                                   ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                ClipOval(
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: team.flag,
+                                                    width: 20,
+                                                    height: 20,
+                                                    fit: BoxFit.cover,
+                                                    errorWidget: (_, _, _) =>
+                                                        const Icon(
+                                                          Icons.circle,
+                                                          size: 20,
+                                                          color: Colors.white,
+                                                        ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Expanded(
+                                                  child: Text(
+                                                    team.teamName,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          const SizedBox(width: 6),
-                                          Expanded(
-                                            child: Text(
-                                              team.teamName,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 12,
+                                          // Colunas scrolláveis
+                                          Row(
+                                            children: [
+                                              _StatCell(
+                                                "${team.points}",
+                                                color: AppColors.primaryGold,
+                                                bold: true,
                                               ),
-                                            ),
+                                              _StatCell("${team.played}"),
+                                              _StatCell(
+                                                "${team.won}",
+                                                color: AppColors.successGreen,
+                                              ),
+                                              _StatCell(
+                                                "${team.drawn}",
+                                                color: Colors.white54,
+                                              ),
+                                              _StatCell(
+                                                "${team.lost}",
+                                                color: Colors.redAccent,
+                                              ),
+                                              _StatCell("${team.goalsFor}"),
+                                              _StatCell("${team.goalsAgainst}"),
+                                              _StatCell(
+                                                "${team.goalDifference}",
+                                                color: team.goalDifference > 0
+                                                    ? AppColors.successGreen
+                                                    : team.goalDifference < 0
+                                                    ? Colors.redAccent
+                                                    : Colors.white70,
+                                              ),
+                                              _CardCell(
+                                                value: team.totalYellows,
+                                                cardColor: Colors.amber,
+                                                isDualCard: false,
+                                              ),
+                                              _CardCell(
+                                                value: team.totalDoubleYellows,
+                                                cardColor: Colors.amber,
+                                                isDualCard: true,
+                                              ),
+                                              _CardCell(
+                                                value: team.totalReds,
+                                                cardColor: Colors.red,
+                                                isDualCard: false,
+                                              ),
+                                              _StatCell(
+                                                "${team.fairPlayPoints}",
+                                                color: team.fairPlayPoints >= 0
+                                                    ? AppColors.successGreen
+                                                    : Colors.redAccent,
+                                                bold: true,
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    // Colunas scrolláveis
-                                    Row(
-                                      children: [
-                                        _StatCell(
-                                          "${team.points}",
-                                          color: AppColors.primaryGold,
-                                          bold: true,
-                                        ),
-                                        _StatCell("${team.played}"),
-                                        _StatCell(
-                                          "${team.won}",
-                                          color: AppColors.successGreen,
-                                        ),
-                                        _StatCell(
-                                          "${team.drawn}",
-                                          color: Colors.white54,
-                                        ),
-                                        _StatCell(
-                                          "${team.lost}",
-                                          color: Colors.redAccent,
-                                        ),
-                                        _StatCell("${team.goalsFor}"),
-                                        _StatCell("${team.goalsAgainst}"),
-                                        _StatCell(
-                                          "${team.goalDifference}",
-                                          color: team.goalDifference > 0
-                                              ? AppColors.successGreen
-                                              : team.goalDifference < 0
-                                              ? Colors.redAccent
-                                              : Colors.white70,
-                                        ),
-                                        _CardCell(
-                                          value: team.totalYellows,
-                                          cardColor: Colors.amber,
-                                          isDualCard: false,
-                                        ),
-                                        _CardCell(
-                                          value: team.totalDoubleYellows,
-                                          cardColor: Colors.amber,
-                                          isDualCard: true,
-                                        ),
-                                        _CardCell(
-                                          value: team.totalReds,
-                                          cardColor: Colors.red,
-                                          isDualCard: false,
-                                        ),
-                                        _StatCell(
-                                          "${team.fairPlayPoints}",
-                                          color: team.fairPlayPoints >= 0
-                                              ? AppColors.successGreen
-                                              : Colors.redAccent,
-                                          bold: true,
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                // Indicador de classificado (barra verde)
-                                if (isQualified)
-                                  Positioned(
-                                    left: 0,
-                                    top: 0,
-                                    bottom: 0,
-                                    child: Container(
-                                      width: 4,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.successGreen,
-                                        borderRadius:
-                                            const BorderRadius.horizontal(
-                                              right: Radius.circular(2),
+                                      // Indicador de classificado (barra verde)
+                                      if (isQualified)
+                                        Positioned(
+                                          left: 0,
+                                          top: 0,
+                                          bottom: 0,
+                                          child: Container(
+                                            width: 4,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.successGreen,
+                                              borderRadius:
+                                                  const BorderRadius.horizontal(
+                                                    right: Radius.circular(2),
+                                                  ),
                                             ),
-                                      ),
-                                    ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                              ],
-                            ),
-                            if (pos < teams.length)
-                              const Divider(height: 1, color: Colors.white10),
+                                  if (pos < teams.length)
+                                    const Divider(
+                                      height: 1,
+                                      color: Colors.white10,
+                                    ),
+                                ],
+                              );
+                            }),
                           ],
-                        );
-                      }),
-                    ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
           ],
         );
       },
