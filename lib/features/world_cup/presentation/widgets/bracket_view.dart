@@ -20,6 +20,14 @@ class _BracketViewState extends State<BracketView> {
   int _activePhaseIndex = 0;
   double _currentXOffset = 0.0;
 
+  static const List<String> _phaseLabels = [
+    '16-AVOS',
+    'OITAVAS',
+    'QUARTAS',
+    'SEMI',
+    'FINAL',
+  ];
+
   // Controller próprio (primary: false) → não compete com o NestedScrollView
   final ScrollController _scrollController = ScrollController();
 
@@ -67,6 +75,17 @@ class _BracketViewState extends State<BracketView> {
       _activePhaseIndex = phaseIndex;
       _currentXOffset = xOffset;
     });
+  }
+
+  void _moveToAdjacentPhase(int delta) {
+    final int nextIndex = (_activePhaseIndex + delta).clamp(
+      0,
+      _phaseLabels.length - 1,
+    );
+
+    if (nextIndex != _activePhaseIndex) {
+      _scrollToPhase(nextIndex);
+    }
   }
 
   int _getMatchNumber(String id) {
@@ -207,20 +226,75 @@ class _BracketViewState extends State<BracketView> {
 
   // ── Barra de navegação de fases ───────────────────────────────────────────
   Widget _buildNavBar() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Container(
       color: AppColors.background,
-      padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _navButton("16-AVOS", 0),
-            _navButton("OITAVAS", 1),
-            _navButton("QUARTAS", 2),
-            _navButton("SEMI", 3),
-            _navButton("FINAL", 4),
-          ],
+      padding: EdgeInsets.fromLTRB(
+        isLandscape ? 6 : 8,
+        isLandscape ? 6 : 10,
+        isLandscape ? 6 : 8,
+        isLandscape ? 4 : 6,
+      ),
+      child: Row(
+        children: [
+          _buildArrowNavButton(
+            icon: Icons.chevron_left,
+            onTap: () => _moveToAdjacentPhase(-1),
+            enabled: _activePhaseIndex > 0,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  _phaseLabels.length,
+                  (index) => _navButton(_phaseLabels[index], index),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          _buildArrowNavButton(
+            icon: Icons.chevron_right,
+            onTap: () => _moveToAdjacentPhase(1),
+            enabled: _activePhaseIndex < (_phaseLabels.length - 1),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildArrowNavButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    required bool enabled,
+  }) {
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: enabled ? Colors.black87 : Colors.black54,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: enabled
+                ? AppColors.primaryGold
+                : AppColors.primaryGold.withValues(alpha: 0.35),
+            width: 1,
+          ),
+        ),
+        child: Icon(
+          icon,
+          size: 20,
+          color: enabled
+              ? AppColors.primaryGold
+              : AppColors.primaryGold.withValues(alpha: 0.45),
         ),
       ),
     );
@@ -228,12 +302,18 @@ class _BracketViewState extends State<BracketView> {
 
   // ── Dica de scroll vertical ───────────────────────────────────────────────
   Widget _buildScrollHint() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Container(
       color: AppColors.background,
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: isLandscape ? 4 : 8),
       child: Center(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          padding: EdgeInsets.symmetric(
+            horizontal: isLandscape ? 10 : 14,
+            vertical: isLandscape ? 4 : 6,
+          ),
           decoration: BoxDecoration(
             color: Colors.black87,
             borderRadius: BorderRadius.circular(20),
@@ -241,7 +321,7 @@ class _BracketViewState extends State<BracketView> {
               color: AppColors.primaryGold.withValues(alpha: 0.4),
             ),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
@@ -251,10 +331,12 @@ class _BracketViewState extends State<BracketView> {
               ),
               SizedBox(width: 6),
               Text(
-                "ROLE PARA VER TODOS OS JOGOS",
+                isLandscape
+                    ? "USE ◀ ▶ PARA MUDAR FASE  •  ROLE PARA VER JOGOS"
+                    : "ROLE PARA VER TODOS OS JOGOS",
                 style: TextStyle(
                   color: Colors.white70,
-                  fontSize: 10,
+                  fontSize: isLandscape ? 9 : 10,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.5,
                 ),
@@ -268,6 +350,8 @@ class _BracketViewState extends State<BracketView> {
 
   // ── Botão de fase ─────────────────────────────────────────────────────────
   Widget _navButton(String label, int index) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
     final bool isActive = _activePhaseIndex == index;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -275,7 +359,10 @@ class _BracketViewState extends State<BracketView> {
         onTap: () => _scrollToPhase(index),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: isLandscape ? 12 : 14,
+            vertical: isLandscape ? 7 : 8,
+          ),
           decoration: BoxDecoration(
             color: isActive ? AppColors.primaryGold : Colors.black87,
             borderRadius: BorderRadius.circular(20),
@@ -297,7 +384,7 @@ class _BracketViewState extends State<BracketView> {
             label,
             style: TextStyle(
               color: isActive ? Colors.black : AppColors.primaryGold,
-              fontSize: 11,
+              fontSize: isLandscape ? 10 : 11,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
             ),
