@@ -11,11 +11,12 @@ import '../../../../core/services/notification_service.dart';
 import '../../domain/entities/match_entity.dart';
 import '../../domain/logic/repescagem_data.dart';
 import '../widgets/stadium_web_browser.dart';
+import '../widgets/premium_badge_app_bar.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
 import '../pages/team_detail_page.dart';
+import '../pages/mascot_detail_page.dart';
 import '../pages/ball_detail_page.dart';
-import '../widgets/premium_badge_app_bar.dart';
 
 // ============================================================
 // DATA MODELS
@@ -1491,7 +1492,7 @@ class _RepescagemSheet extends StatelessWidget {
 }
 
 // ============================================================
-// TAB 3: COPA 2026
+// TAB 0: COPA 2026
 // ============================================================
 
 class _Copa2026Tab extends StatelessWidget {
@@ -1520,27 +1521,31 @@ class _Copa2026Tab extends StatelessWidget {
         _buildSectionCard(
           title: '🦁  MASCOTE OFICIAL',
           icon: Icons.pets,
-          child: _buildMascotContent(),
+          child: _buildMascotContent(context),
         ),
         const SizedBox(height: 14),
-        _buildSectionCard(
-          title: '⚽  BOLA OFICIAL',
-          icon: Icons.sports_soccer,
-          child: _buildBallContent(context),
-        ),
-        const SizedBox(height: 14),
-        _buildSectionCard(
-          title: '📋  FORMATO DA COMPETIÇÃO',
-          icon: Icons.format_list_bulleted,
-          child: _buildFormatContent(),
-        ),
-        const SizedBox(height: 14),
+        // 📄 Card de calendário resumido
         _buildSectionCard(
           title: '📅  CALENDÁRIO RESUMIDO',
           icon: Icons.calendar_today,
           child: _buildTimelineContent(),
         ),
         const SizedBox(height: 14),
+        // 📄 Card de formato da competição
+        _buildSectionCard(
+          title: '📋  FORMATO DA COMPETIÇÃO',
+          icon: Icons.format_list_bulleted,
+          child: _buildFormatContent(),
+        ),
+        const SizedBox(height: 14),
+        // 📄 Card de bola oficial
+        _buildSectionCard(
+          title: '⚽  BOLA OFICIAL',
+          icon: Icons.sports_soccer,
+          child: _buildBallContent(context),
+        ),
+        const SizedBox(height: 14),
+        // 📄 Card de curiosidades
         _buildSectionCard(
           title: '💡  CURIOSIDADES',
           icon: Icons.lightbulb_outline,
@@ -1887,60 +1892,92 @@ class _Copa2026Tab extends StatelessWidget {
     );
   }
 
-  Widget _buildMascotContent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.orange.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '"Tala" & "Rumi"',
-                style: TextStyle(
-                  color: Colors.orange,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+  Widget _buildMascotContent(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final watched = await AdService.showRewarded();
+        if (!watched) return;
+        if (!context.mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const MascotDetailPage()),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.orange.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Maple, Zayu & Clutch',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Tala é uma criatura feminina energética que representa velocidade e agilidade. Rumi é seu parceiro masculino, símbolo de força e determinação.',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  height: 1.5,
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 14,
+                  color: Colors.orange.withValues(alpha: 0.6),
                 ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Alce 🦌, Onça-Pintada 🐆 e Águia 🦅 — o trio oficial que representa Canadá, México e Estados Unidos na Copa 2026.',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+                height: 1.5,
               ),
-              const SizedBox(height: 10),
-              const Text(
-                'Juntos, personificam o espírito do futebol e a diversidade cultural das três nações anfitriãs.',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  height: 1.5,
-                ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _infoChip('🇨🇦 Maple', const Color(0xFFF08080)),
+                _infoChip('🇲🇽 Zayu', const Color(0xFF2E7D32)),
+                _infoChip('🇺🇸 Clutch', const Color(0xFF3A7BD5)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
               ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _infoChip('🌟 Criaturas místicas', Colors.orange),
-                  _infoChip('🇺🇸🇨🇦🇲🇽 Três países', Colors.orange),
-                  _infoChip('⚡ Velocidade e Força', Colors.orange),
+                  Text('🐾', style: TextStyle(fontSize: 14)),
+                  SizedBox(width: 6),
+                  Text(
+                    'Toque para conhecer o trio',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -2367,7 +2404,7 @@ class _Copa2026Tab extends StatelessWidget {
 }
 
 // ============================================================
-// TAB 4: VÍDEOS (YouTube WebView)
+// TAB 3: VÍDEOS (YouTube WebView)
 // ============================================================
 
 class _VideosTab extends StatefulWidget {
@@ -2421,33 +2458,137 @@ class _VideosTabState extends State<_VideosTab> {
   void _setupWebView() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      // 1. Evita a tela branca antes de carregar e fixa o fundo escuro nativamente
+      ..setBackgroundColor(const Color(0xFF0F0F0F))
       ..setUserAgent(
         'Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 '
         '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
       )
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (_) {
+          onPageStarted: (url) async {
             if (mounted) setState(() => _isLoading = true);
+            // Força tema escuro no YouTube através de múltiplas abordagens
+            await _controller.runJavaScript('''
+              // 1. Cookies para forçar tema escuro
+              document.cookie = "PREF=f6=400&f7=100; domain=.youtube.com; path=/; max-age=31536000";
+              document.cookie = "VISITOR_INFO1_LIVE=; domain=.youtube.com; path=/; max-age=31536000";
+              
+              // 2. localStorage para persistir tema escuro
+              localStorage.setItem('yt-theme', 'dark');
+              localStorage.setItem('yt-player-dark-mode', 'true');
+              localStorage.setItem('yt-dark-mode', 'true');
+              
+              // 3. Atributos no HTML
+              document.documentElement.setAttribute('dark', 'true');
+              document.documentElement.setAttribute('theme', 'dark');
+              document.documentElement.classList.add('dark');
+              
+              // 4. Meta tag para forçar tema escuro
+              var meta = document.querySelector('meta[name="theme-color"]');
+              if (meta) {
+                meta.setAttribute('content', '#0f0f0f');
+              } else {
+                var newMeta = document.createElement('meta');
+                newMeta.name = 'theme-color';
+                newMeta.content = '#0f0f0f';
+                document.head.appendChild(newMeta);
+              }
+            ''');
           },
-          onPageFinished: (_) {
+          onPageFinished: (url) async {
             if (mounted) setState(() => _isLoading = false);
-          },
-          onWebResourceError: (_) {
-            if (mounted) setState(() => _isLoading = false);
+
+            // Solução equilibrada: Tema escuro + Ocultação de elementos da interface SEM bloquear conteúdo
+            await _controller.runJavaScript('''
+              (function() {
+                'use strict';
+                
+                // 1. CSS PARA TEMA ESCURO E OCULTAÇÃO SELETIVA
+                var style = document.createElement('style');
+                style.id = 'dark-theme-balanced';
+                style.innerHTML = `
+                  /* Força tema escuro nos backgrounds */
+                  html, body, ytm-app, #app {
+                    background-color: #0f0f0f !important;
+                    background: #0f0f0f !important;
+                    color: #ffffff !important;
+                  }
+                  
+                  /* Texto branco em tudo */
+                  * {
+                    color: #ffffff !important;
+                  }
+                  
+                  /* Cards de vídeo com tema escuro */
+                  ytm-video-card-renderer, ytm-channel-card-renderer {
+                    background-color: #1a1a1a !important;
+                  }
+                  
+                  /* OCULTAÇÃO SELETIVA: Apenas elementos específicos da interface */
+                  #header, #masthead, .appbar, .search-bar, .search-container,
+                  .top-bar, ytm-mobile-topbar-renderer, ytm-header-bar,
+                  #nav, .bottom-nav, footer, ytm-pivot-bar, .pivot-bar,
+                  ytm-pivot-bar-renderer, .mobile-nav, .navbar {
+                    display: none !important;
+                    visibility: hidden !important;
+                    height: 0 !important;
+                    max-height: 0 !important;
+                    overflow: hidden !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                  }
+                  
+                  /* Permite que o conteúdo ocupe espaço */
+                  ytm-app, #app {
+                    padding: 0 !important;
+                    margin: 0 !important;
+                  }
+                `;
+                
+                // Remove estilo antigo
+                var oldStyle = document.getElementById('dark-theme-balanced');
+                if (oldStyle) oldStyle.remove();
+                
+                document.head.appendChild(style);
+                
+                // 2. FUNÇÃO DE OCULTAÇÃO
+                function hideInterface() {
+                  var selectors = [
+                    '#header', '#masthead', '.appbar', '.search-bar', '.search-container',
+                    'ytm-mobile-topbar-renderer', 'ytm-header-bar',
+                    '#nav', '.bottom-nav', 'footer',
+                    'ytm-pivot-bar', '.pivot-bar', 'ytm-pivot-bar-renderer',
+                    '.mobile-nav', '.navbar'
+                  ];
+                  
+                  selectors.forEach(function(selector) {
+                    var elements = document.querySelectorAll(selector);
+                    elements.forEach(function(el) {
+                      if (el) {
+                        el.style.display = 'none';
+                        el.style.visibility = 'hidden';
+                        el.style.height = '0px';
+                      }
+                    });
+                  });
+                  
+                  document.documentElement.setAttribute('dark', 'true');
+                  document.body.setAttribute('dark', 'true');
+                }
+                
+                // Executa imediatamente
+                hideInterface();
+                
+                // Continua monitorando
+                setInterval(hideInterface, 1500);
+                
+              })();
+            ''');
           },
           onNavigationRequest: (request) {
             final url = request.url;
-            if (url.contains('youtube.com') ||
-                url.contains('youtu.be') ||
-                url.contains('google.com') ||
-                url.contains('googleapis.com') ||
-                url.contains('gstatic.com') ||
-                url.contains('yt3.ggpht.com') ||
-                url.contains('ytimg.com') ||
-                url.contains('ge.globo.com') ||
-                url.contains('cazefutebol.com') ||
-                url.contains('caze.com.br')) {
+            if (url.contains('youtube.com') || url.contains('youtu.be')) {
               return NavigationDecision.navigate;
             }
             return NavigationDecision.prevent;
@@ -2459,20 +2600,22 @@ class _VideosTabState extends State<_VideosTab> {
 
   Uri _buildSearchUri(String filterKey) {
     if (filterKey == 'aovivo') {
-      // YouTube com filtro de conteúdo ao vivo
+      // YouTube com filtro de conteúdo ao vivo + tema escuro forçado
       return Uri.parse(
-        'https://m.youtube.com/results?search_query=Copa+do+Mundo+2026+ao+vivo&sp=EgJAAQ%3D%3D',
+        'https://m.youtube.com/results?search_query=Copa+do+Mundo+2026+ao+vivo&sp=EgJAAQ%3D%3D&theme=dark&app=desktop',
       );
     }
     if (filterKey == 'canais') {
-      // Busca pelos canais de transmissão
+      // Busca pelos canais de transmissão + tema escuro forçado
       return Uri.parse(
-        'https://m.youtube.com/results?search_query=CAZE+TV+GE+Globo+Copa+Mundo+2026+transmissao+ao+vivo',
+        'https://m.youtube.com/results?search_query=CAZE+TV+GE+Globo+Copa+Mundo+2026+transmissao+ao+vivo&theme=dark&app=desktop',
       );
     }
     final query = _filters[filterKey]?['query'] ?? 'Copa do Mundo 2026';
     final encoded = Uri.encodeComponent(query);
-    return Uri.parse('https://m.youtube.com/results?search_query=$encoded');
+    return Uri.parse(
+      'https://m.youtube.com/results?search_query=$encoded&theme=dark&app=desktop',
+    );
   }
 
   void _applyFilter(String filterKey) {

@@ -595,7 +595,7 @@ class _BallDetailPageState extends State<BallDetailPage> {
               fullscreenDialog: true,
               builder: (_) => const StadiumWebBrowser(
                 url:
-                    'https://www.adidas.com.br/bola-copa-do-mundo-da-fifa-26-tm-trionda-pro/JD8021.html',
+                    'https://www.fifa.com/pt/tournaments/mens/worldcup/canadamexicousa2026/articles/bola-oficial-copa-mundo-26-trionda-pro-adidas',
                 title: 'Adidas — Trionda Pro',
               ),
             ),
@@ -617,10 +617,10 @@ class _BallDetailPageState extends State<BallDetailPage> {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.shopping_bag_outlined, color: Colors.black, size: 18),
+              Icon(Icons.info, color: Colors.black, size: 18),
               SizedBox(width: 10),
               Text(
-                'Ver na Adidas — R\$ 999,99',
+                'Informações oficiais',
                 style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
