@@ -5,6 +5,7 @@ import 'package:wsports_cup_premium/core/widgets/network_aware_tab.dart';
 // 📄 ALTERAÇÃO 4: Import do sistema de rotas nomeadas
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/constants/app_theme.dart';
+import '../../../../core/services/ad_service.dart';
 import '../../../../core/services/notification_prompt_service.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../domain/entities/match_entity.dart';
@@ -731,6 +732,10 @@ class _SedesTabState extends State<_SedesTab> {
           onTap: () async {
             // Lógica de navegação híbrida (Web vs Mobile)
             if (city.officialUrl != null && city.officialUrl!.isNotEmpty) {
+              // mostra o rewarded antes de abrir
+              final watched = await AdService.showRewarded();
+              if (!watched) return;
+              if (!context.mounted) return;
               if (kIsWeb) {
                 // 🌐 MODO WEB: Abre num novo separador do browser
                 final Uri url = Uri.parse(city.officialUrl!);
@@ -1195,11 +1200,15 @@ class _SelecaoTab extends StatelessWidget {
     final teamId = isUrl ? _extractFlagCode(flagValue) : flagValue;
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         if (isPlaceholder) {
           // Mostra bottom sheet elegante em vez de navegar
           _showRepescagemSheet(context, team);
         } else {
+          // mostra o rewarded antes de navegar
+          final watched = await AdService.showRewarded();
+          if (!watched) return;
+          if (!context.mounted) return;
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -1941,10 +1950,16 @@ class _Copa2026Tab extends StatelessWidget {
       children: [
         // ── Card clicável da bola ─────────────────────────────
         GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const BallDetailPage()),
-          ),
+          onTap: () async {
+            // mostra o rewarded antes de navegar
+            final watched = await AdService.showRewarded();
+            if (!watched) return;
+            if (!context.mounted) return;
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const BallDetailPage()),
+            );
+          },
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(

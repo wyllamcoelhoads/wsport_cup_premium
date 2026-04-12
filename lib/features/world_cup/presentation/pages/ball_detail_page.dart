@@ -2,10 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_theme.dart';
+import '../../../../core/services/ad_service.dart';
 import '../../../../core/widgets/banner_ad_widget.dart';
 import '../widgets/premium_badge_sliver_app_bar.dart';
+import '../widgets/stadium_web_browser.dart';
 
 class BallDetailPage extends StatefulWidget {
   const BallDetailPage({super.key});
@@ -583,19 +584,22 @@ class _BallDetailPageState extends State<BallDetailPage> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () async {
-          final url = Uri.parse(
-            'https://www.adidas.com.br/bola-copa-do-mundo-da-fifa-26-tm-trionda-pro/JD8021.html',
+          // Mostra rewarded antes de abrir
+          final watched = await AdService.showRewarded();
+          if (!watched) return;
+          if (!mounted) return;
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              fullscreenDialog: true,
+              builder: (_) => const StadiumWebBrowser(
+                url:
+                    'https://www.adidas.com.br/bola-copa-do-mundo-da-fifa-26-tm-trionda-pro/JD8021.html',
+                title: 'Adidas — Trionda Pro',
+              ),
+            ),
           );
-          if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Não foi possível abrir a página da Adidas.'),
-                  backgroundColor: Colors.redAccent,
-                ),
-              );
-            }
-          }
         },
         borderRadius: BorderRadius.circular(14),
         child: Container(
