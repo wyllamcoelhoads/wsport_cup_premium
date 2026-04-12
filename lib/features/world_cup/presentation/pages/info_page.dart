@@ -424,23 +424,31 @@ class _InfoPageState extends State<InfoPage>
           onPressed: _goToSimulator,
         ),
       ),
-      bottomNavigationBar: TabBar(
-        controller: _tabController,
-        indicatorColor: AppColors.primaryGold,
-        labelColor: AppColors.primaryGold,
-        unselectedLabelColor: Colors.white38,
-        indicatorWeight: 3,
-        labelStyle: const TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.8,
+      // Dentro do seu Scaffold...
+      bottomNavigationBar: Container(
+        // O Container/Material garante que a cor de fundo preencha a área dos botões
+        color: AppColors.background,
+        child: SafeArea(
+          top: false, // Não queremos padding no topo aqui
+          child: TabBar(
+            controller: _tabController,
+            indicatorColor: AppColors.primaryGold,
+            labelColor: AppColors.primaryGold,
+            unselectedLabelColor: Colors.white38,
+            indicatorWeight: 3,
+            labelStyle: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.8,
+            ),
+            tabs: const [
+              Tab(icon: Icon(Icons.sports_soccer, size: 16), text: 'COPA 2026'),
+              Tab(icon: Icon(Icons.location_city, size: 16), text: 'SEDES'),
+              Tab(icon: Icon(Icons.emoji_flags, size: 16), text: 'SELEÇÕES'),
+              Tab(icon: Icon(Icons.play_circle_fill, size: 16), text: 'VÍDEOS'),
+            ],
+          ),
         ),
-        tabs: const [
-          Tab(icon: Icon(Icons.sports_soccer, size: 16), text: 'COPA 2026'),
-          Tab(icon: Icon(Icons.location_city, size: 16), text: 'SEDES'),
-          Tab(icon: Icon(Icons.emoji_flags, size: 16), text: 'SELEÇÕES'),
-          Tab(icon: Icon(Icons.play_circle_fill, size: 16), text: 'VÍDEOS'),
-        ],
       ),
       body: TabBarView(
         controller: _tabController,

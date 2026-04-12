@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:wsports_cup_premium/features/world_cup/presentation/pages/world_cup_page.dart';
@@ -22,6 +23,17 @@ import 'core/utils/update_banner_notifier.dart';
 //import 'core/utils/team_seeder.dart';
 
 void main() async {
+  // Garante que o app desenhe por baixo das barras do sistema
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      systemNavigationBarColor:
+          Colors.transparent, // Barra de baixo transparente
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
+
+  // Isso força o modo Edge-to-Edge no Android
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
